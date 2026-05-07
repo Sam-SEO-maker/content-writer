@@ -25,7 +25,7 @@ print("STEP 6: POST-REFRESH CANNIBALIZATION VALIDATION")
 print("=" * 80)
 
 # Path to refreshed HTML file
-refreshed_file = Path("_shared/outputs/cours-particuliers.com/html/https_cours_particuliers_com_quel_budget_prevoir_pour_apprendre_langlais_en_angleterre_refreshed.html")
+refreshed_file = Path("_shared/outputs/enseigna.fr/html/https_enseigna_fr_avis-superprof_refreshed.html")
 
 if not refreshed_file.exists():
     print(f"[ERROR] File not found: {refreshed_file}")
@@ -47,10 +47,10 @@ for i, h2 in enumerate(new_h2_list, 1):
 
 # Re-analyze HTML to extract cocon structure
 print("\n[STEP 6.1] Re-analyzing HTML for cocon structure...")
-url = "https://cours-particuliers.com/quel-budget-prevoir-pour-apprendre-langlais-en-angleterre/"
-blog_id = "cours-particuliers"
+url = "https://enseigna.fr/avis-superprof/"
+blog_id = "enseigna"
 
-analyzer = HTMLAnalyzer(domain="cours-particuliers.com")
+analyzer = HTMLAnalyzer(domain="enseigna.fr")
 html_result = analyzer.analyze(refreshed_html, url)
 
 cocon_structure_dict = {

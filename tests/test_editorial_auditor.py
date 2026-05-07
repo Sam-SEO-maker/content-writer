@@ -113,7 +113,7 @@ class TestEditorialAuditor:
         result = auditor.audit(
             url="https://example.fr/parcoursup-2026",
             html_content=html_parcoursup,
-            blog_id="educationetdevenir.fr"
+            blog_id="enseigna.fr"
         )
 
         assert result.topic == "parcoursup_2026", f"Topic détecté: {result.topic}, attendu: parcoursup_2026"
@@ -138,7 +138,7 @@ class TestEditorialAuditor:
         result = auditor.audit(
             url="https://example.fr/parcoursup-mauvais",
             html_content=html_mauvais,
-            blog_id="educationetdevenir.fr"
+            blog_id="enseigna.fr"
         )
 
         # Vérifier que le score est < 4 (seuil de blocage)
@@ -172,7 +172,7 @@ class TestEditorialAuditor:
         result = auditor.audit(
             url="https://example.fr/parcoursup-bon",
             html_content=html_bon,
-            blog_id="educationetdevenir.fr"
+            blog_id="enseigna.fr"
         )
 
         # Vérifier que le score est >= 4
@@ -197,7 +197,7 @@ class TestEditorialAuditor:
         result = auditor.audit(
             url="https://example.fr/article-sources",
             html_content=html_with_sources,
-            blog_id="educationetdevenir.fr"
+            blog_id="enseigna.fr"
         )
 
         # Vérifier que les sources sont détectées

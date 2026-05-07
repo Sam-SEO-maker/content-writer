@@ -342,29 +342,8 @@ class LinkInjector:
                 logger.info(f"[LinkInjector] Loaded HTML from {filepath.name}")
                 return html, filepath
 
-        # Strategy 2: Fallback to STSEO API
-        logger.info(f"[LinkInjector] No local file found, fetching via STSEO API: {url[:60]}")
-        try:
-            from scripts.wordpress.stseo_client import STSEOClient
-
-            client = STSEOClient()
-            result = client.get_post_content_by_link(url)
-            if not result or result.get("error") or not result.get("post_content"):
-                logger.error(f"[LinkInjector] STSEO API returned no content for {url[:60]}")
-                return None, None
-
-            clean_body = result["post_content"]
-
-            # Save to output directory for future use
-            filepath = self.html_dir / f"{slug}_refreshed.html"
-            filepath.write_text(clean_body, encoding="utf-8")
-            logger.info(f"[LinkInjector] Fetched via STSEO API and saved: {filepath.name}")
-
-            return clean_body, filepath
-
-        except Exception as e:
-            logger.error(f"[LinkInjector] STSEO API error: {e}")
-            return None, None
+        logger.warning(f"[LinkInjector] No local file found for {url[:60]}")
+        return None, None
 
     def _fetch_h1_from_output(self, url: str) -> str:
         """
@@ -525,7 +504,7 @@ class LinkInjector:
         Resolve site_id to domain.
 
         Args:
-            site_id: Blog identifier (e.g., "moments-yoga.fr")
+            site_id: Blog identifier (e.g., "enseigna.fr")
 
         Returns:
             Domain string for URL matching

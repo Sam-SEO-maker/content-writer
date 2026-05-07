@@ -73,7 +73,7 @@ def test_dataforseo_connection():
         keyword = "cours particuliers"
         result = analyzer.analyze(
             keyword=keyword,
-            our_domain="cours-particuliers.com"
+            our_domain="enseigna.fr"
         )
 
         if result and hasattr(result, 'organic_results'):

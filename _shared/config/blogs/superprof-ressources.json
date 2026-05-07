@@ -27,8 +27,13 @@
   },
 
   "seo_settings": {
-    "min_word_count": 1500,
-    "max_word_count": 2500,
+    "word_count_by_type": {
+      "theorie": { "min": 1200, "max": 1600 },
+      "exercices": { "min": 600, "max": 1000 }
+    },
+    "word_count_default_type": "theorie",
+    "min_word_count": 1200,
+    "max_word_count": 1600,
     "max_external_links": 2,
     "money_keywords_in_blog_anchors_forbidden": true
   },

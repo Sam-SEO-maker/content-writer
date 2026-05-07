@@ -14,5 +14,5 @@ Scripts de workflow exécutables pour des tâches spécifiques.
 python workflows/run_workflow_parcoursup.py
 
 # Découvrir un sitemap
-python workflows/sitemap_discovery.py --site cours-particuliers
+python workflows/sitemap_discovery.py --site enseigna.fr
 ```

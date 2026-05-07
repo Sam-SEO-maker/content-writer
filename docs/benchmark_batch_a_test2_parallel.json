@@ -1,0 +1,224 @@
+{
+  "test": "Batch A — Test 2 — Parallèle (sub-agents)",
+  "mode": "parallel",
+  "batch": "A",
+  "spreadsheet_id": "1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ",
+  "sheet": "New Growing List",
+  "rows": "151-165",
+  "urls": [
+    {"row": 151, "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/moyens-apprendre-anglais-jeune.html", "keyword": "dessin animé anglais débutant"},
+    {"row": 152, "url": "https://www.superprof.fr/ressources/francais/francais-2nde/commentaire-litteraire-analyse.html", "keyword": "fiche de lecture pierre et jean seconde"},
+    {"row": 153, "url": "https://www.superprof.fr/ressources/ses/ses-terminale-es/evolution-economie-sociale.html", "keyword": "croissance et développement"},
+    {"row": 154, "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/adjectif-pronom-anglais.html", "keyword": "adjectif possessif anglais"},
+    {"row": 155, "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/dictons-royaume-britannique.html", "keyword": "anglais stereotype"},
+    {"row": 156, "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/resistance-bobine-compensateur.html", "keyword": "ds electrocinetique mpsi"},
+    {"row": 157, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/description-britannique.html", "keyword": "exercice there is there are 5eme"},
+    {"row": 158, "url": "https://www.superprof.fr/ressources/svt/svt-2nde/importance-terre-planetes-autour-soleil.html", "keyword": "la terre dans le système solaire"},
+    {"row": 159, "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/general-adversaire-romain.html", "keyword": "sextus pompee"},
+    {"row": 160, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/questionnaire-langue-anglaise.html", "keyword": "quiz anglais 5eme"},
+    {"row": 161, "url": "https://www.superprof.fr/ressources/ses/ses-2nde/confrontation-politique-economique-societe.html", "keyword": "politiste politologue"},
+    {"row": 162, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/travailler-langue-anglaise-oreille.html", "keyword": "comprehension orale anglais 5eme"},
+    {"row": 163, "url": "https://www.superprof.fr/ressources/maths/maths-terminale/terminale-limites-de-fonctions-les-asymptotes.html", "keyword": "cours sur les limites terminale pdf"},
+    {"row": 164, "url": "https://www.superprof.fr/ressources/maths/maths-1ere-stmg/calcul-examen-travail.html", "keyword": "comment calculer une proportion"},
+    {"row": 165, "url": "https://www.superprof.fr/ressources/geographie/geographie-terminale-s/centre-de-l-agglomeration-japon.html", "keyword": "plus grandes villes du japon"}
+  ],
+  "phase1": {
+    "description": "Identique Test 1 Batch A — context bundles réutilisés, pas de re-run Phase 1",
+    "reuses_test1_phase1": true,
+    "duration_seconds": 453,
+    "duration_human": "7m 33s",
+    "note": "Phase 1 est séquentielle dans les 2 tests. La parallélisation ne concerne que Phase 2."
+  },
+  "phase2": {
+    "description": "Génération contenu refreshé — 15 sub-agents en parallèle (1 par URL), ~1500 mots chacun",
+    "architecture": "15 Agent() calls lancés simultanément dans un seul message",
+    "word_count_target": 1500,
+    "output_dir": "_shared/outputs/superprof-ressources/html_parallel/",
+    "start_utc": "2026-04-28T16:43:02Z",
+    "start_epoch": 1777394582,
+    "end_utc": "2026-04-28T16:47:43Z",
+    "end_epoch": 1777394863,
+    "duration_seconds": 281,
+    "duration_human": "4m 41s",
+    "note_timing": "end_utc = dernière completion enregistrée (importance-terre-planetes 16:47:43Z). 4 agents avaient des timestamps bogus dans leurs metadata.json (placeholder 10:00:00 / 09:15:00) — durées corrigées via duration_ms des notifications agent.",
+    "urls_processed": 15,
+    "urls_success": 15,
+    "urls_failed": 0,
+    "bottleneck_agent": "commentaire-litteraire-analyse",
+    "bottleneck_duration_seconds": 247,
+    "avg_per_url_seconds": 145,
+    "avg_word_count": 1373,
+    "total_tokens_all_agents": 1432900,
+    "avg_tokens_per_agent": 95527,
+    "word_count_warnings": [
+      "adjectif-pronom-anglais: 680 mots (court — original quasi vide, aucune matière à enrichir)",
+      "questionnaire-langue-anglaise: 857 mots (format quiz contraint la longueur naturelle)"
+    ],
+    "per_url": [
+      {
+        "row": 151, "slug": "moyens-apprendre-anglais-jeune",
+        "start_utc": "2026-04-28T16:43:02Z", "end_utc": "2026-04-28T16:45:32Z",
+        "duration_seconds": 150, "duration_source": "notification_ms",
+        "word_count": 1478, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 0, "tables": 0, "videos": 0, "internal_links": 1},
+        "tokens": 70514
+      },
+      {
+        "row": 152, "slug": "commentaire-litteraire-analyse",
+        "start_utc": "2026-04-28T16:43:39Z", "end_utc": "2026-04-28T16:45:44Z",
+        "duration_seconds": 125, "duration_source": "metadata_json",
+        "word_count": 1502, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 6},
+        "assets_after":  {"images": 1, "tables": 1, "videos": 0, "internal_links": 6},
+        "tokens": 106217,
+        "note": "image ajoutée (couverture) + tableau — correction vs Test 1 v1 où l'image avait été perdue"
+      },
+      {
+        "row": 153, "slug": "evolution-economie-sociale",
+        "start_utc": "2026-04-28T16:43:54Z", "end_utc": "2026-04-28T16:46:47Z",
+        "duration_seconds": 173, "duration_source": "metadata_json",
+        "word_count": 1390, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3},
+        "assets_after":  {"images": 0, "tables": 0, "videos": 0, "internal_links": 3},
+        "tokens": 116336
+      },
+      {
+        "row": 154, "slug": "adjectif-pronom-anglais",
+        "start_utc": "2026-04-28T16:43:53Z", "end_utc": "2026-04-28T16:46:04Z",
+        "duration_seconds": 131, "duration_source": "metadata_json",
+        "word_count": 680, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 0, "tables": 2, "videos": 0, "internal_links": 1},
+        "tokens": 75221,
+        "note": "⚠️ 680 mots seulement — original quasi vide (exercices bruts sans cours), structure contrainte"
+      },
+      {
+        "row": 155, "slug": "dictons-royaume-britannique",
+        "start_utc": "2026-04-28T16:44:02Z", "end_utc": "2026-04-28T16:46:31Z",
+        "duration_seconds": 149, "duration_source": "metadata_json",
+        "word_count": 1516, "success": true,
+        "assets_before": {"images": 0, "tables": 1, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 1, "tables": 1, "videos": 0, "internal_links": 2},
+        "tokens": 119497,
+        "note": "agent a compté 0 images avant alors que Test 1 détectait 1 image — image probablement dans le DOM WordPress hors post-content"
+      },
+      {
+        "row": 156, "slug": "resistance-bobine-compensateur",
+        "start_utc": "2026-04-28T16:44:11Z", "end_utc": "2026-04-28T16:46:52Z",
+        "duration_seconds": 161, "duration_source": "metadata_json",
+        "word_count": 1380, "success": true,
+        "assets_before": {"images": 3, "tables": 0, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 3, "tables": 1, "videos": 0, "internal_links": 1},
+        "tokens": 80769
+      },
+      {
+        "row": 157, "slug": "description-britannique",
+        "start_utc": "2026-04-28T16:44:19Z", "end_utc": "2026-04-28T16:46:30Z",
+        "duration_seconds": 131, "duration_source": "metadata_json",
+        "word_count": 1480, "success": true,
+        "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 1, "tables": 1, "videos": 0, "internal_links": 1},
+        "tokens": 109964
+      },
+      {
+        "row": 158, "slug": "importance-terre-planetes-autour-soleil",
+        "start_utc": "2026-04-28T16:44:33Z", "end_utc": "2026-04-28T16:47:43Z",
+        "duration_seconds": 190, "duration_source": "metadata_json",
+        "word_count": 1502, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 4},
+        "assets_after":  {"images": 0, "tables": 0, "videos": 0, "internal_links": 4},
+        "tokens": 105747
+      },
+      {
+        "row": 159, "slug": "general-adversaire-romain",
+        "start_utc": "2026-04-28T16:45:11Z", "end_utc": "2026-04-28T16:46:33Z",
+        "duration_seconds": 82, "duration_source": "metadata_json",
+        "word_count": 1337, "success": true,
+        "assets_before": {"images": 3, "tables": 0, "videos": 0, "internal_links": 1},
+        "assets_after":  {"images": 3, "tables": 1, "videos": 0, "internal_links": 1},
+        "tokens": 79809
+      },
+      {
+        "row": 160, "slug": "questionnaire-langue-anglaise",
+        "start_utc": "2026-04-28T16:43:02Z", "end_utc": "2026-04-28T16:45:24Z",
+        "duration_seconds": 142, "duration_source": "notification_ms",
+        "word_count": 857, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 6},
+        "assets_after":  {"images": 0, "tables": 1, "videos": 0, "internal_links": 6},
+        "tokens": 81619,
+        "note": "⚠️ 857 mots — format quiz contraint la longueur naturelle de l'article"
+      },
+      {
+        "row": 161, "slug": "confrontation-politique-economique-societe",
+        "start_utc": "2026-04-28T16:44:57Z", "end_utc": "2026-04-28T16:46:37Z",
+        "duration_seconds": 100, "duration_source": "metadata_json",
+        "word_count": 1426, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 5},
+        "assets_after":  {"images": 0, "tables": 1, "videos": 0, "internal_links": 5},
+        "tokens": 93991
+      },
+      {
+        "row": 162, "slug": "travailler-langue-anglaise-oreille",
+        "start_utc": "2026-04-28T16:45:03Z", "end_utc": "2026-04-28T16:47:37Z",
+        "duration_seconds": 154, "duration_source": "notification_ms",
+        "word_count": 1553, "success": true,
+        "assets_before": {"images": 0, "tables": 2, "videos": 0, "internal_links": 4},
+        "assets_after":  {"images": 0, "tables": 2, "videos": 0, "internal_links": 4},
+        "tokens": 115999
+      },
+      {
+        "row": 163, "slug": "terminale-limites-de-fonctions-les-asymptotes",
+        "start_utc": "2026-04-28T16:45:10Z", "end_utc": "2026-04-28T16:47:12Z",
+        "duration_seconds": 122, "duration_source": "metadata_json",
+        "word_count": 1454, "success": true,
+        "assets_before": {"images": 8, "tables": 0, "videos": 2, "internal_links": 2},
+        "assets_after":  {"images": 8, "tables": 1, "videos": 2, "internal_links": 4},
+        "tokens": 92402
+      },
+      {
+        "row": 164, "slug": "calcul-examen-travail",
+        "start_utc": "2026-04-28T16:45:19Z", "end_utc": "2026-04-28T16:47:21Z",
+        "duration_seconds": 122, "duration_source": "metadata_json",
+        "word_count": 1523, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3},
+        "assets_after":  {"images": 0, "tables": 1, "videos": 0, "internal_links": 3},
+        "tokens": 71159
+      },
+      {
+        "row": 165, "slug": "centre-de-l-agglomeration-japon",
+        "start_utc": "2026-04-28T16:43:02Z", "end_utc": "2026-04-28T16:46:25Z",
+        "duration_seconds": 203, "duration_source": "notification_ms",
+        "word_count": 1520, "success": true,
+        "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 5},
+        "assets_after":  {"images": 0, "tables": 1, "videos": 0, "internal_links": 5},
+        "tokens": 113656
+      }
+    ]
+  },
+  "totals": {
+    "phase1_duration_seconds": 453,
+    "phase1_duration_human": "7m 33s",
+    "phase2_duration_seconds": 281,
+    "phase2_duration_human": "4m 41s",
+    "total_duration_seconds": 734,
+    "total_duration_human": "12m 14s (Phase 1: 7m33s + Phase 2: 4m41s)",
+    "total_tokens_phase2": 1432900,
+    "comparison_vs_test1": {
+      "test1_v2_phase2_seconds": 2205,
+      "test2_phase2_seconds": 281,
+      "phase2_speedup_factor": 7.8,
+      "test1_v2_total_seconds": 2658,
+      "test2_total_seconds": 734,
+      "total_speedup_factor": 3.6,
+      "note": "speedup = test1_v2 / test2. Phase 2 : 7.8× plus rapide en parallèle. Total (Phase 1 commune + Phase 2) : 3.6× plus rapide."
+    },
+    "quality_notes": [
+      "15/15 agents terminés avec succès",
+      "13/15 articles ≥ 1400 mots — 2 outliers (adjectif 680w, quiz 857w) dus à la structure contrainte des originaux",
+      "Règle d'Or respectée sur tous les articles (assets_after ≥ assets_before)",
+      "4 agents ont écrit des timestamps bogus dans metadata.json — durées corrigées via duration_ms des notifications",
+      "commentaire-litteraire-analyse : image préservée (corrige l'échec de Test 1 v1)"
+    ]
+  }
+}

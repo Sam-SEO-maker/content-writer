@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/arts-appliques/arts-appliques-tous-niveaux/livre-astre-nocturne-enfant.html",
+  "row_index": 147,
+  "process_started_at": "19:07",
+  "process_ended_at": "19:08",
+  "total_duration_sec": 15.593,
+  "operations": {
+    "sheets_write": {
+      "started_at": "19:07",
+      "ended_at": "19:08",
+      "duration_sec": 3.115
+    },
+    "gsc_fetch": {
+      "started_at": "19:07",
+      "ended_at": "19:08",
+      "duration_sec": 10.909
+    },
+    "context_write": {
+      "started_at": "19:08",
+      "ended_at": "19:08",
+      "duration_sec": 0.004
+    }
+  },
+  "other_sec": 1.566,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

@@ -22,6 +22,17 @@ Le pipeline de prompt composer DOIT injecter le contenu intégral de ces 3 guide
 
 ## Règles non-négociables (résumé exécutif)
 
+### Longueur cible par type de contenu
+
+Deux typologies coexistent sur Superprof Ressources :
+
+| Type       | Cible mots | Usage                                                        |
+|------------|------------|--------------------------------------------------------------|
+| **théorie**    | 1 200 – 1 600 | Cours, définitions, fiches de rappel, biographies, contextes historiques |
+| **exercices**  | 600 – 1 000   | Entraînements, corrigés types, problèmes résolus, méthodologie appliquée |
+
+Par défaut (si le type n'est pas précisé), utiliser la cible **théorie**. Le type doit venir du brief ou de la spreadsheet (colonne dédiée à ajouter par Andra). Ne pas gonfler artificiellement pour atteindre le haut de la cible — viser la concision utile.
+
 ### Identité de marque
 - ✅ **Superprof** (un seul mot, S majuscule, p minuscule)
 - ❌ JAMAIS : "Super Prof", "SuperProf", "SP"
@@ -56,6 +67,24 @@ Le pipeline de prompt composer DOIT injecter le contenu intégral de ces 3 guide
 - Mettre à jour stats, exemples, structure, visuels selon le brief
 - Respecter les blocs Gutenberg obligatoires (cf. Guide 2)
 - Utiliser le bon éditeur WordPress (cf. Guide 3 — "Critical Rules")
+
+## Structure HTML obligatoire
+
+### H1 dans le corps de texte (OBLIGATOIRE)
+- Chaque article Superprof Ressources doit avoir un `<h1>` comme **première balise du corps de texte**, avant la section d'introduction
+- Placement : juste avant `<section class="introduction">`, à l'intérieur du wrapper `<article>`
+- Le texte du H1 doit **contenir le mot-clé principal** et être descriptif/complémentaire au titre SEO (pas une répétition exacte)
+- Si un H1 existe déjà dans le contenu, ne pas en ajouter un second
+
+```html
+<article class="blog-post" lang="fr">
+
+<h1>[Titre descriptif du corps de l'article]</h1>
+
+<section class="introduction">
+  ...
+</section>
+```
 
 ## Anti-patterns à proscrire
 

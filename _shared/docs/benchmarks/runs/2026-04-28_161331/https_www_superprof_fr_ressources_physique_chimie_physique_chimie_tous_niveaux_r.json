@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/resistance-bobine-compensateur.html",
+  "row_index": 156,
+  "process_started_at": "16:15",
+  "process_ended_at": "16:15",
+  "total_duration_sec": 15.452,
+  "operations": {
+    "sheets_write": {
+      "started_at": "16:15",
+      "ended_at": "16:15",
+      "duration_sec": 3.32
+    },
+    "gsc_fetch": {
+      "started_at": "16:15",
+      "ended_at": "16:15",
+      "duration_sec": 11.342
+    },
+    "context_write": {
+      "started_at": "16:15",
+      "ended_at": "16:15",
+      "duration_sec": 0.002
+    }
+  },
+  "other_sec": 0.787,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

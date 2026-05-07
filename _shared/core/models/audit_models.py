@@ -41,14 +41,6 @@ class CTABlock:
 
 
 @dataclass
-class CoconStructure:
-    """Structure du cocon sémantique détectée."""
-    parent_url: Optional[str] = None
-    parent_title: Optional[str] = None
-    sibling_urls: list = field(default_factory=list)  # [{"url": ..., "title": ...}]
-
-
-@dataclass
 class LinkAsset:
     """Représente un lien extrait."""
     href: str
@@ -92,7 +84,6 @@ class HTMLAnalysisResult:
     # Nouveaux champs pour amélioration du workflow
     featured_image: Optional[ImageAsset] = None  # Image à la Une (exclue du corps)
     cta_blocks: list = field(default_factory=list)  # Blocs CTA stylés
-    cocon_structure: Optional[CoconStructure] = None  # Structure du cocon sémantique
 
 
 # =========================================================================

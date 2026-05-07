@@ -1,0 +1,163 @@
+{
+  "run_id": "2026-04-28_165045",
+  "blog_id": "superprof-ressources",
+  "source": {
+    "sheet": "New Growing List",
+    "rows": "151:165"
+  },
+  "batch_started_at": "16:50",
+  "batch_ended_at": "16:58",
+  "batch_duration_sec": 453.019,
+  "urls_count": 15,
+  "urls_success": 15,
+  "urls_failed": 0,
+  "aggregate": {
+    "sheets_write": {
+      "total_sec": 55.312,
+      "avg_sec": 3.687,
+      "pct_of_batch": 12.21
+    },
+    "gsc_fetch": {
+      "total_sec": 178.261,
+      "avg_sec": 11.884,
+      "pct_of_batch": 39.35
+    },
+    "context_write": {
+      "total_sec": 0.083,
+      "avg_sec": 0.006,
+      "pct_of_batch": 0.02
+    },
+    "context_prep": {
+      "total_sec": 0.065,
+      "avg_sec": 0.008,
+      "pct_of_batch": 0.01
+    },
+    "other": {
+      "total_sec": 217.397,
+      "avg_sec": 14.493,
+      "pct_of_batch": 47.99
+    }
+  },
+  "per_url": [
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/moyens-apprendre-anglais-jeune.html",
+      "row_index": 151,
+      "started_at": "16:50",
+      "ended_at": "16:51",
+      "duration_sec": 18.902,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/francais/francais-2nde/commentaire-litteraire-analyse.html",
+      "row_index": 152,
+      "started_at": "16:51",
+      "ended_at": "16:51",
+      "duration_sec": 15.01,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/ses/ses-terminale-es/evolution-economie-sociale.html",
+      "row_index": 153,
+      "started_at": "16:51",
+      "ended_at": "16:52",
+      "duration_sec": 49.398,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/adjectif-pronom-anglais.html",
+      "row_index": 154,
+      "started_at": "16:52",
+      "ended_at": "16:52",
+      "duration_sec": 15.975,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/dictons-royaume-britannique.html",
+      "row_index": 155,
+      "started_at": "16:52",
+      "ended_at": "16:53",
+      "duration_sec": 33.585,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/resistance-bobine-compensateur.html",
+      "row_index": 156,
+      "started_at": "16:53",
+      "ended_at": "16:53",
+      "duration_sec": 15.768,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/description-britannique.html",
+      "row_index": 157,
+      "started_at": "16:53",
+      "ended_at": "16:54",
+      "duration_sec": 78.439,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/svt/svt-2nde/importance-terre-planetes-autour-soleil.html",
+      "row_index": 158,
+      "started_at": "16:54",
+      "ended_at": "16:55",
+      "duration_sec": 31.847,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/general-adversaire-romain.html",
+      "row_index": 159,
+      "started_at": "16:55",
+      "ended_at": "16:55",
+      "duration_sec": 13.922,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/questionnaire-langue-anglaise.html",
+      "row_index": 160,
+      "started_at": "16:55",
+      "ended_at": "16:56",
+      "duration_sec": 48.617,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/ses/ses-2nde/confrontation-politique-economique-societe.html",
+      "row_index": 161,
+      "started_at": "16:56",
+      "ended_at": "16:56",
+      "duration_sec": 14.562,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/travailler-langue-anglaise-oreille.html",
+      "row_index": 162,
+      "started_at": "16:56",
+      "ended_at": "16:56",
+      "duration_sec": 34.779,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/maths/maths-terminale/terminale-limites-de-fonctions-les-asymptotes.html",
+      "row_index": 163,
+      "started_at": "16:56",
+      "ended_at": "16:57",
+      "duration_sec": 34.032,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/maths/maths-1ere-stmg/calcul-examen-travail.html",
+      "row_index": 164,
+      "started_at": "16:57",
+      "ended_at": "16:57",
+      "duration_sec": 14.131,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/geographie/geographie-terminale-s/centre-de-l-agglomeration-japon.html",
+      "row_index": 165,
+      "started_at": "16:57",
+      "ended_at": "16:58",
+      "duration_sec": 32.151,
+      "success": true
+    }
+  ]
+}

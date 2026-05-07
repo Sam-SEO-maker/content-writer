@@ -10,7 +10,7 @@ Rapport hebdomadaire multi-tenant :
 
 Usage:
     cw report monday-indexation
-    cw report monday-indexation --blog moments-yoga --dry-run
+    cw report monday-indexation --blog enseigna --dry-run
 """
 
 import sys
@@ -392,7 +392,7 @@ class MondayIndexationReport:
             url,            # B - blogpost_url
             "",             # C - main_keyword
             "",             # D - title
-            "STANDALONE",   # E - post_type
+            "",             # E - post_type
             "",             # F - action_blogpost
             "",             # G - status
             "DONE",         # H - audit_gsc (already done)

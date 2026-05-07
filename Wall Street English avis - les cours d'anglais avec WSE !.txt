@@ -1,0 +1,165 @@
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Wall Street English qu'est-ce que c'est? </h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p><em>"Aille ame raidi" ou encore "Douille housse pic english?"...</em> </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Qui ne connaît pas les fameuses pub colorées et humoristiques qui ornent les bus et les métros et qui nous rappellent qu'en France, on est pas très bons en anglais ? Pour ceux qui ne l'aurait pas reconnue, je parle bien de la fameuse entreprise de <a href="https://www.superprof.fr/cours/anglais/france/" data-type="URL" data-id="https://www.superprof.fr/cours/anglais/france/">cours d'anglais</a> Wall Street English. Je l'ai déjà évoqué dans de précédents billets sur ce blog, j'adore apprendre de nouvelles choses et découvrir de nouvelles cultures, j'adore donc apprendre de nouvelles langues. C'est en prenant le métro à Paris il y a quelques temps que je repense à cette fameuse entreprise de formations d'anglais. Je me suis souvenu du centre Wall Street English place de la république dans le 11ème arrondissement de Paris et son énorme enseigne qui m'a toujours intrigué. Mais en fait, Wall Street English, c'est quoi?</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Wall Street English, WSE pour les intimes et de son ancien nom Wall Street Institute est une entreprise de formation entièrement dédiée à l'apprentissage de l'anglais. Le Wall Street Institute est fondé par Luigi Tiziano Peccenini en 1972. Cette entreprise forme depuis un réseau de 420 centres d'apprentissage partout dans le monde. En France, c'est 69 centres répartis sur tout le territoire français. Et en 2021 la satisfaction de ses clients lui a valu de figurer au sommet du palmarès Le point en tant que meilleure école de langue en France avec une note de 9,35/10. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"align":"center","id":1068,"sizeSlug":"medium","linkDestination":"none"} -->
+<figure class="wp-block-image aligncenter size-medium"><img src="https://enseigna.fr/wp-content/uploads/2023/05/wse_lepoint-201x300.png" alt="" class="wp-image-1068"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>Face à ce beau pedigree, j'ai décidé de me plonger dans l'univers WSE pour comprendre ce qui fait son originalité par rapport aux autres entreprises concurrentes, et éventuellement me faire un avis avant de me lancer dans une nouvelle aventure d'apprentissage... </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">La <em>"<em>WSE Method</em>"</em> </h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Wall Street English ce n'est pas une simple entreprise de cours particuliers ! En effet, ce qui distingue Wall Street English d'autres entreprises de cours particulier c'est la <em>WSE Method</em>. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>La <em>WSE method </em>est une approche originale de l'apprentissage d'une langue. C'est en s'inspirant de l'apprentissage d'une langue maternelle que cette pédagogie s'est construite. Les cours vont donc se construire sur une base de 65%-35%, en consacrant la plus grande partie du temps à l'oral et la pratique (écoute et répétition) plutôt qu'à la théorie. D'ailleurs, l'école le revendique : pour un bon apprentissage il faut multiplier les sources d'expositions à la langue. Ainsi on peut trouver sur le blog de l'entreprise de nombreux billets consacrés à des conseils, des références culturelles qui peuvent être intéressantes d'un point de vue pédagogiques mais aussi d'un point de vue ludique. Par exemple, un article est consacré aux différents accents anglophones et recommande différentes séries ou saga anglaises ou américaines selon l'accent recherché par l'élève ! </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Concrètement, la <em>WSE Method </em>c'est un mode d'apprentissage partagé entre sessions de travail en autonomie en ligne depuis chez soi, à faire des exercices d'écoute et de prononciation et des cours avec de vrais professeurs à intervalles réguliers. Le professeur est là pour valider et guider la progression de l'élève. Des cours collectifs en centre sont prévus régulièrement également afin de mettre en pratique les nouvelles connaissances acquises chez soi. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Bien sur, pour pouvoir intégrer un cours d'un niveau adapté, Wall Street English propose un test basé sur le CECRL (Cadre Européen Commun de Références pour les Langues). Il permet de situer l'élève selon les 6 niveaux du CECRL, mais aussi selon les 20 niveaux différents identifiés par l'école. Le classement de l'élève lui permet également de se situer par rapport aux tests certifiants comme le TOEIC, ou le Linguaskill (anciennement connu sous le nom de BULATS). Bien entendu, ce n'est pas un test à prendre à la légère, il se déroule sur rendez-vous dans un des centres ou en visio. En revanche ce test est offert par  la formation sans obligation d'engagement.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"id":1069,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://enseigna.fr/wp-content/uploads/2023/05/wse_niveaux-1024x278.jpg" alt="La progression CECRL" class="wp-image-1069"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>Un autre point dont je voudrais parler c'est les ressources mises à disposition par l'école sur le blog WSE. Bien que l'accès aux cours soit assez cher, j'y reviendrai, le blog de l'entreprise propose pas mal de contenu intéressant en accès gratuit comme des fiches de vocabulaire.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Pour une expérience plus immersive, l'application SayHello permet aux élèves d'accéder à leur compte et leurs cours multimédias depuis leur téléphone. Je pense que l'application est adaptée à ce type de sessions de travail en autonomie et permet de progresser où que l'on soit plutôt que d'être contraint de rester chez soi sur un ordinateur pour faire les exercices en ligne. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Tarifs de Wall Street English</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Mais la <em>WSE Method </em>ça a un prix ! L'entreprise propose diverses formules et donc divers tarifs et ça peut être un peu décourageant de décortiquer toutes ces informations mais penchons nous un peu sur ces prix et ces formules. Au total on peut classer toutes les formules dans trois catégories distinctes : </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>🇬🇧  Les formules <em>WSE Method</em></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>🎓 Les formules de préparation aux tests de langues</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>🏢 Les formules pour les entreprises</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>La <em>WSE method</em> est le produit phare de l'école et se décline en 8 formules qui se distinguent les unes des autres que par leur durée : 2, 3, 6, 9, 12, 15, 18 et 24 mois avec des prix allant de 1490€ à 4890€. Il est donc nécessaire de passer le test d'entrée pour choisir le temps de formation adapté. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>A côté de ces abonnements, il existe donc également des formules axées sur la préparation de tests de langues certifiants. Ainsi, WSE prépare au TOEIC, au  TOEFL, à l’IELTS et au test LINGUASKILL. Ici la tarification fonctionne sous forme de pack : avec un pack TOEIC et LINGUASKILL qui démarre à 630€ pour une préparation en groupe (compter 830€ pour une préparation individuelle) jusqu'à un pack TOEIC, LINGUSAKILL, TOEFL, IBT et IELTS à 690€ en individuel (490€ en groupe). </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Wall Street English propose également des préparations intensives adaptées aux salariés d'entreprise avec des modalités de cours 100% à distance. C'est une formule qui garantit 97% de réussite pour 3h30 de cours par semaine, quel que soit le niveau de départ de l'élève.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>La grande question face à ces prix c'est comment financer ce type de formation? Le coût des formations représente un poste de dépense absolument non négligeable ! Face à ça, l'organisme de formation propose une solution de financement qui peut être intéressante en rendant ses formations éligibles au CPF (Compte Personnel de Formation). Le CPF permet à toutes les personnes actives de bénéficier d'une somme d'argent utilisable pour se former. Ce mode de financement est rendu possible par la certification Qualiopi, qui est une certification décernée par l'Etat aux organismes de formations qui respectent un certains nombre de critères attestant de la qualité de la formation.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Mon avis sur Wall Street English</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Malgré tout le sérieux et l'originalité de la méthode d'apprentissage, l'expérience positive des élèves n'est pas garantie. La fameuse méthode d'écoute et de répétition se faisant principalement en ligne et seul, on peut légitimement se demander ce qui justifie un prix aussi élevé ! Si l'on prend la formule basique <em>WSE method 1 niveau sur 2 mois</em> à 1490€ pour laquelle l'entreprise recommande 3h30 par semaine de sessions d'exercice en autonomie. Si l'on ajoute 1h avec un prof particulier et 1h de classe conversationnelle en groupe, cela fait près de 5h30 par semaine consacrées à la formation. C'est énorme ! Et étant donné que la plupart du travail se fait sans prof, ça ne fait donc que 2h de cours par semaine, soit à près de 93€ de l'heure ! Ainsi, plus l'on prend de cours par semaine, plus le coût de la formation est rentable... C'est pourquoi je dirais que la <em>WSE Method</em>, c'est très bien pour les personnes qui ont un besoin urgent de parler anglais et qui sont très motivées. En revanche, pour un apprentissage plus tranquille, je conseille de passer son chemin. Finalement, avant de se lancer dans l'aventure de Wall Street English, je privilégierais plutôt des alternatives moins onéreuses comme Babbel, Gymglish ou encore Superprof ou un cours particulier ne coute qu'entre 20€ à 50€ de l'heure. C'est d'ailleurs ce qui ressort de plusieurs commentaires d'anciens élèves sur Truspilot dont l'expérience laisse à désirer, comme celui de Karima : </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph {"align":"center"} -->
+<p class="has-text-align-center">"<em>Ils vendent des faux rêves, une formation trop chère pour se retrouver derrière votre ordinateur à chercher comment gérer votre temps et comment avancer le programme tout seul, la seule chose que j'ai gagnée avec eux est le stress qui augmente d'un jour à l'autre car j'ai payé 3000 euros pour me retrouver après 6mois au même niveau de départ" "C'est comme un abonnement Netflix. Tu ne regardes que des vidéos et tu dois te battre pour avoir une place avec d'autres élèves /4 en tout pour parler moins de 10min chacun car le prof arrête 15min avant la fin de 1h pour vous noter à la va vit</em>e." </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>J'ai donc décidé de passer mon chemin, et de me contenter d'un examen approfondi de la méthode d'apprentissage et de l'entreprise. En effet, pour conclure, je dirais que Wall Street English propose une formation sérieuse et dont l'efficacité  a été prouvée pour certains types d'élèves car elle nécessite un très fort engagement. On doit vraiment  se donner le temps et les moyens d'exploiter tout le potentiel mis à sa disposition pour rentabiliser au maximum le prix de la formation. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:columns {"className":"pros-cons-wrapper"} -->
+<div class="wp-block-columns pros-cons-wrapper"><!-- wp:column {"className":"cons-block"} -->
+<div class="wp-block-column cons-block"><!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">Les -</h3>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Coût beaucoup trop élevé !</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Complexité du parcours d'apprentissage.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></div>
+<!-- /wp:column -->
+
+<!-- wp:column {"className":"pros-block"} -->
+<div class="wp-block-column pros-block"><!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">Les +</h3>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Modes d'apprentissage diversifiés.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Possibilité de financer les cours avec le CPF.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Contenus multimédias plus poussés que des entreprises similaires (Babbel, Gymglish...).</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Sources</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li><a href="https://fr.wikipedia.org/wiki/Wall_Street_English" data-type="URL" data-id="https://fr.wikipedia.org/wiki/Wall_Street_English">https://fr.wikipedia.org/wiki/Wall_Street_English</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><a href="https://www.trustpilot.com/review/wallstreetenglish.fr">https://www.trustpilot.com/review/wallstreetenglish.fr</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><a href="https://www.service-public.fr/particuliers/vosdroits/F10705">https://www.service-public.fr/particuliers/vosdroits/F10705</a></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->

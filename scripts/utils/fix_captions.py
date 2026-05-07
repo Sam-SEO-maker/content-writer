@@ -1,8 +1,8 @@
 """
 Fix image captions in refreshed HTML files.
 
-Replaces <figure>/<figcaption> (broken by scraping) with original
-[caption]...[/caption] WordPress shortcodes from STSEO API.
+Compares <figure>/<figcaption> tags in refreshed HTML against the original
+live article to detect caption drift.
 """
 
 import logging
@@ -13,8 +13,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from scripts.wordpress.stseo_client import STSEOClient
-
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
@@ -22,7 +20,7 @@ logger = logging.getLogger(__name__)
 if sys.platform == "win32":
     sys.stdout = open(sys.stdout.fileno(), mode="w", encoding="utf-8", buffering=1)
 
-BLOGS = ["coachsportlyon.fr", "cours-particuliers.com", "mymusicteacher.fr"]
+BLOGS = ["enseigna.fr", "superprof.fr"]
 SUBDIRS = ["html_child_posts", "html_parent_posts"]
 
 
@@ -53,7 +51,7 @@ def extract_image_filename(html_fragment: str) -> str:
 
 def build_caption_map(original_content: str) -> tuple:
     """
-    Build maps for matching [caption] blocks from STSEO original content.
+    Build maps for matching [caption] blocks from original HTML.
 
     Returns:
         (by_id, by_filename):
@@ -83,8 +81,8 @@ def fix_file(filepath: str, by_id: dict, by_filename: dict) -> dict:
 
     Args:
         filepath: Path to the refreshed HTML file
-        by_id: {wp_image_id: caption_shortcode} from STSEO original
-        by_filename: {image_filename: caption_shortcode} from STSEO original
+        by_id: {wp_image_id: caption_shortcode} from original HTML
+        by_filename: {image_filename: caption_shortcode} from original HTML
 
     Returns:
         {"replaced": int, "unmatched": int, "total_figures": int}
@@ -134,8 +132,8 @@ def fix_file(filepath: str, by_id: dict, by_filename: dict) -> dict:
 
 
 def main():
+    import requests
     base = Path(__file__).parent.parent.parent / "_shared" / "outputs"
-    client = STSEOClient()
 
     total_files = 0
     total_replaced = 0
@@ -160,15 +158,26 @@ def main():
                 filepath = dirpath / filename
                 url = filename_to_url(filename, blog)
 
-                # Fetch original from STSEO
-                result = client.get_post_content_by_link(url)
-                if not result or result.get("error") or not result.get("post_content"):
-                    logger.warning(f"SKIP {filename} (STSEO miss: {url})")
+                # Fetch original from live site
+                try:
+                    resp = requests.get(
+                        url,
+                        timeout=20,
+                        headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
+                        allow_redirects=True,
+                    )
+                    if not resp.ok:
+                        logger.warning(f"SKIP {filename} (HTTP {resp.status_code}: {url})")
+                        total_skipped += 1
+                        continue
+                    original_html = resp.text
+                except Exception as e:
+                    logger.warning(f"SKIP {filename} (fetch error: {e})")
                     total_skipped += 1
                     continue
 
                 # Build caption maps from original
-                by_id, by_filename = build_caption_map(result["post_content"])
+                by_id, by_filename = build_caption_map(original_html)
 
                 # Fix the file
                 stats = fix_file(str(filepath), by_id, by_filename)
@@ -187,7 +196,7 @@ def main():
     logger.info(f"  Files processed: {total_files}")
     logger.info(f"  Figures replaced: {total_replaced}")
     logger.info(f"  Unmatched figures: {total_failed}")
-    logger.info(f"  Files skipped (STSEO miss): {total_skipped}")
+    logger.info(f"  Files skipped (HTTP miss): {total_skipped}")
     logger.info(f"{'='*60}")
 
 

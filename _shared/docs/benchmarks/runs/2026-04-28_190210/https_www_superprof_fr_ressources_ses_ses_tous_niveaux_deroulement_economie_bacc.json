@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/ses/ses-tous-niveaux/deroulement-economie-baccalaureat.html",
+  "row_index": 146,
+  "process_started_at": "19:07",
+  "process_ended_at": "19:07",
+  "total_duration_sec": 15.123,
+  "operations": {
+    "sheets_write": {
+      "started_at": "19:07",
+      "ended_at": "19:07",
+      "duration_sec": 2.689
+    },
+    "gsc_fetch": {
+      "started_at": "19:07",
+      "ended_at": "19:07",
+      "duration_sec": 10.94
+    },
+    "context_write": {
+      "started_at": "19:07",
+      "ended_at": "19:07",
+      "duration_sec": 0.008
+    }
+  },
+  "other_sec": 1.486,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

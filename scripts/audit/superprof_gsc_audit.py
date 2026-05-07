@@ -7,7 +7,13 @@ Pour chaque URL fournie :
 3. Upsert dans l'onglet `GSC_Perfs` de la spreadsheet "Articles Ressources"
 4. Dump JSON local dans `_shared/outputs/superprof-ressources/audit/`
 
-Lecture-only sur l'onglet `⬆️ Growing` (jamais d'écriture dans cet onglet).
+Onglet `⬆️ Growing` :
+- Lecture : URL (col A), main_keyword (col B), statuts (col F)
+- Écriture : colonne F uniquement, via `write_growing_statuts`
+  · "Rédigé"     — après génération du contenu refreshé
+  · "Draft in WP" — après envoi via l'API WordPress (à implémenter)
+  · "Publié"     — après publication effective
+  · "A faire"    — valeur par défaut, URL non encore traitée
 """
 
 from __future__ import annotations
@@ -64,64 +70,132 @@ def _build_clients():
 
 
 # -----------------------------------------------------------------------------
-# Sheet ops — Growing (read-only) + GSC_Perfs (read/write)
+# Sheet ops — Growing (read col A/B/F + write col F) + GSC_Perfs (read/write)
 # -----------------------------------------------------------------------------
 
-def read_growing_bottom(sheets, n: int = 10) -> list[tuple[int, str, str]]:
+GROWING_STATUTS_COL = "F"  # Colonne du menu déroulant statuts dans Growing
+STATUTS_VALUES = ("A faire", "Rédigé", "Draft in WP", "Publié")
+
+
+def read_growing_bottom(sheets, n: int = 10) -> list[tuple[int, str, str, str]]:
     """
     Lit les `n` dernières URLs de l'onglet Growing.
 
     Returns:
-        Liste de tuples (row_index, url, main_keyword)
+        Liste de tuples (row_index, url, main_keyword, statuts)
+        statuts vaut "A faire" si la colonne F est vide ou absente.
     """
     r = sheets.spreadsheets().values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range=f"'{GROWING_SHEET}'!A1:E2000",
+        range=f"'{GROWING_SHEET}'!A1:F2000",
     ).execute()
     rows = r.get("values", [])
 
-    # Garder seulement les lignes avec une URL valide
     indexed = [
-        (i + 1, row[0], row[1] if len(row) > 1 else "")
+        (
+            i + 1,
+            row[0],
+            row[1] if len(row) > 1 else "",
+            row[5] if len(row) > 5 and row[5] else "A faire",
+        )
         for i, row in enumerate(rows)
         if row and row[0].startswith("http")
     ]
     return indexed[-n:]
 
 
+def find_growing_row_by_url(sheets, url: str) -> Optional[int]:
+    """Retourne le numéro de ligne 1-indexed de l'URL dans Growing, ou None."""
+    r = sheets.spreadsheets().values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"'{GROWING_SHEET}'!A:A",
+    ).execute()
+    for i, row in enumerate(r.get("values", []), start=1):
+        if row and row[0] == url:
+            return i
+    return None
+
+
+def write_growing_statuts(sheets, row_index: int, statuts: str) -> None:
+    """Écrit la valeur statuts en colonne F de l'onglet Growing."""
+    sheets.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID,
+        range=f"'{GROWING_SHEET}'!{GROWING_STATUTS_COL}{row_index}",
+        valueInputOption="USER_ENTERED",
+        body={"values": [[statuts]]},
+    ).execute()
+
+
 def ensure_gsc_perfs_sheet(sheets) -> None:
-    """Crée l'onglet GSC_Perfs avec en-têtes s'il n'existe pas."""
+    """Crée l'onglet GSC_Perfs s'il n'existe pas et (re)synchronise les en-têtes.
+
+    Idempotent : si le tab existe déjà avec un schéma plus ancien (moins de
+    colonnes), on met à jour la ligne 1 pour refléter le schéma actuel défini
+    par `SuperprofAuditRow.gsc_perfs_headers()`. Les données existantes en
+    col A-M sont préservées ; les nouvelles colonnes (ex: N/O timestamps)
+    restent vides pour les lignes antérieures.
+    """
+    headers = SuperprofAuditRow.gsc_perfs_headers()
+    col_count = len(headers)
+
     meta = sheets.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()
     existing = {s["properties"]["title"] for s in meta.get("sheets", [])}
 
-    if GSC_PERFS_SHEET in existing:
-        return
-
-    print(f"[INFO] Creating sheet '{GSC_PERFS_SHEET}'...")
-    sheets.spreadsheets().batchUpdate(
-        spreadsheetId=SPREADSHEET_ID,
-        body={
-            "requests": [
-                {
-                    "addSheet": {
-                        "properties": {
-                            "title": GSC_PERFS_SHEET,
-                            "gridProperties": {"rowCount": 1000, "columnCount": 13},
+    if GSC_PERFS_SHEET not in existing:
+        print(f"[INFO] Creating sheet '{GSC_PERFS_SHEET}'...")
+        sheets.spreadsheets().batchUpdate(
+            spreadsheetId=SPREADSHEET_ID,
+            body={
+                "requests": [
+                    {
+                        "addSheet": {
+                            "properties": {
+                                "title": GSC_PERFS_SHEET,
+                                "gridProperties": {"rowCount": 1000, "columnCount": col_count},
+                            }
                         }
                     }
-                }
-            ]
-        },
-    ).execute()
+                ]
+            },
+        ).execute()
+        sheets.spreadsheets().values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"'{GSC_PERFS_SHEET}'!A1",
+            valueInputOption="USER_ENTERED",
+            body={"values": [headers]},
+        ).execute()
+        print(f"[INFO] Sheet '{GSC_PERFS_SHEET}' created with {col_count} headers.")
+        return
 
-    headers = SuperprofAuditRow.gsc_perfs_headers()
-    sheets.spreadsheets().values().update(
-        spreadsheetId=SPREADSHEET_ID,
-        range=f"'{GSC_PERFS_SHEET}'!A1",
-        valueInputOption="USER_ENTERED",
-        body={"values": [headers]},
-    ).execute()
-    print(f"[INFO] Sheet '{GSC_PERFS_SHEET}' created with {len(headers)} headers.")
+    # Sheet exists — check if headers match and sync if not
+    current = (
+        sheets.spreadsheets()
+        .values()
+        .get(spreadsheetId=SPREADSHEET_ID, range=f"'{GSC_PERFS_SHEET}'!1:1")
+        .execute()
+        .get("values", [[]])
+    )
+    current_row = current[0] if current else []
+    if current_row != headers:
+        sheets.spreadsheets().values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"'{GSC_PERFS_SHEET}'!A1",
+            valueInputOption="USER_ENTERED",
+            body={"values": [headers]},
+        ).execute()
+        print(
+            f"[INFO] Sheet '{GSC_PERFS_SHEET}' headers synced "
+            f"({len(current_row)} → {col_count} cols)."
+        )
+
+
+def _col_letter(n: int) -> str:
+    """Convert a 1-based column index to its spreadsheet letter (1→A, 27→AA)."""
+    result = ""
+    while n > 0:
+        n, rem = divmod(n - 1, 26)
+        result = chr(ord("A") + rem) + result
+    return result
 
 
 def upsert_gsc_perfs(sheets, audit: SuperprofAuditRow) -> None:
@@ -141,12 +215,13 @@ def upsert_gsc_perfs(sheets, audit: SuperprofAuditRow) -> None:
             break
 
     payload = audit.to_gsc_perfs_row()
+    last_col = _col_letter(len(payload))
 
     if target_row:
         # UPDATE
         sheets.spreadsheets().values().update(
             spreadsheetId=SPREADSHEET_ID,
-            range=f"'{GSC_PERFS_SHEET}'!A{target_row}:M{target_row}",
+            range=f"'{GSC_PERFS_SHEET}'!A{target_row}:{last_col}{target_row}",
             valueInputOption="USER_ENTERED",
             body={"values": [payload]},
         ).execute()
@@ -319,7 +394,7 @@ def run(n: int = 10) -> None:
 
     print(f"[3/4] Auditing each URL via GSC API...")
     audits: list[SuperprofAuditRow] = []
-    for i, (row_idx, url, kw) in enumerate(urls, 1):
+    for i, (row_idx, url, kw, _statuts) in enumerate(urls, 1):
         print(f"  [{i}/{len(urls)}] L{row_idx} : {url[:80]}")
         audit = audit_url(gsc, row_idx, url, kw)
         audits.append(audit)

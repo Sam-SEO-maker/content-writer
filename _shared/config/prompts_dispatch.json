@@ -53,7 +53,7 @@
 
   "subject_prompts": {
     "education_reviews": {
-      "file": "prompts/subjects/education_reviews.md",
+      "file": "sites/enseigna.md",
       "applicable_blogs": ["enseigna"],
       "keywords": ["avis", "comparatif", "test", "plateforme", "soutien scolaire"],
       "tone": "expert_analytique",
@@ -67,7 +67,7 @@
       }
     },
     "education_general": {
-      "file": "prompts/subjects/education_general.md",
+      "file": "sites/superprof-ressources/superprof-ressources.md",
       "applicable_blogs": ["superprof-ressources"],
       "keywords": ["cours", "soutien", "aide", "apprentissage", "tuteur", "professeur"],
       "tone": "natural_informal",
@@ -96,7 +96,7 @@
       "estimated_tokens": 3000
     },
     "partial_refresh": {
-      "file": "prompts/strategies/partial_refresh.md",
+      "file": "prompts/strategies/full_refresh.md",
       "trigger_conditions": ["content_stale", "stats_outdated"],
       "scope": "diff_based",
       "estimated_tokens": 1500

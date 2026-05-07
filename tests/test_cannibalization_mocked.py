@@ -21,7 +21,7 @@ print("ANTI-CANNIBALIZATION TEST WITH MOCKED SIBLINGS")
 print("=" * 80)
 
 # Simulated current article
-current_url = "https://cours-particuliers.com/combien-de-temps-apprendre-anglais-angleterre/"
+current_url = "https://enseigna.fr/combien-de-temps-apprendre-anglais-angleterre/"
 current_h1 = "Combien de temps pour apprendre l'anglais en Angleterre ?"
 
 # Simulated H2s (some cannibalizing, some not)
@@ -36,19 +36,19 @@ current_h2_list = [
 # Simulated sibling articles (realistic cocon)
 sibling_articles = [
     SiblingArticle(
-        url="https://cours-particuliers.com/meilleures-villes-apprendre-anglais-angleterre/",
+        url="https://enseigna.fr/meilleures-villes-apprendre-anglais-angleterre/",
         h1="Les meilleures villes ou apprendre l'anglais en Angleterre",
         main_keyword="villes apprendre anglais angleterre",
         context_h2_from_parent=None
     ),
     SiblingArticle(
-        url="https://cours-particuliers.com/budget-sejour-linguistique-angleterre/",
+        url="https://enseigna.fr/budget-sejour-linguistique-angleterre/",
         h1="Quel budget prevoir pour un sejour linguistique en Angleterre",
         main_keyword="budget sejour linguistique angleterre",
         context_h2_from_parent=None
     ),
     SiblingArticle(
-        url="https://cours-particuliers.com/meilleurs-ecoles-anglais-londres/",
+        url="https://enseigna.fr/meilleurs-ecoles-anglais-londres/",
         h1="Les meilleures ecoles d'anglais a Londres",
         main_keyword="ecoles anglais londres",
         context_h2_from_parent=None
@@ -57,7 +57,7 @@ sibling_articles = [
 
 # Create mocked cocon structure
 cocon_structure = {
-    'parent_url': 'https://cours-particuliers.com/apprendre-anglais-angleterre/',
+    'parent_url': 'https://enseigna.fr/apprendre-anglais-angleterre/',
     'parent_title': 'Guide complet pour apprendre l\'anglais en Angleterre',
     'sibling_urls': [s.url for s in sibling_articles]
 }

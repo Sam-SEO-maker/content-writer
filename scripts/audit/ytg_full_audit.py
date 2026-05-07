@@ -1,4 +1,4 @@
-"""Full YTG audit of all 51 coachsportlyon articles."""
+"""Full YTG audit — adapt SLUGS and BASE to target site."""
 import json
 import time
 import sys
@@ -65,7 +65,7 @@ SLUGS = [
 ]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-BASE = PROJECT_ROOT / "_shared" / "outputs" / "coachsportlyon.fr"
+BASE = PROJECT_ROOT / "_shared" / "outputs" / "enseigna.fr"
 
 
 def main():
@@ -86,7 +86,7 @@ def main():
     ).execute().get("values", [])
     slug_to_kw = {}
     for r in rows[1:]:
-        if len(r) > 3 and r[0] == "coachsportlyon.fr":
+        if len(r) > 3 and r[0] == "enseigna.fr":
             s = r[2].strip("/").split("/")[-1]
             slug_to_kw[s] = r[3]
 
@@ -98,7 +98,7 @@ def main():
         for suffix in ["_corrected.html", "_refreshed.html"]:
             for f in all_html:
                 fn = f.name
-                fn_clean = fn.replace("https_coachsportlyon_fr_", "").replace("_corrected.html", "").replace("_refreshed.html", "")
+                fn_clean = fn.replace("https_enseigna_fr_", "").replace("_corrected.html", "").replace("_refreshed.html", "")
                 if slug_u == fn_clean or slug_u in fn_clean or slug in fn_clean.replace("_", "-"):
                     candidate = f.parent / (fn.split("_refreshed")[0].split("_corrected")[0] + suffix)
                     if candidate.exists():

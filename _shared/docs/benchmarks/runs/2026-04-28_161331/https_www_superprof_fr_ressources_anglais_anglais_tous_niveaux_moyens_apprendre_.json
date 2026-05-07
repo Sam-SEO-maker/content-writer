@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/moyens-apprendre-anglais-jeune.html",
+  "row_index": 151,
+  "process_started_at": "16:13",
+  "process_ended_at": "16:13",
+  "total_duration_sec": 19.146,
+  "operations": {
+    "sheets_write": {
+      "started_at": "16:13",
+      "ended_at": "16:13",
+      "duration_sec": 6.632
+    },
+    "gsc_fetch": {
+      "started_at": "16:13",
+      "ended_at": "16:13",
+      "duration_sec": 11.085
+    },
+    "context_write": {
+      "started_at": "16:13",
+      "ended_at": "16:13",
+      "duration_sec": 0.004
+    }
+  },
+  "other_sec": 1.424,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

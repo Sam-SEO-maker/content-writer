@@ -11,7 +11,7 @@ from typing import Optional
 from bs4 import BeautifulSoup, Tag
 
 from _shared.core.models.linking_models import LinkMapping, InjectionPoint
-from scripts.cocon.similarity_engine import SimilarityEngine
+from scripts.linking.similarity_engine import SimilarityEngine
 
 logger = logging.getLogger(__name__)
 

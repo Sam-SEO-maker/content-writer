@@ -25,7 +25,7 @@ def main():
 
     # Article 1
     result1 = RefreshResultRow(
-        url="https://cours-particuliers.com/apprendre-anglais-au-royaume-uni/",
+        url="https://enseigna.fr/apprendre-anglais-au-royaume-uni/",
         refresh_date=datetime.now().strftime("%Y-%m-%d %H:%M"),
         rewrite_type="FULL_REFRESH",
         new_title="Cours d'anglais au Royaume-Uni : le guide complet pour apprendre en 2026",
@@ -40,7 +40,7 @@ def main():
         validation_passed=True,
         validation_errors="",
         content_preview="Prendre des cours d'anglais au Royaume-Uni reste en 2026 l'une des méthodes les plus efficaces pour progresser rapidement. Selon une étude du British Council (2025)...",
-        full_content_link="outputs/cours-particuliers/2026-02-04/apprendre-anglais-au-royaume-uni/article_final.html",
+        full_content_link="outputs/enseigna/2026-02-04/apprendre-anglais-au-royaume-uni/article_final.html",
         publish_queue=True,
         published_date="",
         tokens_used=0
@@ -48,7 +48,7 @@ def main():
 
     # Article 2
     result2 = RefreshResultRow(
-        url="https://cours-particuliers.com/combien-de-temps-pour-apprendre-langlais-en-angleterre/",
+        url="https://enseigna.fr/combien-de-temps-pour-apprendre-langlais-en-angleterre/",
         refresh_date=datetime.now().strftime("%Y-%m-%d %H:%M"),
         rewrite_type="FULL_REFRESH",
         new_title="Combien de temps pour apprendre l'anglais en Angleterre ? Guide complet 2026",
@@ -63,7 +63,7 @@ def main():
         validation_passed=True,
         validation_errors="",
         content_preview="Comptez entre 100 et 200 heures de cours intensifs pour progresser d'un niveau sur l'échelle CECRL. Selon les données du British Council (2025)...",
-        full_content_link="outputs/cours-particuliers/2026-02-04/combien-de-temps-pour-apprendre-langlais-en-anglet/article_final.html",
+        full_content_link="outputs/enseigna/2026-02-04/combien-de-temps-pour-apprendre-langlais-en-anglet/article_final.html",
         publish_queue=True,
         published_date="",
         tokens_used=0
@@ -80,13 +80,13 @@ def main():
     from scripts.sheets.sheets_client import TaskStatus
 
     client.update_status(
-        "https://cours-particuliers.com/apprendre-anglais-au-royaume-uni/",
+        "https://enseigna.fr/apprendre-anglais-au-royaume-uni/",
         TaskStatus.COMPLETED
     )
     print("Statut URL 1 mis à jour: COMPLETED")
 
     client.update_status(
-        "https://cours-particuliers.com/combien-de-temps-pour-apprendre-langlais-en-angleterre/",
+        "https://enseigna.fr/combien-de-temps-pour-apprendre-langlais-en-angleterre/",
         TaskStatus.COMPLETED
     )
     print("Statut URL 2 mis à jour: COMPLETED")

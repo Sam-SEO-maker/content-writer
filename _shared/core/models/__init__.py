@@ -9,7 +9,6 @@ Permet des imports simplifiés : from _shared.core.models import ImageAsset, Tas
 from .enums import (
     TaskStatus,
     TriggerType,
-    PostType,
     TaskPriority,
     RefreshStrategy,
     SearchIntent,
@@ -22,7 +21,6 @@ from .enums import (
 from .audit_models import (
     ImageAsset,
     CTABlock,
-    CoconStructure,
     LinkAsset,
     HeadingStructure,
     HTMLAnalysisResult,
@@ -52,6 +50,7 @@ from .decision_models import (
 
 # Sheets Models
 from .sheets_models import (
+    ContentWriterRow,
     URLTask,
     AuditResultRow,
     RefreshResultRow,
@@ -84,14 +83,6 @@ from .sitemap_models import (
     StaleContent
 )
 
-# Cocon Models
-from .cocon_models import (
-    SiblingArticle,
-    CoconRegistryData,
-    CannibalizationMatch,
-    CannibalizationReport
-)
-
 # Linking Models
 from .linking_models import (
     LinkMapping,
@@ -104,7 +95,6 @@ __all__ = [
     # Enums
     "TaskStatus",
     "TriggerType",
-    "PostType",
     "TaskPriority",
     "RefreshStrategy",
     "SearchIntent",
@@ -114,7 +104,6 @@ __all__ = [
     # Audit Models
     "ImageAsset",
     "CTABlock",
-    "CoconStructure",
     "LinkAsset",
     "HeadingStructure",
     "HTMLAnalysisResult",
@@ -138,6 +127,7 @@ __all__ = [
     "DecisionResult",
     "StrategyConfig",
     # Sheets Models
+    "ContentWriterRow",
     "URLTask",
     "AuditResultRow",
     "RefreshResultRow",
@@ -158,11 +148,6 @@ __all__ = [
     "SitemapCache",
     "FetchResult",
     "StaleContent",
-    # Cocon Models
-    "SiblingArticle",
-    "CoconRegistryData",
-    "CannibalizationMatch",
-    "CannibalizationReport",
     # Linking Models
     "LinkMapping",
     "InjectionPoint",

@@ -35,7 +35,7 @@ class LinkMappingLoader:
         Load linking map CSV for a specific site.
 
         Args:
-            site_id: Blog identifier (e.g., "moments-yoga.fr")
+            site_id: Blog identifier (e.g., "enseigna.fr")
 
         Returns:
             List of validated LinkMapping objects
@@ -157,8 +157,8 @@ class LinkMappingLoader:
         Mirrors OutputManager._url_to_slug() logic for consistency.
 
         Examples:
-            https://www.moments-yoga.fr/origines-styles-yoga/ -> origines-styles-yoga
-            https://www.moments-yoga.fr/cours-de-yoga/bienfaits/ -> cours-de-yoga-bienfaits
+            https://www.enseigna.fr/origines-styles-yoga/ -> origines-styles-yoga
+            https://www.enseigna.fr/cours-de-yoga/bienfaits/ -> cours-de-yoga-bienfaits
         """
         parsed = urlparse(url) if url.startswith("http") else None
         if parsed:

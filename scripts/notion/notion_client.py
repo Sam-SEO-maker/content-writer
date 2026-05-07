@@ -43,12 +43,8 @@ NOTION_CREDENTIALS_PATH = Path(
 
 # Mapping domaine Notion (NDD) → blog_id interne
 _DOMAIN_TO_BLOG_ID: dict[str, str] = {
-    "moments-yoga.fr": "moments-yoga",
-    "cours-particuliers.com": "cours-particuliers",
-    "educationetdevenir.fr": "educationetdevenir",
-    "coachsportlyon.fr": "coachsportlyon",
-    "mymusicteacher.fr": "mymusicteacher",
     "enseigna.fr": "enseigna",
+    "superprof.fr": "superprof-ressources",
 }
 
 # Mapping inverse blog_id → domaine Notion (pour les filtres API)
@@ -292,7 +288,7 @@ class NotionClient:
         Schéma réel de la base :
           - "Blog Catégorie" (title)  → titre de l'article
           - "Permalink" (rich_text)   → URL de l'article
-          - "NDD" (select)            → domaine du site (ex: "moments-yoga.fr")
+          - "NDD" (select)            → domaine du site (ex: "enseigna.fr")
           - "Statut" (status)         → statut de traitement
           - "Mois" (select)           → mois de publication (ex: "Mars 2026")
           - "Sujet" (rich_text)       → résumé du sujet
@@ -300,7 +296,7 @@ class NotionClient:
 
         Args:
             database_id: ID de la base "Commandes" Notion
-            blog_id: blog ID interne (ex: "moments-yoga") — converti en domaine pour le filtre
+            blog_id: blog ID interne (ex: "enseigna") — converti en domaine pour le filtre
             status: Filtre sur le statut (optionnel)
 
         Returns:
@@ -339,7 +335,7 @@ class NotionClient:
         """
         props = page.get("properties", {})
 
-        # "NDD" contient le domaine (ex: "moments-yoga.fr") → convertir en blog_id
+        # "NDD" contient le domaine (ex: "enseigna.fr") → convertir en blog_id
         ndd = self._extract_select(props, ["NDD"])
         blog_id = _DOMAIN_TO_BLOG_ID.get(ndd, ndd)
 
@@ -454,7 +450,7 @@ class NotionClient:
             title: Titre de l'article (nouveau H1 ou original)
             url: URL de l'article
             strategy: Stratégie appliquée (ex: FULL_REFRESH)
-            blog_id: Identifiant du blog (ex: moments-yoga)
+            blog_id: Identifiant du blog (ex: enseigna)
             impressions: Impressions GSC 30j au moment du refresh
             clicks: Clics GSC 30j au moment du refresh
             indexed: Statut d'indexation ("YES" ou "NO")

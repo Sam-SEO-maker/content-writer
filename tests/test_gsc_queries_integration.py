@@ -31,7 +31,7 @@ def test_gsc_queries_formatting():
         {"query": "devenir coach sportif", "impressions": 850, "ctr": 1.8, "position": 12.5, "clicks": 15},
 
         # Core keywords: bonnes impressions, bonne position
-        {"query": "coach sportif lyon", "impressions": 650, "ctr": 4.2, "position": 5.3, "clicks": 27},
+        {"query": "avis superprof", "impressions": 650, "ctr": 4.2, "position": 5.3, "clicks": 27},
         {"query": "cours sport lyon", "impressions": 420, "ctr": 3.8, "position": 7.1, "clicks": 16},
 
         # Long tail: faible volume, bien positionné
@@ -93,16 +93,16 @@ def test_audit_data_integration():
 
     # Simuler audit_data avec keywords
     mock_audit_data = {
-        "url": "https://coachsportlyon.fr/coach-sportif-lyon/",
-        "main_keyword": "coach sportif lyon",
+        "url": "https://enseigna.fr/avis-superprof/",
+        "main_keyword": "avis superprof",
         "performance": {
             "clicks_30d": 125,
             "impressions_30d": 3500,
             "ctr_30d": 3.6,
             "avg_position": 8.2,
-            "main_keyword": "coach sportif lyon",
+            "main_keyword": "avis superprof",
             "keywords": [
-                {"query": "coach sportif lyon", "impressions": 650, "ctr": 4.2, "position": 5.3, "clicks": 27},
+                {"query": "avis superprof", "impressions": 650, "ctr": 4.2, "position": 5.3, "clicks": 27},
                 {"query": "formation coach sportif", "impressions": 1200, "ctr": 1.5, "position": 8.2, "clicks": 18},
                 {"query": "personal trainer lyon", "impressions": 35, "ctr": 8.5, "position": 3.2, "clicks": 3},
             ]

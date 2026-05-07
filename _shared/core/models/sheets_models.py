@@ -4,15 +4,176 @@ Sheets Models Module
 Modèles pour l'intégration avec Google Sheets.
 
 Architecture :
-- `RefreshAuditRow`     — modèle générique legacy (à terme : à supprimer)
-- `SuperprofAuditRow`   — onglet "⬆️ Growing" de la spreadsheet "Articles Ressources"
+- `ContentWriterRow`    — modèle unifié Content Writer (20 colonnes A-T) — à utiliser pour les 2 blogs
+- `RefreshAuditRow`     — modèle SRW legacy (28 colonnes A-AB) — à terme supprimer
+- `SuperprofAuditRow`   — onglet "GSC_Perfs" de la spreadsheet Superprof (lecture seule, 15 colonnes)
 - `EnseignaAvisRow`     — onglet "Avis" de la spreadsheet Enseigna (à venir)
 - `EnseignaVersusRow`   — onglet "Versus" de la spreadsheet Enseigna (à venir)
 """
 
 from dataclasses import dataclass, field
 
-from .enums import TaskStatus, TriggerType, PostType
+from .enums import TaskStatus, TriggerType
+
+
+def _safe_int(val, default=0):
+    if not val:
+        return default
+    try:
+        return int(float(str(val).replace(",", ".")))
+    except (ValueError, TypeError):
+        return default
+
+
+def _safe_float(val, default=0.0):
+    if not val:
+        return default
+    try:
+        return float(str(val).replace(",", "."))
+    except (ValueError, TypeError):
+        return default
+
+
+@dataclass
+class ContentWriterRow:
+    """
+    Modèle unifié Content Writer (20 colonnes A-T).
+
+    Utilisé pour les 2 blogs : enseigna + superprof-ressources.
+    Remplace RefreshAuditRow dans la nouvelle architecture.
+
+    Structure spreadsheet "Articles Ressources" :
+      A: domain_name      — enseigna.fr | superprof.fr/ressources/
+      B: catégorie        — anglais/maths/histoire… (Superprof) ; soutien scolaire/langues/loisirs (Enseigna)
+      C: url
+      D: main_keyword
+      E: title
+      F: post_type        — théorique | exercices | review
+      G: status           — À faire | Audit GSC | En cours | Rédigé | Publié
+      H: action           — FULL_REFRESH | PARTIAL_REFRESH | TITLE_OPTIMIZATION | NEW_CONTENT
+      I: gsc_impressions_30d
+      J: gsc_clicks_30d
+      K: gsc_ctr_30d
+      L: people_also_ask  — questions PAA (comma-separated, max 4)
+      M: secondary_keywords
+      N: new_h1_title
+      O: word_count_before
+      P: word_count_after
+      Q: images_count
+      R: internal_links_count
+      S: error_message
+      T: refresh_date     — ISO timestamp
+    """
+
+    domain_name: str = ""                   # A
+    categorie: str = ""                     # B
+    url: str = ""                           # C
+    main_keyword: str = ""                  # D
+    title: str = ""                         # E
+    post_type: str = ""                     # F (théorique/exercices/review)
+    status: str = "À faire"                 # G
+    action: str = ""                        # H
+    gsc_impressions_30d: int = 0            # I
+    gsc_clicks_30d: int = 0                 # J
+    gsc_ctr_30d: float = 0.0               # K
+    people_also_ask: str = ""              # L
+    secondary_keywords: str = ""           # M
+    new_h1_title: str = ""                 # N
+    word_count_before: int = 0             # O
+    word_count_after: int = 0              # P
+    images_count: int = 0                  # Q
+    internal_links_count: int = 0          # R
+    error_message: str = ""                # S
+    refresh_date: str = ""                 # T
+
+    row_index: int = 0                     # non-sheet — ligne dans le spreadsheet
+
+    def to_list(self) -> list:
+        """Convertit en liste pour écriture Google Sheets (20 colonnes A-T)."""
+        return [
+            self.domain_name,
+            self.categorie,
+            self.url,
+            self.main_keyword,
+            self.title,
+            self.post_type,
+            self.status,
+            self.action,
+            self.gsc_impressions_30d,
+            self.gsc_clicks_30d,
+            round(self.gsc_ctr_30d * 100, 2) if self.gsc_ctr_30d else 0,
+            self.people_also_ask,
+            self.secondary_keywords,
+            self.new_h1_title,
+            self.word_count_before,
+            self.word_count_after,
+            self.images_count,
+            self.internal_links_count,
+            self.error_message,
+            self.refresh_date,
+        ]
+
+    @staticmethod
+    def headers() -> list:
+        """En-têtes (single source of truth) pour la feuille principale."""
+        return [
+            "Domain",
+            "Catégorie",
+            "URL",
+            "Main Keyword",
+            "Title",
+            "Post Type",
+            "Status",
+            "Action",
+            "Impressions 30d",
+            "Clicks 30d",
+            "CTR 30d (%)",
+            "People Also Ask",
+            "Secondary Keywords",
+            "New H1 Title",
+            "Word Count Before",
+            "Word Count After",
+            "Images Count",
+            "Internal Links Count",
+            "Error Message",
+            "Refresh Date",
+        ]
+
+    @staticmethod
+    def from_list(row: list, row_index: int = 0) -> "ContentWriterRow":
+        """Crée une instance à partir d'une liste (20 colonnes A-T)."""
+        def safe_float(val, default=0.0):
+            # CTR values arrive as percentages (e.g. "2,5") — divide by 100
+            if not val:
+                return default
+            try:
+                return float(str(val).replace(",", ".").replace("%", "")) / 100
+            except (ValueError, TypeError):
+                return default
+
+        return ContentWriterRow(
+            domain_name=row[0] if len(row) > 0 else "",
+            categorie=row[1] if len(row) > 1 else "",
+            url=row[2] if len(row) > 2 else "",
+            main_keyword=row[3] if len(row) > 3 else "",
+            title=row[4] if len(row) > 4 else "",
+            post_type=row[5] if len(row) > 5 else "",
+            status=row[6] if len(row) > 6 else "À faire",
+            action=row[7] if len(row) > 7 else "",
+            gsc_impressions_30d=_safe_int(row[8]) if len(row) > 8 else 0,
+            gsc_clicks_30d=_safe_int(row[9]) if len(row) > 9 else 0,
+            gsc_ctr_30d=safe_float(row[10]) if len(row) > 10 else 0.0,
+            people_also_ask=row[11] if len(row) > 11 else "",
+            secondary_keywords=row[12] if len(row) > 12 else "",
+            new_h1_title=row[13] if len(row) > 13 else "",
+            word_count_before=_safe_int(row[14]) if len(row) > 14 else 0,
+            word_count_after=_safe_int(row[15]) if len(row) > 15 else 0,
+            images_count=_safe_int(row[16]) if len(row) > 16 else 0,
+            internal_links_count=_safe_int(row[17]) if len(row) > 17 else 0,
+            error_message=row[18] if len(row) > 18 else "",
+            refresh_date=row[19] if len(row) > 19 else "",
+            row_index=row_index,
+        )
 
 
 @dataclass
@@ -22,7 +183,6 @@ class URLTask:
     title: str  # Titre de l'article (nouvelle colonne)
     blog_id: str
     row_index: int
-    post_type: PostType = PostType.STANDALONE
     status: TaskStatus = TaskStatus.PENDING
     triggered_by: TriggerType = TriggerType.MANUAL
     added_date: str = ""
@@ -31,12 +191,6 @@ class URLTask:
     error_message: str = ""
     notes: str = ""
     main_keyword: str = ""  # Mot-clé principal fourni (colonne C)
-    # URLs des articles enfants (jusqu'à 6) pour les articles PARENT
-    child_urls: list[str] = None  # Liste des URLs enfants
-
-    def __post_init__(self):
-        if self.child_urls is None:
-            self.child_urls = []
 
 
 @dataclass
@@ -106,7 +260,7 @@ class RefreshAuditRow:
     blogpost_url: str = ""                         # B
     main_keyword: str = ""                         # C
     title: str = ""                                # D
-    post_type: PostType = PostType.STANDALONE       # E (PARENT/CHILD/STANDALONE)
+    post_type: str = ""                             # E
 
     # F-G: Action tracking
     action_blogpost: str = ""                     # F (NO ACTION, PARTIAL REFRESH, REFRESH TITLES, FULL REFRESH)
@@ -161,7 +315,7 @@ class RefreshAuditRow:
             self.blogpost_url,                                                   # B
             self.main_keyword,                                                   # C
             self.title,                                                          # D
-            self.post_type.value,                                                # E
+            self.post_type,                                                      # E
             self.action_blogpost,                                                # F
             self.status,                                                         # G
             self.audit_gsc,                                                      # H
@@ -190,50 +344,34 @@ class RefreshAuditRow:
     @staticmethod
     def from_list(row: list, row_index: int = 0) -> "RefreshAuditRow":
         """Crée une instance à partir d'une liste (28 colonnes A-AB du sheet)."""
-        def safe_float(val, default=0.0):
-            if not val:
-                return default
-            try:
-                return float(str(val).replace(",", "."))
-            except (ValueError, TypeError):
-                return default
-
-        def safe_int(val, default=0):
-            if not val:
-                return default
-            try:
-                return int(float(str(val).replace(",", ".")))
-            except (ValueError, TypeError):
-                return default
-
         return RefreshAuditRow(
             blog_id=row[0] if len(row) > 0 else "",                             # A
             blogpost_url=row[1] if len(row) > 1 else "",                         # B
             main_keyword=row[2] if len(row) > 2 else "",                         # C
             title=row[3] if len(row) > 3 else "",                                # D
-            post_type=PostType(row[4]) if len(row) > 4 else PostType.STANDALONE, # E
+            post_type=row[4] if len(row) > 4 else "",                            # E
             action_blogpost=row[5] if len(row) > 5 else "",                      # F
             status=row[6] if len(row) > 6 else "",                               # G
             audit_gsc=row[7] if len(row) > 7 else "",                            # H
             audit_serp=row[8] if len(row) > 8 else "",                           # I
-            impressions_30d=safe_int(row[9]) if len(row) > 9 else 0,             # J
-            clicks_30d=safe_int(row[10]) if len(row) > 10 else 0,                # K
-            ctr_30d=safe_float(row[11]) if len(row) > 11 else 0.0,               # L
+            impressions_30d=_safe_int(row[9]) if len(row) > 9 else 0,            # J
+            clicks_30d=_safe_int(row[10]) if len(row) > 10 else 0,               # K
+            ctr_30d=_safe_float(row[11]) if len(row) > 11 else 0.0,              # L
             people_also_ask=row[12] if len(row) > 12 else "",                    # M
             secondary_keywords=row[13] if len(row) > 13 else "",                 # N
             new_h1_title=row[14] if len(row) > 14 else "",                       # O
             new_h2_titles=row[15] if len(row) > 15 else "",                      # P
-            word_count_before=safe_int(row[16]) if len(row) > 16 else 0,         # Q
-            images_count=safe_int(row[17]) if len(row) > 17 else 0,              # R
-            internal_links_count=safe_int(row[18]) if len(row) > 18 else 0,      # S
+            word_count_before=_safe_int(row[16]) if len(row) > 16 else 0,        # Q
+            images_count=_safe_int(row[17]) if len(row) > 17 else 0,             # R
+            internal_links_count=_safe_int(row[18]) if len(row) > 18 else 0,     # S
             cannibalization_flag=(row[19] == "YES") if len(row) > 19 else False, # T
             cannibalization_urls=row[20] if len(row) > 20 else "",               # U
             error_message=row[21] if len(row) > 21 else "",                      # V
             index_diagnostic=row[22] if len(row) > 22 else "",                   # W
-            editorial_audit_score=safe_float(row[23]) if len(row) > 23 else 0.0, # X
+            editorial_audit_score=_safe_float(row[23]) if len(row) > 23 else 0.0, # X
             editorial_audit_date=row[24] if len(row) > 24 else "",               # Y
             editorial_verdict=row[25] if len(row) > 25 else "",                  # Z
-            blocking_issues_count=safe_int(row[26]) if len(row) > 26 else 0,     # AA
+            blocking_issues_count=_safe_int(row[26]) if len(row) > 26 else 0,    # AA
             editorial_audit_report_url=row[27] if len(row) > 27 else "",         # AB
             row_index=row_index,
         )
@@ -283,6 +421,10 @@ class SuperprofAuditRow:
     last_gsc_refresh: str = ""       # ISO timestamp ou "NO_DATA"
     error_message: str = ""
 
+    # Horodatage du process pipeline (benchmark_runner)
+    process_started_at: str = ""     # ISO "YYYY-MM-DD HH:MM:SS" — début fetch
+    process_ended_at: str = ""       # ISO "YYYY-MM-DD HH:MM:SS" — fin livraison
+
     # Source row (1-indexed dans Growing) — utile pour traçabilité
     growing_row_index: int = 0
 
@@ -290,7 +432,7 @@ class SuperprofAuditRow:
         """
         Convertit en liste pour écriture dans l'onglet GSC_Perfs.
 
-        Schéma 12 colonnes (validé) :
+        Schéma 15 colonnes (validé) :
         A: URL
         B: Main Keyword
         C: Impressions 30d
@@ -304,6 +446,8 @@ class SuperprofAuditRow:
         K: Top Query 2
         L: Top Query 3
         M: Last GSC Refresh
+        N: Process Started At
+        O: Process Ended At
         """
         return [
             self.url,
@@ -319,6 +463,8 @@ class SuperprofAuditRow:
             self.top_query_2,
             self.top_query_3,
             self.last_gsc_refresh,
+            self.process_started_at,
+            self.process_ended_at,
         ]
 
     @staticmethod
@@ -338,6 +484,8 @@ class SuperprofAuditRow:
             "Top Query 2",
             "Top Query 3",
             "Last GSC Refresh",
+            "Process Started At",
+            "Process Ended At",
         ]
 
     def to_dict(self) -> dict:
@@ -359,5 +507,7 @@ class SuperprofAuditRow:
             },
             "top_queries": [self.top_query_1, self.top_query_2, self.top_query_3],
             "last_gsc_refresh": self.last_gsc_refresh,
+            "process_started_at": self.process_started_at,
+            "process_ended_at": self.process_ended_at,
             "error_message": self.error_message,
         }

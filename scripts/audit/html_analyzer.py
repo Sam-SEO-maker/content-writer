@@ -11,7 +11,6 @@ from urllib.parse import urljoin, urlparse
 from _shared.core.models import (
     ImageAsset,
     CTABlock,
-    CoconStructure,
     LinkAsset,
     HeadingStructure,
     HTMLAnalysisResult,
@@ -79,9 +78,6 @@ class HTMLAnalyzer:
         # Extraction des blocs CTA stylés
         cta_blocks = self._extract_cta_blocks(html, headings.h2_list)
 
-        # Détection de la structure du cocon sémantique
-        cocon_structure = self._detect_cocon_structure(internal_links)
-
         # Métriques de qualité
         has_faq = bool(re.search(r'<h[23][^>]*>\s*(FAQ|Questions?\s+fréquentes?|Foire\s+aux\s+questions?)', html, re.I))
         has_table = '<table' in html.lower()
@@ -107,7 +103,6 @@ class HTMLAnalyzer:
             paragraph_count=paragraph_count,
             featured_image=featured_image,
             cta_blocks=cta_blocks,
-            cocon_structure=cocon_structure,
         )
 
     def _extract_title(self, html: str) -> str:
@@ -367,46 +362,6 @@ class HTMLAnalyzer:
 
         return cta_blocks
 
-    def _detect_cocon_structure(self, internal_links: list[LinkAsset]) -> CoconStructure:
-        """
-        Détecte la structure du cocon sémantique à partir des liens internes.
-
-        Analyse les liens internes pour identifier :
-        - L'article parent (lien vers article plus général)
-        - Les articles frères/enfants (autres liens internes)
-
-        Args:
-            internal_links: Liste des liens internes extraits
-
-        Returns:
-            CoconStructure avec parent et siblings détectés
-        """
-        cocon = CoconStructure()
-
-        if not internal_links:
-            return cocon
-
-        # Heuristique : le premier lien interne de l'introduction est souvent le parent
-        # Les autres liens sont des articles frères
-        siblings = []
-
-        for i, link in enumerate(internal_links):
-            link_info = {
-                "url": link.href,
-                "title": link.anchor,
-                "context_h2": link.context_h2
-            }
-
-            # Le premier lien sans contexte H2 (donc dans l'intro) pourrait être le parent
-            if i == 0 and link.context_h2 is None:
-                cocon.parent_url = link.href
-                cocon.parent_title = link.anchor
-            else:
-                siblings.append(link_info)
-
-        cocon.sibling_urls = siblings
-        return cocon
-
     def extract_assets_dict(self, result: HTMLAnalysisResult) -> dict:
         """
         Extrait les assets dans un dictionnaire pour préservation.
@@ -476,13 +431,6 @@ class HTMLAnalyzer:
                 }
                 for cta in result.cta_blocks
             ],
-
-            # Structure du cocon sémantique
-            "cocon_structure": {
-                "parent_url": result.cocon_structure.parent_url,
-                "parent_title": result.cocon_structure.parent_title,
-                "sibling_urls": result.cocon_structure.sibling_urls,
-            } if result.cocon_structure else None,
 
             # Comptages (sans featured_image)
             "counts": {

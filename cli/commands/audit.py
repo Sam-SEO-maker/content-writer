@@ -12,9 +12,8 @@ import os
 import click
 from pathlib import Path
 
+import requests
 from scripts.audit import EditorialAuditor, GSCAnalyzer, SERPAnalyzer
-from scripts.cocon import CannibalizationDetector, SiblingFetcher
-from scripts.wordpress.stseo_client import STSEOClient
 from scripts.sheets import SheetsClient
 
 
@@ -38,16 +37,20 @@ def editorial(url, blog, spreadsheet_id):
     click.echo(f"URL:  {url}")
     click.echo(f"Blog: {blog}\n")
 
-    # Fetch content via STSEO API
-    click.echo("[1/2] Récupération contenu via STSEO API...")
-    stseo = STSEOClient()
-    stseo_result = stseo.get_post_content_by_link(url)
-
-    if not stseo_result or not stseo_result.get("post_content"):
-        click.echo("  ✗ Impossible de récupérer le contenu via STSEO", err=True)
+    # Fetch content via direct HTTP scraping
+    click.echo("[1/2] Récupération contenu par scraping HTTP...")
+    try:
+        resp = requests.get(
+            url,
+            timeout=30,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
+            allow_redirects=True,
+        )
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        click.echo(f"  ✗ Impossible de récupérer le contenu: {e}", err=True)
         raise click.Abort()
-
-    html = stseo_result["post_content"]
     click.echo(f"  ✓ HTML récupéré ({len(html)} chars)")
 
     # Run editorial audit
@@ -82,67 +85,6 @@ def editorial(url, blog, spreadsheet_id):
         raise click.Abort()
 
 
-@audit.command()
-@click.argument('url')
-@click.option('--blog', required=True, help='Blog ID')
-@click.option('--spreadsheet-id', default=lambda: os.environ.get('SPREADSHEET_ID'), help='Google Sheet ID (auto depuis .env)')
-def cannibalization(url, blog, spreadsheet_id):
-    """
-    Détection de cannibalization entre siblings.
-
-    Vérifie si des H2 cannibalisent les H1 des siblings.
-    """
-    click.echo(f"\n🔍 AUDIT CANNIBALIZATION")
-    click.echo(f"URL:  {url}")
-    click.echo(f"Blog: {blog}\n")
-
-    if not spreadsheet_id:
-        click.echo("❌ --spreadsheet-id requis pour fetch siblings", err=True)
-        raise click.Abort()
-
-    # Scrape HTML
-    click.echo("[1/3] Scraping HTML...")
-    scraper = WebScraper()
-    html = scraper.fetch_html(url)
-
-    if not html:
-        click.echo("  ✗ Impossible de scraper l'URL", err=True)
-        raise click.Abort()
-
-    click.echo(f"  ✓ HTML téléchargé ({len(html)} chars)")
-
-    # Fetch siblings
-    click.echo("[2/3] Récupération siblings...")
-    sheets_client = SheetsClient(spreadsheet_id)
-    fetcher = SiblingFetcher(sheets_client)
-    siblings = fetcher.fetch_siblings(url)
-
-    if not siblings:
-        click.echo("  ℹ Aucun sibling trouvé (article STANDALONE)")
-        return
-
-    click.echo(f"  ✓ {len(siblings)} siblings trouvés")
-
-    # Detect cannibalization
-    click.echo("[3/3] Détection cannibalization...")
-    detector = CannibalizationDetector()
-    report = detector.detect_cannibalization(html, url, siblings)
-
-    click.echo(f"\n📊 RÉSULTATS:")
-    click.echo(f"  Matches trouvés:  {report.matches_count}")
-    click.echo(f"  HIGH risk:        {report.high_risk_count}")
-
-    if report.has_cannibalization:
-        click.echo(f"\n  ⚠ CANNIBALIZATION DÉTECTÉE:")
-        for match in report.matches[:5]:
-            click.echo(f"\n    H2: {match.h2_section[:60]}")
-            click.echo(f"    Sibling H1: {match.sibling_h1[:60]}")
-            click.echo(f"    Score: {match.similarity_score:.2f} ({match.severity})")
-            click.echo(f"    URL sibling: {match.sibling_url}")
-
-        click.echo(f"\n❌ Action requise: Remplacer {report.high_risk_count} H2 sections")
-    else:
-        click.echo(f"\n✅ Pas de cannibalization détectée")
 
 
 @audit.command()

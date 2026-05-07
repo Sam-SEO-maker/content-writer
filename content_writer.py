@@ -9,9 +9,9 @@ Usage:
     cw refresh <url> --blog superprof-ressources
     cw workflow run <url> --blog enseigna [--row 3]
     cw audit editorial <url> --blog superprof-ressources
-    cw cocon identify
     cw batch audit-gsc --blog enseigna
     cw debug workflow <url> --blog enseigna
+    cw statuts <url> "Rédigé"
 """
 
 import sys
@@ -42,14 +42,14 @@ def cli(ctx):
 
 
 # Import des groupes de commandes
-from cli.commands import refresh, workflow, audit, cocon, batch, indexing, debug, linking
+from cli.commands import refresh, workflow, audit, batch, indexing, debug, linking
 from cli.commands import ytg, notion_cmd, report
+from cli.commands import statuts as statuts_cmd
 
 # Enregistrer les commandes
 cli.add_command(refresh.refresh)
 cli.add_command(workflow.workflow)
 cli.add_command(audit.audit)
-cli.add_command(cocon.cocon)
 cli.add_command(batch.batch)
 cli.add_command(indexing.indexing)
 cli.add_command(debug.debug)
@@ -57,6 +57,7 @@ cli.add_command(linking.linking)
 cli.add_command(ytg.ytg)
 cli.add_command(notion_cmd.notion)
 cli.add_command(report.report)
+cli.add_command(statuts_cmd.statuts)
 
 
 if __name__ == "__main__":

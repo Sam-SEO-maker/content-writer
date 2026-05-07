@@ -289,11 +289,7 @@ from _shared.core.constants import (
 | Blog | ID | Catégorie |
 |------|-----|-----------|
 | Enseigna.fr | `enseigna` | Reviews éducation |
-| Cours-particuliers.com | `cours-particuliers` | Éducation générale |
-| Moments-yoga.fr | `moments-yoga` | Bien-être (YMYL) |
-| MyMusicTeacher.fr | `mymusicteacher` | Musique |
-| CoachSportLyon.fr | `coachsportlyon` | Sport (YMYL) |
-| EducationetDevenir.fr | `educationetdevenir` | Orientation |
+| Superprof.fr/ressources | `superprof-ressources` | Blog éducatif |
 
 ### Ajouter un nouveau blog
 

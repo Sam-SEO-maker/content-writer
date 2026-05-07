@@ -1,7 +1,7 @@
 """
 YTG Batch Audit for all HTML articles in _shared/outputs/.
 
-Scans cours-particuliers.com and mymusicteacher.fr, deduplicates files,
+Scans enseigna.fr and superprof.fr, deduplicates files,
 resolves keywords from metadata JSON, then audits each article via YTG API
 (guide lookup + SERP scores + content analysis).
 
@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUTS_DIR = PROJECT_ROOT / "_shared" / "outputs"
 
-SITES = ["cours-particuliers.com", "mymusicteacher.fr"]
+SITES = ["enseigna.fr", "superprof.fr"]
 
 
 # ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ def discover_html_files(site_id: str) -> list[Path]:
 
 def resolve_keyword(html_path: Path, site_id: str) -> str:
     """Resolve main keyword from metadata JSON or slug."""
-    json_dir = OUTPUTS_DIR / site_id / "json"
+    metadata_dir = OUTPUTS_DIR / site_id / "metadata"
 
     # Try multiple matching strategies
     stem = html_path.stem.replace("_refreshed", "")
@@ -108,8 +108,8 @@ def resolve_keyword(html_path: Path, site_id: str) -> str:
         url_stem = stem
 
     candidates = [
-        json_dir / f"{url_stem}_metadata.json",
-        json_dir / f"{stem}_metadata.json",
+        metadata_dir / f"{url_stem}_metadata.json",
+        metadata_dir / f"{stem}_metadata.json",
     ]
 
     # Strategy 2: scan all JSON files for partial match
@@ -127,8 +127,8 @@ def resolve_keyword(html_path: Path, site_id: str) -> str:
                 pass
 
     # Strategy 3: scan JSON dir for partial match
-    if json_dir.exists():
-        for jf in json_dir.glob("*_metadata.json"):
+    if metadata_dir.exists():
+        for jf in metadata_dir.glob("*_metadata.json"):
             jf_clean = jf.stem.replace("_metadata", "").replace(site_prefix, "").replace("_", "-").lower()
             if all(p in jf_clean for p in key_parts):
                 try:

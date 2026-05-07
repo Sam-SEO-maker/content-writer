@@ -174,7 +174,7 @@ def main():
 
     # Mode 2: Batch depuis spreadsheet
     parser.add_argument("--spreadsheet-id", type=str, help="ID du Google Spreadsheet")
-    parser.add_argument("--blog-id", type=str, help="Blog ID (enseigna, moments-yoga, etc.)")
+    parser.add_argument("--blog-id", type=str, help="Blog ID (enseigna, superprof-ressources, etc.)")
     parser.add_argument("--status-filter", type=str, default="CONTENT DONE",
                        help="Filtre sur colonne G (status)")
 

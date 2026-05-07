@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/ses/ses-2nde/confrontation-politique-economique-societe.html",
+  "row_index": 161,
+  "process_started_at": "16:56",
+  "process_ended_at": "16:56",
+  "total_duration_sec": 14.562,
+  "operations": {
+    "sheets_write": {
+      "started_at": "16:56",
+      "ended_at": "16:56",
+      "duration_sec": 2.999
+    },
+    "gsc_fetch": {
+      "started_at": "16:56",
+      "ended_at": "16:56",
+      "duration_sec": 10.485
+    },
+    "context_write": {
+      "started_at": "16:56",
+      "ended_at": "16:56",
+      "duration_sec": 0.004
+    }
+  },
+  "other_sec": 1.075,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

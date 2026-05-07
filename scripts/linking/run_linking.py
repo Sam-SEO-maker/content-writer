@@ -2,9 +2,9 @@
 Run Linking - CLI Entry Point
 
 Usage:
-    python -m scripts.linking.run_linking --site moments-yoga.fr
-    python -m scripts.linking.run_linking --site moments-yoga.fr --csv path/to/custom.csv
-    python -m scripts.linking.run_linking --site moments-yoga.fr --dry-run
+    python -m scripts.linking.run_linking --site enseigna.fr
+    python -m scripts.linking.run_linking --site enseigna.fr --csv path/to/custom.csv
+    python -m scripts.linking.run_linking --site enseigna.fr --dry-run
 """
 
 import argparse
@@ -75,12 +75,12 @@ def print_report_summary(reports):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Injection automatique de maillage interne (cocon sémantique)"
+        description="Injection automatique de maillage interne"
     )
     parser.add_argument(
         "--site",
         required=True,
-        help="Site ID (e.g., moments-yoga.fr, enseigna.fr)",
+        help="Site ID (e.g., enseigna.fr, enseigna.fr)",
     )
     parser.add_argument(
         "--csv",

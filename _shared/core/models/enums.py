@@ -32,13 +32,6 @@ class TriggerType(Enum):
     STALE_DETECTION = "STALE_DETECTION"
 
 
-class PostType(Enum):
-    """Type d'article dans la hiérarchie du cocon sémantique."""
-    PARENT = "PARENT"      # Article pilier : H2 = H1 des enfants
-    CHILD = "CHILD"        # Article enfant d'un parent
-    STANDALONE = "STANDALONE"  # Article indépendant (défaut)
-
-
 class TaskPriority(Enum):
     """Niveaux de priorité des tâches."""
     CRITICAL = 1

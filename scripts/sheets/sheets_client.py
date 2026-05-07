@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 from _shared.core.models import (
     TaskStatus,
     TriggerType,
-    PostType,
     URLTask,
     AuditResultRow,
     RefreshResultRow,
-    RefreshAuditRow,  # NEW: Unified single-sheet model
+    RefreshAuditRow,
 )
+from _shared.core.models.sheets_models import _safe_int, _safe_float
 
 # Google API (optionnel, pour mode direct)
 try:
@@ -268,25 +268,11 @@ class SheetsClient:
                 if blog_id and blog_id_val != blog_id:
                     continue
 
-                # Parser post_type avec fallback sur STANDALONE
-                post_type_str = row[4] if len(row) > 4 and row[4] else "STANDALONE"
-                try:
-                    post_type = PostType(post_type_str)
-                except ValueError:
-                    post_type = PostType.STANDALONE
-
-                # Extraire les URLs enfants (colonnes L à Q, indices 11 à 16)
-                child_urls = [
-                    row[j] for j in range(11, 17)
-                    if len(row) > j and row[j]
-                ]
-
                 tasks.append(URLTask(
                     url=row[1],
                     title=row[3] if len(row) > 3 else "",
                     blog_id=blog_id_val,
                     row_index=i,
-                    post_type=post_type,
                     status=TaskStatus(status) if status else TaskStatus.PENDING,
                     triggered_by=TriggerType(row[6]) if len(row) > 6 and row[6] else TriggerType.MANUAL,
                     added_date="",
@@ -294,8 +280,7 @@ class SheetsClient:
                     processing_completed=row[8] if len(row) > 8 else "",
                     error_message=row[9] if len(row) > 9 else "",
                     notes=row[10] if len(row) > 10 else "",
-                    child_urls=child_urls,
-                    main_keyword=main_keyword,  # NEW FIELD
+                    main_keyword=main_keyword,
                 ))
 
             return tasks
@@ -307,8 +292,7 @@ class SheetsClient:
     def add_url(self, url: str, blog_id: str,
                 title: str = "",
                 triggered_by: TriggerType = TriggerType.MANUAL,
-                post_type: PostType = PostType.STANDALONE,
-                notes: str = "", child_urls: list[str] = None) -> bool:
+                notes: str = "") -> bool:
         """
         Ajoute une URL à la file de traitement.
 
@@ -317,9 +301,7 @@ class SheetsClient:
             title: Titre de l'article
             blog_id: Identifiant du blog
             triggered_by: Source du déclenchement
-            post_type: Type d'article (PARENT/CHILD/STANDALONE)
             notes: Notes optionnelles
-            child_urls: Liste des URLs enfants (max 6, si PARENT)
 
         Returns:
             True si succès
@@ -327,25 +309,18 @@ class SheetsClient:
         if self._sheets_service is None:
             return False
 
-        if child_urls is None:
-            child_urls = []
-
-        # Pad child_urls to exactly 6 elements
-        child_urls_padded = (child_urls + [""] * 6)[:6]
-
         try:
             row = [
                 url,
-                title,  # Nouvelle colonne title
+                title,
                 blog_id,
-                post_type.value,
+                "",  # post_type (empty — column kept for backwards compat)
                 TaskStatus.PENDING.value,
                 triggered_by.value,
                 "",  # processing_started
                 "",  # processing_completed
                 "",  # error_message
                 notes,
-                *child_urls_padded,  # 6 colonnes d'URLs enfants
             ]
 
             self._append_row(self.SHEET_URLS_INPUT, row)
@@ -785,7 +760,6 @@ class SheetsClient:
         REFONTE: Auto-initialise les URLs qui n'ont jamais été auditées (I vide).
         """
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -800,28 +774,11 @@ class SheetsClient:
                             # Fallback: créer une row minimale avec les champs essentiels
                             print(f"[WARNING] Impossible de parser ligne {i} pour GSC audit: {e}. Création d'une row minimale...")
                             try:
-                                # Convertir les nombres avec fallback pour locale FR (0,25 vs 0.25)
-                                def safe_int(val, default=0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return int(float(str(val).replace(",", ".")))
-                                    except (ValueError, TypeError):
-                                        return default
-
-                                def safe_float(val, default=0.0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return float(str(val).replace(",", "."))
-                                    except (ValueError, TypeError):
-                                        return default
-
                                 # Créer une row minimale
                                 try:
-                                    post_type = PostType(row[4]) if len(row) > 4 and row[4] else PostType.STANDALONE
+                                    post_type = row[4] if len(row) > 4 else ""
                                 except (ValueError, KeyError):
-                                    post_type = PostType.STANDALONE
+                                    post_type = ""
 
                                 audit_row = RefreshAuditRow(
                                     blog_id=row[0] if len(row) > 0 else "",
@@ -833,16 +790,16 @@ class SheetsClient:
                                     status=row[6] if len(row) > 6 else "",
                                     audit_gsc=row[7] if len(row) > 7 else "",
                                     audit_serp=row[8] if len(row) > 8 else "",
-                                    impressions_30d=safe_int(row[9]),
-                                    clicks_30d=safe_int(row[10]),
-                                    ctr_30d=safe_float(row[11]),
+                                    impressions_30d=_safe_int(row[9]),
+                                    clicks_30d=_safe_int(row[10]),
+                                    ctr_30d=_safe_float(row[11]),
                                     people_also_ask=row[12] if len(row) > 12 else "",
                                     secondary_keywords=row[13] if len(row) > 13 else "",
                                     new_h1_title=row[14] if len(row) > 14 else "",
                                     new_h2_titles=row[15] if len(row) > 15 else "",
-                                    word_count_before=safe_int(row[16]),
-                                    images_count=safe_int(row[17]),
-                                    internal_links_count=safe_int(row[18]),
+                                    word_count_before=_safe_int(row[16]),
+                                    images_count=_safe_int(row[17]),
+                                    internal_links_count=_safe_int(row[18]),
                                     cannibalization_flag=(row[19] == "YES") if len(row) > 19 else False,
                                     cannibalization_urls=row[20] if len(row) > 20 else "",
                                     error_message=row[21] if len(row) > 21 else "",
@@ -858,137 +815,6 @@ class SheetsClient:
         except Exception:
             return []
 
-    def auto_fill_post_types(self, blog_id: Optional[str] = None) -> dict:
-        """
-        STEP 0 pre-fill: remplit la colonne F (post_type) pour toutes les lignes
-        où elle est vide, en interrogeant l'API Mindmaps STSEO.
-
-        Source de vérité: structure mindmap STSEO (PARENT/CHILD/STANDALONE).
-        - URL trouvée comme parent de branche → PARENT
-        - URL trouvée comme enfant de branche → CHILD
-        - URL absente de toute mindmap           → STANDALONE
-        - /category/ dans le path               → STANDALONE
-
-        Args:
-            blog_id: Limiter à un seul blog (optionnel)
-
-        Returns:
-            {"filled": int, "skipped": int, "errors": list[str]}
-        """
-        import os
-        import requests
-        from urllib.parse import urlparse
-
-        STSEO_BASE = "https://www.superteamseo.com/wp-json/sp/v1"
-        PBN_IDS = {
-            "enseigna": 492,
-            "cours-particuliers": 602,
-            "educationetdevenir": 653,
-            "moments-yoga": 15,
-            "mymusicteacher": 610,
-            "coachsportlyon": 17,
-        }
-        DOMAIN_TO_BLOG = {
-            "enseigna.fr": "enseigna",
-            "cours-particuliers.com": "cours-particuliers",
-            "educationetdevenir.fr": "educationetdevenir",
-            "moments-yoga.fr": "moments-yoga",
-            "mymusicteacher.fr": "mymusicteacher",
-            "coachsportlyon.fr": "coachsportlyon",
-        }
-
-        results = {"filled": 0, "skipped": 0, "errors": []}
-
-        try:
-            data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
-        except Exception as e:
-            results["errors"].append(f"Sheet read error: {e}")
-            return results
-
-        # Collect rows where col F is empty, grouped by blog
-        rows_to_classify: list[tuple[int, str, str]] = []  # (row_num, url, detected_blog_id)
-        for i, row in enumerate(data[1:], start=2):
-            url = row[1] if len(row) > 1 else ""
-            existing_type = row[4] if len(row) > 4 else ""
-            if not url or not url.startswith("http"):
-                continue
-            if existing_type in ("PARENT", "CHILD", "STANDALONE"):
-                results["skipped"] += 1
-                continue
-            netloc = urlparse(url).netloc.replace("www.", "")
-            detected_blog = DOMAIN_TO_BLOG.get(netloc)
-            if not detected_blog:
-                continue
-            if blog_id and detected_blog != blog_id:
-                continue
-            rows_to_classify.append((i, url, detected_blog))
-
-        if not rows_to_classify:
-            return results
-
-        # Fetch mindmaps for required blogs (one call per blog)
-        needed_blogs = {r[2] for r in rows_to_classify}
-        stseo_auth = (
-            os.environ.get("STSEO_EMAIL", ""),
-            os.environ.get("STSEO_PASSWORD", ""),
-        )
-        url_type_map: dict[str, str] = {}
-
-        for bid in needed_blogs:
-            pbn_id = PBN_IDS.get(bid)
-            if not pbn_id:
-                continue
-            try:
-                resp = requests.get(
-                    f"{STSEO_BASE}/get_pbn_website_mindmaps",
-                    params={"pbn_website_id": pbn_id},
-                    auth=stseo_auth,
-                    timeout=30,
-                )
-                resp.raise_for_status()
-                mindmaps = resp.json().get("mindmaps", [])
-                for mm in mindmaps:
-                    for branch in mm.get("branches", []):
-                        parent_url = branch["parent"]["url"].rstrip("/")
-                        url_type_map[parent_url] = "PARENT"
-                        for child in branch.get("children", []):
-                            child_url = child["url"].rstrip("/")
-                            if child_url not in url_type_map:
-                                url_type_map[child_url] = "CHILD"
-                logger.info(f"[auto_fill_post_types] {bid}: mindmaps loaded ({len(mindmaps)} cocons)")
-            except Exception as e:
-                msg = f"Mindmap fetch error for {bid}: {e}"
-                logger.warning(f"[auto_fill_post_types] {msg}")
-                results["errors"].append(msg)
-
-        # Build batch update
-        updates = []
-        for row_num, url, _ in rows_to_classify:
-            if "/category/" in urlparse(url).path:
-                post_type = "STANDALONE"
-            else:
-                post_type = url_type_map.get(url.rstrip("/"), "STANDALONE")
-            updates.append({
-                "range": f"{self.SHEET_REFRESHS_AUDIT}!F{row_num}",
-                "values": [[post_type]],
-            })
-            logger.info(f"[auto_fill_post_types] F{row_num} = {post_type}  ({url[:60]})")
-            results["filled"] += 1
-
-        if updates:
-            try:
-                self._sheets_service.spreadsheets().values().batchUpdate(
-                    spreadsheetId=self.spreadsheet_id,
-                    body={"valueInputOption": "RAW", "data": updates},
-                ).execute()
-                logger.info(f"[auto_fill_post_types] Written {len(updates)} post_types to col F")
-            except Exception as e:
-                msg = f"Sheet write error: {e}"
-                logger.error(f"[auto_fill_post_types] {msg}")
-                results["errors"].append(msg)
-
-        return results
-
     def read_rows_missing_keyword(self, blog_id: Optional[str] = None) -> list["RefreshAuditRow"]:
         """
         Lit les lignes où main_keyword (col D, index 3) est vide.
@@ -997,7 +823,6 @@ class SheetsClient:
         une découverte automatique du mot-clé principal.
         """
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -1023,18 +848,12 @@ class SheetsClient:
                 except Exception:
                     # Fallback minimal
                     try:
-                        post_type_str = row[4] if len(row) > 4 and row[4] else "STANDALONE"
-                        try:
-                            post_type = PostType(post_type_str)
-                        except (ValueError, KeyError):
-                            post_type = PostType.STANDALONE
-
                         audit_row = RefreshAuditRow(
                             blog_id=row[0] if len(row) > 0 else "",
                             blogpost_url=url,
                             main_keyword="",
                             title=row[3] if len(row) > 3 else "",
-                            post_type=post_type,
+                            post_type=row[4] if len(row) > 4 else "",
                             action_blogpost=row[5] if len(row) > 5 else "",
                             status=status,
                             audit_gsc="",
@@ -1092,7 +911,6 @@ class SheetsClient:
         des keywords existants et en trouver de meilleurs si volume < seuil.
         """
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -1116,17 +934,12 @@ class SheetsClient:
                         rows.append(audit_row)
                 except Exception:
                     try:
-                        post_type_str = row[4] if len(row) > 4 and row[4] else "STANDALONE"
-                        try:
-                            post_type = PostType(post_type_str)
-                        except (ValueError, KeyError):
-                            post_type = PostType.STANDALONE
                         audit_row = RefreshAuditRow(
                             blog_id=row[0] if len(row) > 0 else "",
                             blogpost_url=url,
                             main_keyword=main_kw,
                             title=row[3] if len(row) > 3 else "",
-                            post_type=post_type,
+                            post_type=row[4] if len(row) > 4 else "",
                             action_blogpost=row[5] if len(row) > 5 else "",
                             status=status,
                             audit_gsc="",
@@ -1161,7 +974,6 @@ class SheetsClient:
         Critère: editorial_verdict (colonne AA, index 26) vide ou absent
         """
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -1188,7 +1000,6 @@ class SheetsClient:
         REFONTE: Auto-initialise les URLs qui n'ont jamais été auditées (J vide).
         """
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -1203,28 +1014,11 @@ class SheetsClient:
                             # Fallback: créer une row minimale avec les champs essentiels
                             print(f"[WARNING] Impossible de parser ligne {i}: {e}. Création d'une row minimale...")
                             try:
-                                # Convertir les nombres avec fallback pour locale FR (0,25 vs 0.25)
-                                def safe_int(val, default=0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return int(float(str(val).replace(",", ".")))
-                                    except (ValueError, TypeError):
-                                        return default
-
-                                def safe_float(val, default=0.0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return float(str(val).replace(",", "."))
-                                    except (ValueError, TypeError):
-                                        return default
-
                                 # Créer une row minimale
                                 try:
-                                    post_type = PostType(row[4]) if len(row) > 4 and row[4] else PostType.STANDALONE
+                                    post_type = row[4] if len(row) > 4 else ""
                                 except (ValueError, KeyError):
-                                    post_type = PostType.STANDALONE
+                                    post_type = ""
 
                                 audit_row = RefreshAuditRow(
                                     blog_id=row[0] if len(row) > 0 else "",
@@ -1236,16 +1030,16 @@ class SheetsClient:
                                     status=row[6] if len(row) > 6 else "",
                                     audit_gsc=row[7] if len(row) > 7 else "",
                                     audit_serp=row[8] if len(row) > 8 else "",
-                                    impressions_30d=safe_int(row[9]),
-                                    clicks_30d=safe_int(row[10]),
-                                    ctr_30d=safe_float(row[11]),
+                                    impressions_30d=_safe_int(row[9]),
+                                    clicks_30d=_safe_int(row[10]),
+                                    ctr_30d=_safe_float(row[11]),
                                     people_also_ask=row[12] if len(row) > 12 else "",
                                     secondary_keywords=row[13] if len(row) > 13 else "",
                                     new_h1_title=row[14] if len(row) > 14 else "",
                                     new_h2_titles=row[15] if len(row) > 15 else "",
-                                    word_count_before=safe_int(row[16]),
-                                    images_count=safe_int(row[17]),
-                                    internal_links_count=safe_int(row[18]),
+                                    word_count_before=_safe_int(row[16]),
+                                    images_count=_safe_int(row[17]),
+                                    internal_links_count=_safe_int(row[18]),
                                     cannibalization_flag=(row[19] == "YES") if len(row) > 19 else False,
                                     cannibalization_urls=row[20] if len(row) > 20 else "",
                                     error_message=row[21] if len(row) > 21 else "",
@@ -1264,7 +1058,6 @@ class SheetsClient:
     def read_pending_for_decision(self, blog_id: Optional[str] = None) -> list["RefreshAuditRow"]:
         """Lit les lignes où audit_gsc=DONE ET audit_serp=DONE ET action_blogpost=''."""
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
             for i, row in enumerate(data[1:], start=2):
@@ -1279,28 +1072,11 @@ class SheetsClient:
                             # Fallback: créer une row minimale avec les champs essentiels
                             print(f"[WARNING] Impossible de parser ligne {i} pour décision: {e}. Création d'une row minimale...")
                             try:
-                                # Convertir les nombres avec fallback pour locale FR (0,25 vs 0.25)
-                                def safe_int(val, default=0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return int(float(str(val).replace(",", ".")))
-                                    except (ValueError, TypeError):
-                                        return default
-
-                                def safe_float(val, default=0.0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return float(str(val).replace(",", "."))
-                                    except (ValueError, TypeError):
-                                        return default
-
                                 # Créer une row minimale
                                 try:
-                                    post_type = PostType(row[4]) if len(row) > 4 and row[4] else PostType.STANDALONE
+                                    post_type = row[4] if len(row) > 4 else ""
                                 except (ValueError, KeyError):
-                                    post_type = PostType.STANDALONE
+                                    post_type = ""
 
                                 audit_row = RefreshAuditRow(
                                     blog_id=row[0] if len(row) > 0 else "",
@@ -1312,16 +1088,16 @@ class SheetsClient:
                                     status=row[6] if len(row) > 6 else "",
                                     audit_gsc=row[7] if len(row) > 7 else "",
                                     audit_serp=row[8] if len(row) > 8 else "",
-                                    impressions_30d=safe_int(row[9]),
-                                    clicks_30d=safe_int(row[10]),
-                                    ctr_30d=safe_float(row[11]),
+                                    impressions_30d=_safe_int(row[9]),
+                                    clicks_30d=_safe_int(row[10]),
+                                    ctr_30d=_safe_float(row[11]),
                                     people_also_ask=row[12] if len(row) > 12 else "",
                                     secondary_keywords=row[13] if len(row) > 13 else "",
                                     new_h1_title=row[14] if len(row) > 14 else "",
                                     new_h2_titles=row[15] if len(row) > 15 else "",
-                                    word_count_before=safe_int(row[16]),
-                                    images_count=safe_int(row[17]),
-                                    internal_links_count=safe_int(row[18]),
+                                    word_count_before=_safe_int(row[16]),
+                                    images_count=_safe_int(row[17]),
+                                    internal_links_count=_safe_int(row[18]),
                                     cannibalization_flag=(row[19] == "YES") if len(row) > 19 else False,
                                     cannibalization_urls=row[20] if len(row) > 20 else "",
                                     error_message=row[21] if len(row) > 21 else "",
@@ -1340,7 +1116,6 @@ class SheetsClient:
     def read_pending_for_refresh(self, action: str, blog_id: Optional[str] = None) -> list["RefreshAuditRow"]:
         """Lit les lignes où action_blogpost = action ET status != CONTENT DONE."""
         try:
-            from _shared.core.models import RefreshAuditRow, PostType
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
             rows = []
 
@@ -1365,28 +1140,11 @@ class SheetsClient:
                             # Fallback: créer une row minimale avec les champs essentiels
                             print(f"[WARNING] Impossible de parser ligne {i}: {e}. Création d'une row minimale...")
                             try:
-                                # Convertir les nombres avec fallback pour locale FR (0,25 vs 0.25)
-                                def safe_int(val, default=0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return int(float(str(val).replace(",", ".")))
-                                    except (ValueError, TypeError):
-                                        return default
-
-                                def safe_float(val, default=0.0):
-                                    if not val:
-                                        return default
-                                    try:
-                                        return float(str(val).replace(",", "."))
-                                    except (ValueError, TypeError):
-                                        return default
-
                                 # Créer une row minimale avec essentiels pour batch_refresh
                                 try:
-                                    post_type = PostType(row[4]) if len(row) > 4 and row[4] else PostType.STANDALONE
+                                    post_type = row[4] if len(row) > 4 else ""
                                 except (ValueError, KeyError):
-                                    post_type = PostType.STANDALONE
+                                    post_type = ""
 
                                 audit_row = RefreshAuditRow(
                                     blog_id=row[0] if len(row) > 0 else "",
@@ -1398,16 +1156,16 @@ class SheetsClient:
                                     status=row[6] if len(row) > 6 else "",
                                     audit_gsc=row[7] if len(row) > 7 else "",
                                     audit_serp=row[8] if len(row) > 8 else "",
-                                    impressions_30d=safe_int(row[9]),
-                                    clicks_30d=safe_int(row[10]),
-                                    ctr_30d=safe_float(row[11]),
+                                    impressions_30d=_safe_int(row[9]),
+                                    clicks_30d=_safe_int(row[10]),
+                                    ctr_30d=_safe_float(row[11]),
                                     people_also_ask=row[12] if len(row) > 12 else "",
                                     secondary_keywords=row[13] if len(row) > 13 else "",
                                     new_h1_title=row[14] if len(row) > 14 else "",
                                     new_h2_titles=row[15] if len(row) > 15 else "",
-                                    word_count_before=safe_int(row[16]),
-                                    images_count=safe_int(row[17]),
-                                    internal_links_count=safe_int(row[18]),
+                                    word_count_before=_safe_int(row[16]),
+                                    images_count=_safe_int(row[17]),
+                                    internal_links_count=_safe_int(row[18]),
                                     cannibalization_flag=(row[19] == "YES") if len(row) > 19 else False,
                                     cannibalization_urls=row[20] if len(row) > 20 else "",
                                     error_message=row[21] if len(row) > 21 else "",
@@ -1438,7 +1196,6 @@ class SheetsClient:
         pour préparer l'étape suivante du workflow.
         """
         try:
-            from _shared.core.models import RefreshAuditRow
             data = self._read_sheet(self.SHEET_REFRESHS_AUDIT)
 
             for i, row in enumerate(data[1:], start=2):

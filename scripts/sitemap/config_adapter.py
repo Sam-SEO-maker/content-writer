@@ -95,7 +95,7 @@ def load_fetcher_from_blog_config(blog_id: str, base_path: Optional[Path] = None
         SitemapFetcher configuré
 
     Usage:
-        fetcher = load_fetcher_from_blog_config("educationetdevenir")
+        fetcher = load_fetcher_from_blog_config("enseigna")
         result = fetcher.fetch_and_detect_new()
     """
     from .fetcher import SitemapFetcher
@@ -116,7 +116,7 @@ def load_analyzer_from_blog_config(blog_id: str, base_path: Optional[Path] = Non
         SitemapAnalyzer configuré
 
     Usage:
-        analyzer = load_analyzer_from_blog_config("educationetdevenir")
+        analyzer = load_analyzer_from_blog_config("enseigna")
         stale = analyzer.find_stale_content(months=6)
     """
     from .analyzer import SitemapAnalyzer

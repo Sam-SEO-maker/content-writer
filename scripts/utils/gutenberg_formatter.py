@@ -8,11 +8,11 @@ _WP_IMAGE_CLASS_RE = re.compile(r"wp-image-(\d+)")
 
 
 def _decode(tag: Tag) -> str:
-    return tag.decode_contents(formatter="html")
+    return tag.decode_contents(formatter="minimal")
 
 
 def _render_inner(tag: Tag) -> str:
-    return tag.decode_contents(formatter="html")
+    return tag.decode_contents(formatter="minimal")
 
 
 def _heading(tag: Tag) -> str:
@@ -170,7 +170,7 @@ def _pros_cons(tag: Tag) -> str:
 
 def _convert_element(tag: Tag) -> str:
     name = tag.name
-    if name in ("h2", "h3", "h4", "h5", "h6"):
+    if name in ("h1", "h2", "h3", "h4", "h5", "h6"):
         return _heading(tag)
     if name == "p":
         return _paragraph(tag)

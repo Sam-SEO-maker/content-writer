@@ -1,0 +1,29 @@
+{
+  "blog_id": "superprof-ressources",
+  "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/maupassant-baron-trahison.html",
+  "row_index": 143,
+  "process_started_at": "19:06",
+  "process_ended_at": "19:06",
+  "total_duration_sec": 15.646,
+  "operations": {
+    "sheets_write": {
+      "started_at": "19:06",
+      "ended_at": "19:06",
+      "duration_sec": 2.891
+    },
+    "gsc_fetch": {
+      "started_at": "19:06",
+      "ended_at": "19:06",
+      "duration_sec": 11.183
+    },
+    "context_write": {
+      "started_at": "19:06",
+      "ended_at": "19:06",
+      "duration_sec": 0.008
+    }
+  },
+  "other_sec": 1.565,
+  "output_html": null,
+  "success": true,
+  "errors": []
+}

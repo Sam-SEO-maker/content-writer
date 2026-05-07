@@ -7,24 +7,33 @@ Architecture:
 - Temp cache: _shared/temp/{site_id}/ (scraped HTML for comparison)
 - Permanent outputs:
   - _shared/outputs/{site_id}/html/ (refreshed HTML files)
-  - _shared/outputs/{site_id}/json/ (metadata and audit JSON files)
+  - _shared/outputs/{site_id}/metadata/ (metadata and audit JSON files)
   - _shared/outputs/{site_id}/editorial_audits/ (editorial audit markdown files)
 
 Multi-tenant support:
 - enseigna.fr
-- cours-particuliers.com
-- educationetdevenir.fr
-- moments-yoga.fr
-- mymusicteacher.fr
-- coachsportlyon.fr
+- superprof.fr (ressources)
 """
 
 from pathlib import Path
 from typing import Optional, Dict, List, Tuple
 import json
+import re
 import shutil
+import unicodedata
 from datetime import datetime
 import logging
+
+
+def title_to_slug(title: str) -> str:
+    """Convert an article title to a clean URL/filename slug."""
+    s = unicodedata.normalize('NFD', title)
+    s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+    s = s.lower()
+    s = re.sub(r'[^a-z0-9\s]', '', s)
+    s = re.sub(r'\s+', '-', s.strip())
+    s = re.sub(r'-+', '-', s)
+    return s[:150] or "unknown"
 
 logger = logging.getLogger(__name__)
 
@@ -45,21 +54,13 @@ class OutputManager:
     # Valid site IDs from CLAUDE.md multi-tenant architecture
     VALID_SITE_IDS = [
         "enseigna.fr",
-        "cours-particuliers.com",
-        "educationetdevenir.fr",
-        "moments-yoga.fr",
-        "mymusicteacher.fr",
-        "coachsportlyon.fr"
+        "superprof.fr",
     ]
 
     # Mapping blog_id (sans extension) → domain (avec extension)
     _BLOG_ID_TO_DOMAIN = {
         "enseigna": "enseigna.fr",
-        "cours-particuliers": "cours-particuliers.com",
-        "educationetdevenir": "educationetdevenir.fr",
-        "moments-yoga": "moments-yoga.fr",
-        "mymusicteacher": "mymusicteacher.fr",
-        "coachsportlyon": "coachsportlyon.fr",
+        "superprof-ressources": "superprof.fr",
     }
 
     def __init__(self, base_path: Optional[Path] = None):
@@ -121,8 +122,8 @@ class OutputManager:
                 site_dir.mkdir(parents=True, exist_ok=True)
                 stats["output_dirs_created"] += 1
 
-            # Create html/, json/, editorial_audits/ subdirectories
-            for subdir in ["html", "json", "editorial_audits"]:
+            # Create html/, metadata/, editorial_audits/ subdirectories
+            for subdir in ["html", "metadata", "editorial_audits"]:
                 sub_path = site_dir / subdir
                 if not sub_path.exists():
                     sub_path.mkdir(parents=True, exist_ok=True)
@@ -158,7 +159,7 @@ class OutputManager:
 
         Examples:
             https://enseigna.fr/avis-acadomia/ → avis-acadomia
-            https://moments-yoga.fr/posture-guerrier/ → posture-guerrier
+            https://www.superprof.fr/ressources/maths/calcul/ → calcul
         """
         from urllib.parse import urlparse
         import re
@@ -179,23 +180,7 @@ class OutputManager:
 
     @staticmethod
     def _title_to_slug(title: str) -> str:
-        """
-        Convert article title to a clean filename slug.
-
-        Examples:
-            "Comment bien respirer au Pilates ?" → "comment-bien-respirer-au-pilates"
-            "Dhanurasana : la Posture de l'Arc" → "dhanurasana-la-posture-de-larc"
-        """
-        import re
-        import unicodedata
-
-        s = unicodedata.normalize('NFD', title)
-        s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
-        s = s.lower()
-        s = re.sub(r'[^a-z0-9\s]', '', s)
-        s = re.sub(r'\s+', '-', s.strip())
-        s = re.sub(r'-+', '-', s)
-        return s[:150] or "unknown"
+        return title_to_slug(title)
 
     # =========================================================================
     # TEMP CACHE METHODS (for scraped HTML)
@@ -297,8 +282,8 @@ class OutputManager:
         site_dir = self.outputs_root / site_id
         site_dir.mkdir(parents=True, exist_ok=True)
 
-        # Ensure html/, json/, editorial_audits/ subdirectories exist
-        for subdir in ["html", "json", "editorial_audits"]:
+        # Ensure html/, metadata/, editorial_audits/ subdirectories exist
+        for subdir in ["html", "metadata", "editorial_audits"]:
             (site_dir / subdir).mkdir(parents=True, exist_ok=True)
 
         return site_dir
@@ -309,7 +294,7 @@ class OutputManager:
         url_slug: str,
         html_content: str,
         title: Optional[str] = None,
-        post_type: Optional[str] = None
+        post_type: Optional[str] = None  # kept for backwards compat, ignored
     ) -> Path:
         """
         Save refreshed HTML content (WordPress-ready).
@@ -319,20 +304,12 @@ class OutputManager:
             url_slug: URL slug for filename (fallback if no title)
             html_content: Refreshed HTML content
             title: Article title (column E) — used for filename if provided
-            post_type: PARENT/CHILD/STANDALONE — routes to html_parent_posts/ or html_child_posts/
 
         Returns:
             Path to saved file
         """
         site_id = self._validate_site_id(site_id)
-
-        # Route to post_type-specific subdirectory if applicable
-        if post_type == "PARENT":
-            html_dir = self.get_site_output_dir(site_id) / "html_parent_posts"
-        elif post_type == "CHILD":
-            html_dir = self.get_site_output_dir(site_id) / "html_child_posts"
-        else:
-            html_dir = self.get_site_output_dir(site_id) / "html"
+        html_dir = self.get_site_output_dir(site_id) / "html"
         html_dir.mkdir(parents=True, exist_ok=True)
 
         file_slug = self._title_to_slug(title) if title else url_slug
@@ -345,6 +322,12 @@ class OutputManager:
         gutenberg_file = html_dir / f"{file_slug}_refreshed.gutenberg.html"
         gutenberg_file.write_text(to_gutenberg(html_content), encoding="utf-8")
         logger.info(f"Saved Gutenberg HTML: {gutenberg_file}")
+
+        from scripts.utils.table_csv_extractor import extract_tables_to_csv
+        csv_dir = self.get_site_output_dir(site_id) / "csv"
+        csv_files = extract_tables_to_csv(html_content, csv_dir, file_slug)
+        if csv_files:
+            logger.info(f"[CSV] {len(csv_files)} tableau(x) extrait(s) → {csv_dir}")
 
         # Clean up temp file for this article after successful delivery
         self._cleanup_temp(site_id, url_slug)
@@ -370,9 +353,9 @@ class OutputManager:
         """
         site_id = self._validate_site_id(site_id)
 
-        json_dir = self.get_site_output_dir(site_id) / "json"
-        json_dir.mkdir(parents=True, exist_ok=True)
-        output_file = json_dir / f"{url_slug}_metadata.json"
+        metadata_dir = self.get_site_output_dir(site_id) / "metadata"
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+        output_file = metadata_dir / f"{url_slug}_metadata.json"
 
         with output_file.open("w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
@@ -401,9 +384,9 @@ class OutputManager:
         """
         site_id = self._validate_site_id(site_id)
 
-        json_dir = self.get_site_output_dir(site_id) / "json"
-        json_dir.mkdir(parents=True, exist_ok=True)
-        output_file = json_dir / f"{url_slug}_{report_type}.json"
+        metadata_dir = self.get_site_output_dir(site_id) / "metadata"
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+        output_file = metadata_dir / f"{url_slug}_{report_type}.json"
 
         with output_file.open("w", encoding="utf-8") as f:
             json.dump(audit_data, f, indent=2, ensure_ascii=False)
@@ -460,30 +443,22 @@ class OutputManager:
             site_id: Blog identifier
             url_slug: URL slug
             title: Article title — used for HTML filename if provided
-            post_type: PARENT/CHILD/STANDALONE — routes to html_parent_posts/ or html_child_posts/
-
         Returns:
             Dictionary of output file paths
         """
         site_id = self._validate_site_id(site_id)
 
         output_dir = self.get_site_output_dir(site_id)
-        # Route to post_type-specific subdirectory if applicable
-        if post_type == "PARENT":
-            html_dir = output_dir / "html_parent_posts"
-        elif post_type == "CHILD":
-            html_dir = output_dir / "html_child_posts"
-        else:
-            html_dir = output_dir / "html"
-        json_dir = output_dir / "json"
+        html_dir = output_dir / "html"
+        metadata_dir = output_dir / "metadata"
         editorial_dir = output_dir / "editorial_audits"
 
         return {
             "refreshed_html": html_dir / f"{self._title_to_slug(title) if title else url_slug}_refreshed.html",
-            "metadata": json_dir / f"{url_slug}_metadata.json",
-            "audit": json_dir / f"{url_slug}_audit.json",
-            "serp": json_dir / f"{url_slug}_serp.json",
-            "gsc": json_dir / f"{url_slug}_gsc.json",
+            "metadata": metadata_dir / f"{url_slug}_metadata.json",
+            "audit": metadata_dir / f"{url_slug}_audit.json",
+            "serp": metadata_dir / f"{url_slug}_serp.json",
+            "gsc": metadata_dir / f"{url_slug}_gsc.json",
             "editorial_audit": editorial_dir / f"{url_slug}_editorial_audit.md",
             "temp_html": self.temp_root / site_id / f"{url_slug}.html"
         }

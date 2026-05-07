@@ -23,6 +23,7 @@ if sys.platform == "win32":
 
 from _shared.core.models import RefreshWorkflowResult
 from _shared.core.models.audit_models import EditorialAuditResult
+from _shared.core.utils.timing import OperationTimer, timed
 
 # Imports des modules internes
 from ..audit import AuditEngine, GSCAnalyzer, SERPAnalyzer, HTMLAnalyzer, EditorialAuditor
@@ -33,8 +34,6 @@ from ..sheets import SheetsClient, WorkflowTracker
 from ..cache import DocumentCache
 from ..scraping import ContentExtractor
 from ..scraping.content_extractor import _convert_wp_shortcodes
-from ..cocon import CannibalizationDetector  # NEW: Anti-cannibalization system
-from ..wordpress.stseo_client import STSEOClient  # STSEO API for content fetching
 from ..audit.semantic_checker import SemanticChecker  # NEW: Post-generation semantic density check
 from ..audit.ytg_analyzer import YTGAnalyzer, YTGGuideResult  # YTG semantic guides
 from ..notion import NotionClient  # Notion anti-cannibalization
@@ -95,16 +94,9 @@ class RefreshOrchestrator:
         # Content extractor for HTML parsing (asset baseline extraction)
         self.content_extractor = ContentExtractor(self.base_path / "_shared" / "config" / "blogs")
 
-        # STSEO API client (primary source for content fetching)
-        self.stseo_client = STSEOClient()
-
         # Editorial auditor pour quality gate (étape 1.5)
         editorial_rules_path = self.base_path / "_shared" / "config" / "editorial_rules.json"
         self.editorial_auditor = EditorialAuditor(editorial_rules_path)
-
-        # Cannibalization detector pour anti-cannibalisation (étape 1.5b + 3.5)
-        # Note: sheets_client sera None au démarrage, mais sera disponible après init
-        self.cannibalization_detector = None
 
         # Semantic checker pour validation post-génération (anti-suroptimisation)
         self.semantic_checker = SemanticChecker(
@@ -147,7 +139,6 @@ class RefreshOrchestrator:
     def _load_sites_config(self) -> dict:
         """
         Charge sites.json et crée un mapping domain → id pour les noms de fichiers.
-        Crée aussi un mapping blog_id → pbn_website_id pour l'API STSEO.
 
         Returns:
             Mapping {domain: id} pour résoudre les noms de fichiers
@@ -155,7 +146,6 @@ class RefreshOrchestrator:
         import json
         sites_json_path = self.base_path / "_shared" / "config" / "sites.json"
         mapping = {}
-        self._pbn_website_ids = {}  # blog_id → pbn_website_id
 
         try:
             with open(sites_json_path, "r", encoding="utf-8") as f:
@@ -167,20 +157,11 @@ class RefreshOrchestrator:
                         mapping[domain] = site_id
                         # Also map id → id for direct access
                         mapping[site_id] = site_id
-                    # PBN website ID mapping
-                    pbn_id = site.get("pbn_website_id")
-                    if site_id and pbn_id:
-                        self._pbn_website_ids[site_id] = pbn_id
         except Exception as e:
             import logging
             logging.getLogger("RefreshOrchestrator").warning(f"Failed to load sites.json: {e}")
 
         return mapping
-
-    def _get_pbn_website_id(self, blog_id: str) -> Optional[int]:
-        """Résout le pbn_website_id pour un blog_id donné."""
-        normalized = self._normalize_blog_id(blog_id)
-        return getattr(self, '_pbn_website_ids', {}).get(normalized)
 
     def _normalize_blog_id(self, blog_id: str) -> str:
         """
@@ -228,7 +209,9 @@ class RefreshOrchestrator:
 
     def _fetch_html(self, url: str, blog_id: str = "") -> dict:
         """
-        Récupère le contenu HTML d'une URL via l'API STSEO.
+        Récupère le contenu HTML d'une URL.
+
+        Fetch du contenu via HTTP direct — ContentExtractor pour extraction du body.
 
         Args:
             url: URL de l'article
@@ -260,36 +243,43 @@ class RefreshOrchestrator:
                     output_site_id = domain
                     break
 
+        # Direct HTTP fetch + ContentExtractor (selector-based extraction)
         try:
-            # Fetch content via STSEO API (clean post_content directly)
-            stseo_result = self.stseo_client.get_post_content_by_link(url)
-            if not stseo_result or stseo_result.get("error") or not stseo_result.get("post_content"):
-                logger.warning(f"[STSEO] No content returned for {url[:60]}")
-                return empty_result
+            resp = requests.get(
+                url,
+                timeout=30,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
+                allow_redirects=True,
+            )
+            resp.raise_for_status()
+            full_html = resp.text
 
-            html = _convert_wp_shortcodes(stseo_result["post_content"])
-            logger.info(f"[STSEO] Content fetched via API for {url[:60]}")
+            clean_body, extraction_meta = self.content_extractor.extract_article_body(
+                full_html, output_site_id or blog_id, url=url
+            )
+            assets_baseline = self.content_extractor._extract_assets_baseline(clean_body)
+            word_count = len(clean_body.split())
 
-            # Extract assets baseline from clean body
-            assets_baseline = self.content_extractor._extract_assets_baseline(html)
-            word_count = len(html.split())
-
-            # Save to temp cache
             if output_site_id:
-                url_slug = self.output_mgr._url_to_slug(url)
-                self.output_mgr.save_temp_html(output_site_id, url_slug, html)
+                try:
+                    url_slug = self.output_mgr._url_to_slug(url)
+                    self.output_mgr.save_temp_html(output_site_id, url_slug, clean_body)
+                except ValueError as save_err:
+                    logger.debug(f"Skipping temp cache: {save_err}")
 
             logger.info(
-                f"Content via stseo_api: "
-                f"{word_count} words, "
-                f"{assets_baseline['counts']['images']} images"
+                f"Content via direct_http ({extraction_meta.get('method_used')}): "
+                f"{word_count} words, {assets_baseline['counts']['images']} images"
             )
 
             return {
-                "full_html": html,
-                "clean_body": html,
-                "extraction_metadata": {"method_used": "stseo_api", "word_count": word_count},
-                "assets_baseline": assets_baseline
+                "full_html": full_html,
+                "clean_body": clean_body,
+                "extraction_metadata": {
+                    "method_used": f"direct_http_{extraction_meta.get('method_used', 'unknown')}",
+                    "word_count": word_count,
+                },
+                "assets_baseline": assets_baseline,
             }
 
         except Exception as e:
@@ -309,97 +299,6 @@ class RefreshOrchestrator:
                 return json.load(f).get("notion_refresh_tracker_db_id", "")
         except Exception:
             return ""
-
-    def _enrich_cocon_with_mindmap(
-        self, url: str, blog_id: str, cocon_structure: Optional[dict]
-    ) -> Optional[dict]:
-        """
-        Enrichit le cocon_structure avec les données mindmap STSEO.
-
-        Si le cocon_structure HTML est vide ou incomplet, la mindmap STSEO
-        fournit la structure parent/children complète du cocon.
-
-        Args:
-            url: URL de l'article courant
-            blog_id: ID du blog
-            cocon_structure: Structure cocon existante (peut être None)
-
-        Returns:
-            cocon_structure enrichi ou None
-        """
-        logger = logging.getLogger("RefreshOrchestrator")
-
-        pbn_id = self._get_pbn_website_id(blog_id)
-        if not pbn_id:
-            return cocon_structure
-
-        try:
-            mindmap_data = self.stseo_client.get_website_mindmaps(pbn_id)
-            if not mindmap_data or mindmap_data.get("error") or not mindmap_data.get("mindmaps"):
-                return cocon_structure
-
-            # Find the branch containing the current URL
-            normalized_url = url.rstrip("/")
-            for mindmap in mindmap_data["mindmaps"]:
-                for branch in mindmap.get("branches", []):
-                    parent = branch.get("parent", {})
-                    children = branch.get("children", [])
-
-                    parent_url = parent.get("url", "").rstrip("/")
-                    child_urls = [c.get("url", "").rstrip("/") for c in children]
-
-                    # Case 1: Current URL is the PARENT of this branch
-                    if normalized_url == parent_url:
-                        sibling_urls = [c.get("url", "") for c in children]
-                        logger.info(
-                            f"[STSEO Mindmap] URL is PARENT in branch {branch.get('branch')}, "
-                            f"{len(sibling_urls)} children found"
-                        )
-                        if not cocon_structure:
-                            cocon_structure = {
-                                'parent_url': None,
-                                'parent_title': None,
-                                'sibling_urls': sibling_urls,
-                            }
-                        else:
-                            # Merge: add children not already known
-                            existing = set(u.rstrip("/") for u in cocon_structure.get('sibling_urls', []))
-                            for su in sibling_urls:
-                                if su.rstrip("/") not in existing:
-                                    cocon_structure['sibling_urls'].append(su)
-                        return cocon_structure
-
-                    # Case 2: Current URL is a CHILD in this branch
-                    if normalized_url in child_urls:
-                        sibling_urls = [c.get("url", "") for c in children if c.get("url", "").rstrip("/") != normalized_url]
-                        logger.info(
-                            f"[STSEO Mindmap] URL is CHILD in branch {branch.get('branch')}, "
-                            f"parent={parent.get('url', '')[:60]}, {len(sibling_urls)} siblings"
-                        )
-                        if not cocon_structure:
-                            cocon_structure = {
-                                'parent_url': parent.get("url", ""),
-                                'parent_title': parent.get("title", ""),
-                                'sibling_urls': sibling_urls,
-                            }
-                        else:
-                            # Enrich parent if missing
-                            if not cocon_structure.get('parent_url') and parent.get("url"):
-                                cocon_structure['parent_url'] = parent.get("url", "")
-                                cocon_structure['parent_title'] = parent.get("title", "")
-                            # Merge siblings
-                            existing = set(u.rstrip("/") for u in cocon_structure.get('sibling_urls', []))
-                            for su in sibling_urls:
-                                if su.rstrip("/") not in existing:
-                                    cocon_structure['sibling_urls'].append(su)
-                        return cocon_structure
-
-            logger.debug(f"[STSEO Mindmap] URL not found in any branch for pbn_id={pbn_id}")
-            return cocon_structure
-
-        except Exception as e:
-            logger.warning(f"[STSEO Mindmap] Non-bloquant, erreur ignorée: {e}")
-            return cocon_structure
 
     def _extract_content_metrics(self, html_or_extraction: any, url: str, blog_id: str) -> dict:
         """
@@ -485,7 +384,8 @@ class RefreshOrchestrator:
         html_content: str,
         force_action: Optional[str] = None,
         custom_prompt: Optional[str] = None,
-        provided_keyword: Optional[str] = None
+        provided_keyword: Optional[str] = None,
+        timer: Optional[OperationTimer] = None,
     ) -> RefreshWorkflowResult:
         """
         Traite une URL complète à travers le workflow.
@@ -497,6 +397,7 @@ class RefreshOrchestrator:
             force_action: Action forcée (bypass decision engine)
             custom_prompt: Prompt personnalisé (4 niveaux) remplace les guidelines du cache
             provided_keyword: Mot-clé fourni (optionnel, force analyse SERP)
+            timer: OperationTimer optionnel pour chronométrer gsc_fetch / sheets_write / context_prep
 
         Returns:
             RefreshWorkflowResult avec les détails
@@ -521,7 +422,8 @@ class RefreshOrchestrator:
             # =========================================================
             # Update status in spreadsheet
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "AUDITING")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "AUDITING")
 
             editorial_result = self._run_editorial_audit(url, html_content, blog_id)
 
@@ -536,15 +438,19 @@ class RefreshOrchestrator:
 
                 # Log dans Sheets si disponible
                 if self.sheets_client:
-                    self.sheets_client.log_editorial_audit(
-                        url=url,
-                        score=editorial_result.overall_score,
-                        verdict="BLOCKED",
-                        blocking_issues_count=len(editorial_result.blocking_issues),
-                        blocking_issues="; ".join(editorial_result.blocking_issues[:3]),
-                        report_url=report_relative_url
-                    )
+                    with timed(timer, "sheets_write"):
+                        self.sheets_client.log_editorial_audit(
+                            url=url,
+                            score=editorial_result.overall_score,
+                            verdict="BLOCKED",
+                            blocking_issues_count=len(editorial_result.blocking_issues),
+                            blocking_issues="; ".join(editorial_result.blocking_issues[:3]),
+                            report_url=report_relative_url
+                        )
 
+                if timer is not None:
+                    timer.success = False
+                    timer.errors.append("BLOCKED_QUALITY_ISSUES")
                 return RefreshWorkflowResult(
                     url=url,
                     blog_id=blog_id,
@@ -565,31 +471,27 @@ class RefreshOrchestrator:
                 url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
                 report_relative_url = f"_shared/outputs/{blog_id}/editorial_audits/{url_slug}_editorial_audit.md"
 
-                self.sheets_client.log_editorial_audit(
-                    url=url,
-                    score=editorial_result.overall_score,
-                    verdict=verdict,
-                    blocking_issues_count=len(editorial_result.blocking_issues),
-                    blocking_issues="",
-                    report_url=report_relative_url
-                )
-
-            # =========================================================
-            # STEP 1.5b: LOAD COCON STRUCTURE (Anti-Cannibalization)
-            # =========================================================
-            # Note: Le cocon sera chargé après l'analyse HTML (STEP 2)
-            # pour avoir accès à la structure des liens internes
-            cocon_data = None  # Sera chargé dans STEP 3.5
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.log_editorial_audit(
+                        url=url,
+                        score=editorial_result.overall_score,
+                        verdict=verdict,
+                        blocking_issues_count=len(editorial_result.blocking_issues),
+                        blocking_issues="",
+                        report_url=report_relative_url
+                    )
 
             # =========================================================
             # STEP 2: AUDIT
             # =========================================================
             # Update status in spreadsheet
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "AUDITING")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "AUDITING")
 
             audit_engine = self._get_audit_engine(blog_id)
-            audit_report = audit_engine.full_audit(url, html_content, provided_keyword=provided_keyword)
+            with timed(timer, "gsc_fetch"):
+                audit_report = audit_engine.full_audit(url, html_content, provided_keyword=provided_keyword)
             audit_dict = audit_engine.to_dict(audit_report)
             # Inject semantic category for ghostwriter semantic field loading
             audit_dict["category"] = self.BLOG_CATEGORY_MAP.get(blog_id, "")
@@ -631,7 +533,8 @@ class RefreshOrchestrator:
             # =========================================================
             # Update status in spreadsheet
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "AUDITING")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "AUDITING")
 
             if force_action:
                 primary_action = force_action
@@ -654,14 +557,15 @@ class RefreshOrchestrator:
             if self.workflow_tracker:
                 self.workflow_tracker.advance_step(url, "decision")
                 # Log la décision
-                self.sheets_client.log_decision(
-                    url=url,
-                    rules_triggered=decision_result.get("rules_triggered", []),
-                    primary_action=primary_action,
-                    rewrite_scope=decision_result.get("rewrite_scope", ""),
-                    estimated_tokens=decision_result.get("estimated_tokens", 0),
-                    prompt_template=decision_result.get("prompt_template", ""),
-                )
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.log_decision(
+                        url=url,
+                        rules_triggered=decision_result.get("rules_triggered", []),
+                        primary_action=primary_action,
+                        rewrite_scope=decision_result.get("rewrite_scope", ""),
+                        estimated_tokens=decision_result.get("estimated_tokens", 0),
+                        prompt_template=decision_result.get("prompt_template", ""),
+                    )
 
                 # Enrichir l'audit_row avec les actions recommandées
                 if 'audit_row' in locals():
@@ -685,7 +589,8 @@ class RefreshOrchestrator:
                     audit_row.recommended_actions = recommended_actions
 
                     # Loger l'audit dans Sheets
-                    self.sheets_client.log_audit(audit_row)
+                    with timed(timer, "sheets_write"):
+                        self.sheets_client.log_audit(audit_row)
 
             # Update colonne G (action_blogpost) in spreadsheet
             if self.sheets_client:
@@ -699,15 +604,16 @@ class RefreshOrchestrator:
                     "internal_links_count": len(internal_links) if isinstance(internal_links, list) else internal_links,
                 }
                 cannibalization_data = {
-                    "flag": audit_dict.get("cocon_cannibalization", {}).get("matches_count", 0) > 0,
-                    "urls": ", ".join(audit_dict.get("cocon_cannibalization", {}).get("blacklist", [])),
+                    "flag": False,
+                    "urls": "",
                 }
-                self.sheets_client.update_decision(
-                    url=url,
-                    action_blogpost=action_blogpost,
-                    content_metrics=content_metrics,
-                    cannibalization=cannibalization_data,
-                )
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_decision(
+                        url=url,
+                        action_blogpost=action_blogpost,
+                        content_metrics=content_metrics,
+                        cannibalization=cannibalization_data,
+                    )
 
             # Si NO_ACTION ou DATA_COLLECTION_REQUIRED, terminer ici
             if primary_action in ("NO_ACTION", "DATA_COLLECTION_REQUIRED"):
@@ -731,10 +637,11 @@ class RefreshOrchestrator:
             # Si REDIRECT_301, signaler et terminer
             if primary_action == "REDIRECT_301":
                 if self.sheets_client:
-                    self.sheets_client.set_action_required(
-                        url,
-                        audit_report.cannibalization.suggested_action
-                    )
+                    with timed(timer, "sheets_write"):
+                        self.sheets_client.set_action_required(
+                            url,
+                            audit_report.cannibalization.suggested_action
+                        )
 
                 if self.workflow_tracker:
                     self.workflow_tracker.complete_workflow(url, success=True)
@@ -794,137 +701,12 @@ class RefreshOrchestrator:
                 audit_dict["notion_title_match"] = {"matched": False}
 
             # =========================================================
-            # STEP 3.5: DETECT H2 CANNIBALIZATION (Anti-Cannibalization)
-            # =========================================================
-            # Update status in spreadsheet
-            if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "AUDITING")
-
-
-
-            cannibalization_report = None
-            try:
-                # Initialize cannibalization detector if not already done
-                if self.cannibalization_detector is None:
-                    self.cannibalization_detector = CannibalizationDetector(
-                        self.sheets_client,
-                        self.stseo_client
-                    )
-
-                # Extract H2 list from audit report
-                current_h2_list = audit_report.html_analysis.headings.h2_list if audit_report.html_analysis else []
-
-                # Extract cocon structure from HTML analysis
-                cocon_structure = None
-                post_type = "STANDALONE"  # Default
-                child_h1_titles = []  # For PARENT articles
-
-                if audit_report.html_analysis and audit_report.html_analysis.cocon_structure:
-                    cocon_structure = {
-                        'parent_url': audit_report.html_analysis.cocon_structure.parent_url,
-                        'parent_title': audit_report.html_analysis.cocon_structure.parent_title,
-                        'sibling_urls': audit_report.html_analysis.cocon_structure.sibling_urls,
-                    }
-
-                # Enrich cocon structure with STSEO mindmap data
-                cocon_structure = self._enrich_cocon_with_mindmap(url, blog_id, cocon_structure)
-
-                if cocon_structure:
-                    # Determine post type based on cocon structure
-                    if cocon_structure['parent_url']:
-                        post_type = "CHILD"
-                    elif cocon_structure['sibling_urls']:
-                        post_type = "PARENT"
-
-                    # NEW: For PARENT articles, fetch H1 titles of ALL children
-                    # This creates a WHITELIST of mandatory H2s
-                    if post_type == "PARENT" and cocon_structure['sibling_urls']:
-                        logger.info(f"[STEP 3.5] PARENT article detected, fetching {len(cocon_structure['sibling_urls'])} child H1 titles...")
-
-                        # Fetch sibling metadata (H1 titles) via SiblingFetcher
-                        from ..cocon import SiblingFetcher
-                        sibling_fetcher = SiblingFetcher(self.sheets_client, self.stseo_client)
-                        siblings = sibling_fetcher.fetch_batch(cocon_structure['sibling_urls'])
-
-                        # Extract H1 titles (= mandatory H2s for this PARENT)
-                        child_h1_titles = [sibling.h1 for sibling in siblings if sibling.h1]
-
-                        logger.info(f"[STEP 3.5] Fetched {len(child_h1_titles)} child H1 titles for PARENT article")
-                        for i, h1 in enumerate(child_h1_titles, 1):
-                            logger.debug(f"  {i}. {h1[:60]}")
-
-                # Detect cannibalization
-                logger.info(f"[STEP 3.5] Detecting H2 cannibalization for {url[:60]}")
-                cannibalization_report = self.cannibalization_detector.detect(
-                    url=url,
-                    blog_id=blog_id,
-                    current_h2_list=current_h2_list,
-                    cocon_structure=cocon_structure
-                )
-
-                # Log to spreadsheet if cannibalization detected
-                if cannibalization_report.matches and self.sheets_client:
-                    sibling_urls = ", ".join([m.sibling_url for m in cannibalization_report.matches])
-                    logger.warning(
-                        f"[STEP 3.5] Cannibalization detected: {len(cannibalization_report.matches)} matches"
-                    )
-
-                    # Update columns T-U using existing update_decision method
-                    self.sheets_client.update_decision(
-                        url=url,
-                        action_blogpost="",
-                        content_metrics={},
-                        cannibalization={
-                            "flag": True,
-                            "urls": sibling_urls
-                        }
-                    )
-
-                # Add to audit_dict for ghostwriter
-                audit_dict["cocon_cannibalization"] = {
-                    "matches_count": len(cannibalization_report.matches),
-                    "blacklist": cannibalization_report.blacklist_h2_topics
-                }
-
-                # NEW: Add cocon whitelist for PARENT articles
-                audit_dict["cocon_whitelist"] = {
-                    "post_type": post_type,
-                    "is_parent_article": post_type == "PARENT",
-                    "mandatory_h2_titles": child_h1_titles,  # H1 of children = mandatory H2s
-                    "child_count": len(child_h1_titles),
-                }
-
-                if post_type == "PARENT":
-                    logger.info(
-                        f"[STEP 3.5] PARENT article: {len(child_h1_titles)} mandatory H2s added to whitelist"
-                    )
-
-                logger.info(
-                    f"[STEP 3.5] Cannibalization detection complete: "
-                    f"{len(cannibalization_report.matches)} matches, "
-                    f"{len(cannibalization_report.blacklist_h2_topics)} blacklisted topics"
-                )
-
-            except Exception as e:
-                logger.error(f"[STEP 3.5] Failed to detect cannibalization: {e}")
-                # Continue workflow even if cannibalization detection fails
-                audit_dict["cocon_cannibalization"] = {
-                    "matches_count": 0,
-                    "blacklist": []
-                }
-                audit_dict["cocon_whitelist"] = {
-                    "post_type": "STANDALONE",
-                    "is_parent_article": False,
-                    "mandatory_h2_titles": [],
-                    "child_count": 0,
-                }
-
-            # =========================================================
             # STEP 4: WRITING (Préparation du contexte)
             # =========================================================
             # Update status in spreadsheet
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "AUDITING")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "AUDITING")
 
             # Configurer la stratégie
             prompts_path = self.base_path / "_shared" / "config" / "prompts_dispatch.json"
@@ -938,18 +720,19 @@ class RefreshOrchestrator:
             )
 
             # Préparer le contexte de réécriture
-            rewrite_context = self.ghostwriter.prepare_rewrite_context(
-                original_html=html_content,
-                strategy_config={
-                    "strategy": strategy_config.strategy.value,
-                    "rewrite_scope": strategy_config.rewrite_scope,
-                    "guidelines": strategy_config.guidelines,
-                    "blog_overrides": strategy_config.blog_overrides,
-                },
-                audit_data=audit_dict,
-                assets=audit_report.assets,
-                seo_guidelines=custom_prompt or self.doc_cache.get_combined_guidelines(),
-            )
+            with timed(timer, "context_prep"):
+                rewrite_context = self.ghostwriter.prepare_rewrite_context(
+                    original_html=html_content,
+                    strategy_config={
+                        "strategy": strategy_config.strategy.value,
+                        "rewrite_scope": strategy_config.rewrite_scope,
+                        "guidelines": strategy_config.guidelines,
+                        "blog_overrides": strategy_config.blog_overrides,
+                    },
+                    audit_data=audit_dict,
+                    assets=audit_report.assets,
+                    seo_guidelines=custom_prompt or self.doc_cache.get_combined_guidelines(),
+                )
 
             if self.workflow_tracker:
                 self.workflow_tracker.advance_step(url, "writing")
@@ -974,7 +757,8 @@ class RefreshOrchestrator:
             # Update status to TODO (not DONE yet - text not generated)
             # DONE will be set by batch_refresh() after LLM call
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "TODO")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "TODO")
 
             return RefreshWorkflowResult(
                 url=url,
@@ -1002,7 +786,12 @@ class RefreshOrchestrator:
 
             # Update status to FAILED in spreadsheet
             if self.sheets_client:
-                self.sheets_client.update_refresh_status(url, "BLOCKED")
+                with timed(timer, "sheets_write"):
+                    self.sheets_client.update_refresh_status(url, "BLOCKED")
+
+            if timer is not None:
+                timer.success = False
+                timer.errors.append(str(error_msg)[:200])
 
             return RefreshWorkflowResult(
                 url=url,
@@ -1017,88 +806,6 @@ class RefreshOrchestrator:
                 errors=errors,
                 execution_time_seconds=(datetime.now() - start_time).total_seconds(),
             )
-
-    def validate_rewritten_content(
-        self,
-        url: str,
-        original_html: str,
-        new_content: str,
-        primary_keyword: Optional[str] = None,
-        category: Optional[str] = None,
-        subject: Optional[str] = None,
-        ytg_targets: Optional[dict] = None,
-    ) -> dict:
-        """
-        Valide le contenu réécrit par le LLM.
-
-        Args:
-            url: URL de l'article
-            original_html: HTML original
-            new_content: Nouveau contenu du LLM
-            primary_keyword: Mot-clé principal (pour check sémantique)
-            category: Catégorie (pour check sémantique)
-            subject: Sujet spécifique (pour check sémantique)
-            ytg_targets: Cibles concurrentes YTG {top3_soseo, top3_dseo, ...}
-                pour calibrer dynamiquement les seuils SOSEO/DSEO.
-
-        Returns:
-            Résultat de validation avec contenu potentiellement corrigé
-        """
-        # Extraire les assets originaux
-        original_assets = self.asset_manager.extract_assets(original_html)
-
-        # Valider les assets
-        validation = self.asset_manager.validate(original_assets, new_content)
-
-        # Si invalide, tenter de restaurer
-        final_content = new_content
-        if not validation.is_valid:
-            final_content = self.asset_manager.restore_missing_assets(
-                new_content,
-                original_assets,
-                validation
-            )
-            # Re-valider
-            validation = self.asset_manager.validate(original_assets, final_content)
-
-        # Semantic density check (post-generation anti-over-optimization)
-        # ytg_targets calibre dynamiquement les seuils SOSEO/DSEO sur les vraies
-        # données concurrentes si un guide YTG a été créé en STEP 2.5.
-        semantic_result = self.semantic_checker.check(
-            html_content=final_content,
-            primary_keyword=primary_keyword,
-            category=category,
-            subject=subject,
-            ytg_targets=ytg_targets,
-        )
-        semantic_report = self.semantic_checker.generate_report(semantic_result)
-
-        import logging
-        logger = logging.getLogger(__name__)
-        if not semantic_result.is_optimal:
-            logger.warning(
-                f"[SEMANTIC CHECK] {url[:50]}: {semantic_result.verdict} "
-                f"(score={semantic_result.score}, "
-                f"alerts={len(semantic_result.alerts)})"
-            )
-
-        return {
-            "is_valid": validation.is_valid,
-            "final_content": final_content,
-            "validation": validation,
-            "report": self.asset_manager.generate_assets_report(original_assets, validation),
-            "semantic_check": {
-                "score": semantic_result.score,
-                "coverage_score": semantic_result.coverage_score,
-                "danger_score": semantic_result.danger_score,
-                "verdict": semantic_result.verdict,
-                "is_optimal": semantic_result.is_optimal,
-                "alerts_count": len(semantic_result.alerts),
-                "critical_alerts": len(semantic_result.critical_alerts),
-                "report": semantic_report,
-                "metrics": semantic_result.metrics,
-            },
-        }
 
     # =========================================================================
     # YTG & Notion helpers
@@ -1154,50 +861,6 @@ class RefreshOrchestrator:
                 return site.get("notion_commandes_db_id") or None
         return None
 
-    def get_pending_urls(self, blog_id: Optional[str] = None) -> list[dict]:
-        """
-        Récupère les URLs en attente de traitement.
-
-        Args:
-            blog_id: Filtrer par blog (optionnel)
-
-        Returns:
-            Liste des tâches en attente
-        """
-        if not self.sheets_client:
-            return []
-
-        tasks = self.sheets_client.read_pending_urls(blog_id)
-        return [
-            {
-                "url": t.url,
-                "blog_id": t.blog_id,
-                "priority": 3,  # Default priority (mid-level)
-                "triggered_by": t.triggered_by.value,
-                "main_keyword": t.main_keyword if t.main_keyword else "",
-            }
-            for t in tasks
-        ]
-
-    def quick_audit_batch(self, urls: list[tuple[str, str, str]]) -> list[dict]:
-        """
-        Effectue un audit rapide sur un batch d'URLs.
-
-        Args:
-            urls: Liste de tuples (url, blog_id, html_content)
-
-        Returns:
-            Liste des résultats d'audit rapide
-        """
-        results = []
-
-        for url, blog_id, html_content in urls:
-            audit_engine = self._get_audit_engine(blog_id)
-            quick_result = audit_engine.quick_audit(url, html_content)
-            results.append(quick_result)
-
-        return results
-
     # =========================================================================
     # NEW: v2.0 Single-Sheet Architecture Batch Operations
     # =========================================================================
@@ -1233,7 +896,7 @@ class RefreshOrchestrator:
 
         # Filter by post_type if specified
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -1329,7 +992,7 @@ class RefreshOrchestrator:
         logger = logging.getLogger("RefreshOrchestrator")
 
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -1470,7 +1133,7 @@ class RefreshOrchestrator:
         logger = logging.getLogger("RefreshOrchestrator")
 
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -1661,18 +1324,14 @@ class RefreshOrchestrator:
         # Ensure column W exists
         self.sheets_client.ensure_column_w_header()
 
-        # Auto-fill post_type (col F) for any rows where it is missing
         _gsc_logger = logging.getLogger("RefreshOrchestrator")
-        pt_results = self.sheets_client.auto_fill_post_types(blog_id)
-        if pt_results["filled"]:
-            _gsc_logger.info(f"[batch_audit_gsc] auto_fill_post_types: {pt_results['filled']} filled, {pt_results['skipped']} already set")
 
         # Read rows where audit_gsc = AUDITING
         rows = self.sheets_client.read_pending_for_gsc_audit(blog_id)
 
         # Filter by post_type if specified
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -1776,7 +1435,7 @@ class RefreshOrchestrator:
 
         # Filter by post_type if specified
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -1883,7 +1542,7 @@ class RefreshOrchestrator:
 
         # Filter by post_type if specified
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         results = {
             "processed": 0,
@@ -2003,7 +1662,7 @@ class RefreshOrchestrator:
             "title": row.title,
             "main_keyword": row.main_keyword,
             "action": action,
-            "post_type": row.post_type.value if hasattr(row.post_type, 'value') else str(row.post_type),
+            "post_type": str(row.post_type) if row.post_type else "",
             "impressions_30d": row.impressions_30d,
             "clicks_30d": row.clicks_30d,
             "ctr_30d": float(row.ctr_30d) if row.ctr_30d else 0.0,
@@ -2039,16 +1698,24 @@ class RefreshOrchestrator:
             f.write(f"GUIDELINES SYSTÈME:\n{seo_guidelines[:3000]}\n\n")
             f.write(f"GUIDELINES SITE {row.blog_id}:\n{site_prompt[:1500]}\n")
 
-        # Determine HTML subdirectory based on post_type
-        post_type_val = row.post_type.value if hasattr(row.post_type, 'value') else str(row.post_type)
-        if post_type_val == "PARENT":
-            html_subdir = "html_parent_posts"
-        elif post_type_val == "CHILD":
-            html_subdir = "html_child_posts"
-        else:
-            html_subdir = "html"
+        html_subdir = "html"
 
-        # Create task instructions
+        # Build task instructions
+        instructions = [
+            "Lis le fichier original.html complet",
+            "Lis les données d'audit dans audit_data.json",
+            "Lis les guidelines dans guidelines.txt",
+            "Génère le HTML optimisé en respectant la RÈGLE D'OR",
+            f"Sauvegarde le résultat dans _shared/outputs/{row.blog_id}/{html_subdir}/{url_slug}_refreshed.html",
+            f"Sauvegarde les métadonnées dans _shared/outputs/{row.blog_id}/metadata/{url_slug}_metadata.json",
+        ]
+        if row.blog_id == "superprof-ressources":
+            instructions.append(
+                f"Exécute en Bash depuis la racine du projet : "
+                f".venv/bin/python content_writer.py statuts '{row.blogpost_url}' 'Rédigé'"
+            )
+
+        # Create task bundle
         task_data = {
             "task_type": "content_refresh",
             "status": "READY",
@@ -2062,17 +1729,10 @@ class RefreshOrchestrator:
                 },
                 "output": {
                     "refreshed_html": f"_shared/outputs/{row.blog_id}/{html_subdir}/{url_slug}_refreshed.html",
-                    "metadata": f"_shared/outputs/{row.blog_id}/json/{url_slug}_metadata.json"
+                    "metadata": f"_shared/outputs/{row.blog_id}/metadata/{url_slug}_metadata.json"
                 }
             },
-            "instructions": [
-                "Lis le fichier original.html complet",
-                "Lis les données d'audit dans audit_data.json",
-                "Lis les guidelines dans guidelines.txt",
-                "Génère le HTML optimisé en respectant la RÈGLE D'OR",
-                f"Sauvegarde le résultat dans _shared/outputs/{row.blog_id}/{html_subdir}/{url_slug}_refreshed.html",
-                f"Sauvegarde les métadonnées dans _shared/outputs/{row.blog_id}/json/{url_slug}_metadata.json"
-            ]
+            "instructions": instructions,
         }
 
         task_file = context_dir / "task.json"
@@ -2115,7 +1775,7 @@ class RefreshOrchestrator:
 
             # STEP 2: Check if Claude Code should be invoked
             # Define expected output paths using OutputManager (title-based naming)
-            outputs = self.output_mgr.get_output_files(row.blog_id, url_slug, title=row.title, post_type=row.post_type.value if hasattr(row.post_type, 'value') else str(row.post_type))
+            outputs = self.output_mgr.get_output_files(row.blog_id, url_slug, title=row.title)
             refreshed_file = outputs["refreshed_html"]
             metadata_file = outputs["metadata"]
 
@@ -2177,175 +1837,16 @@ class RefreshOrchestrator:
             # Fallback: return original HTML
             return original_html, row.title
 
-    def process_prepared_contexts(
-        self,
-        blog_id: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> dict:
-        """
-        Traite les contextes préparés article par article.
-
-        Cette méthode génère automatiquement le contenu HTML pour les contextes
-        qui ont été préparés par le workflow mais pas encore générés.
-
-        Args:
-            blog_id: Filtrer par blog_id (optionnel)
-            limit: Nombre maximum de contextes à traiter (optionnel)
-
-        Returns:
-            Dict avec statistiques de génération
-        """
-        print("\n" + "="*70)
-        print("TRAITEMENT AUTOMATIQUE DES CONTEXTES PRÉPARÉS")
-        print("="*70)
-
-        # Lister tous les contextes préparés
-        contexts_dir = self.base_path / "_shared" / "context"
-        if not contexts_dir.exists():
-            return {
-                "status": "error",
-                "message": "Aucun répertoire de contextes trouvé",
-                "processed": 0
-            }
-
-        # Scanner les contextes
-        prepared_contexts = []
-        for context_path in contexts_dir.iterdir():
-            if not context_path.is_dir():
-                continue
-
-            # Vérifier que tous les fichiers requis existent
-            required_files = ["original.html", "audit_data.json", "guidelines.txt", "task.json"]
-            if not all((context_path / f).exists() for f in required_files):
-                continue
-
-            # Lire task.json pour obtenir les infos
-            try:
-                with open(context_path / "task.json", 'r', encoding='utf-8') as f:
-                    task_info = json.load(f)
-
-                # Extraire blog_id depuis les output files
-                output_path = task_info.get("files", {}).get("output", {}).get("refreshed_html", "")
-                if not output_path:
-                    continue
-
-                # Extraire blog_id du chemin: _shared/outputs/{blog_id}/...
-                parts = Path(output_path).parts
-                if "_shared" in parts and "outputs" in parts:
-                    idx = parts.index("outputs")
-                    if idx + 1 < len(parts):
-                        ctx_blog_id = parts[idx + 1]
-                    else:
-                        continue
-                else:
-                    continue
-
-                # Filtrer par blog_id si spécifié
-                if blog_id and ctx_blog_id != blog_id:
-                    continue
-
-                # Vérifier si déjà généré
-                output_html = Path(output_path)
-                if output_html.exists():
-                    print(f"[SKIP] Déjà généré: {context_path.name}")
-                    continue
-
-                prepared_contexts.append({
-                    "context_dir": context_path,
-                    "blog_id": ctx_blog_id,
-                    "url_slug": context_path.name,
-                    "task_info": task_info
-                })
-
-            except Exception as e:
-                print(f"[WARN] Erreur lecture task.json pour {context_path.name}: {e}")
-                continue
-
-        if not prepared_contexts:
-            return {
-                "status": "info",
-                "message": "Aucun contexte à traiter (tous déjà générés)",
-                "processed": 0
-            }
-
-        # Appliquer limite si spécifiée
-        if limit:
-            prepared_contexts = prepared_contexts[:limit]
-
-        print(f"\n{len(prepared_contexts)} contexte(s) à traiter\n")
-
-        # Traiter chaque contexte
-        results = {
-            "processed": 0,
-            "success": 0,
-            "errors": 0,
-            "details": []
-        }
-
-        for i, ctx in enumerate(prepared_contexts, 1):
-            print(f"\n{'='*70}")
-            print(f"[{i}/{len(prepared_contexts)}] Traitement: {ctx['url_slug']}")
-            print(f"{'='*70}")
-
-            try:
-                # Utiliser Ghostwriter pour préparer le prompt de génération
-                output_dir = self.base_path / "_shared" / "outputs" / ctx["blog_id"]
-                output_dir.mkdir(parents=True, exist_ok=True)
-
-                generation_info = self.ghostwriter.generate_from_context(
-                    context_dir=ctx["context_dir"],
-                    output_dir=output_dir,
-                    blog_id=ctx["blog_id"]
-                )
-
-                if generation_info["status"] != "ready_for_generation":
-                    raise Exception(f"Échec préparation: {generation_info}")
-
-                # Afficher le prompt pour que Claude Code génère le contenu
-                print(f"\n[GÉNÉRATION] Contexte chargé, prompt composé")
-                print(f"[GÉNÉRATION] Guidelines: CLAUDE.md + catégories + stratégie + site")
-                print(f"[GÉNÉRATION] Blog: {ctx['blog_id']}")
-                print(f"[GÉNÉRATION] Stratégie: {generation_info['metadata']['strategy']}")
-                print(f"\n[ATTENTE] Claude Code doit maintenant générer le HTML...")
-                print(f"[INFO] Prompt de génération disponible dans generation_info")
-                print(f"[INFO] Fichiers de sortie attendus:")
-                print(f"  - {generation_info['output_files']['html']}")
-                print(f"  - {generation_info['output_files']['metadata']}")
-
-                # NOTE: Ici, Claude Code (moi-même) doit générer le contenu
-                # Pour l'instant, on retourne le prompt - la génération sera faite manuellement
-                results["details"].append({
-                    "url_slug": ctx["url_slug"],
-                    "status": "ready",
-                    "generation_prompt": generation_info["generation_prompt"],
-                    "output_files": generation_info["output_files"]
-                })
-
-                results["processed"] += 1
-
-            except Exception as e:
-                print(f"[ERROR] Erreur traitement {ctx['url_slug']}: {e}")
-                results["errors"] += 1
-                results["details"].append({
-                    "url_slug": ctx["url_slug"],
-                    "status": "error",
-                    "error": str(e)
-                })
-
-        return results
-
     def batch_title_optimization(self, blog_id: Optional[str] = None, post_type: Optional[str] = None) -> dict:
         """
         Batch title optimization: génère new_h1_title (col P) et extrait H2s actuels (col Q).
 
         S'exécute APRÈS Decision et AVANT Refresh.
-        Permet aux PARENT articles de lire les nouveaux H1 des enfants via SiblingFetcher.
-
         Traite les URLs avec action_blogpost remplie ET new_h1_title (col P) vide.
 
         Args:
             blog_id: Filter by blog_id (optional)
-            post_type: Filter by post_type - "CHILD", "PARENT", "STANDALONE" (optional)
+            post_type: Filter by post_type (optional, for backwards compat)
 
         Returns:
             {"processed": int, "success": int, "failed": int, "errors": list}
@@ -2359,7 +1860,7 @@ class RefreshOrchestrator:
         # Read all rows from spreadsheet
         data = self.sheets_client._read_sheet(self.sheets_client.SHEET_REFRESHS_AUDIT)
 
-        from _shared.core.models import RefreshAuditRow, PostType
+        from _shared.core.models import RefreshAuditRow
 
         results = {"processed": 0, "success": 0, "failed": 0, "errors": []}
 
@@ -2500,7 +2001,7 @@ class RefreshOrchestrator:
 
         # Filter by post_type if specified
         if post_type:
-            rows = [r for r in rows if r.post_type.value == post_type]
+            rows = [r for r in rows if r.post_type == post_type]
 
         # Limit number of rows to process
         if limit and limit > 0:
@@ -2636,11 +2137,6 @@ class RefreshOrchestrator:
                         self.logger = __import__("logging").getLogger("RefreshOrchestrator")
                         self.logger.warning(f"Asset validation error: {str(asset_err)[:50]}")
 
-                # STEP 5.5: INTERNAL LINKING — DISABLED
-                # Le pipeline cocon-aware basé sur cocon_branch a été retiré (avril 2026).
-                # Pour réinjecter du linking interne, utiliser LinkInjector avec un mapping
-                # CSV manuel (cf. _shared/config/linking_maps/).
-
                 # STEP 5.6: YTG POST-VALIDATION (SEMANTIC DENSITY CHECK)
                 ytg_post_scores = {}
                 try:
@@ -2736,50 +2232,6 @@ class RefreshOrchestrator:
                             logger.debug(f"[STEP 5.6] YTG skipped: no guide for '{row.main_keyword[:40]}'")
                 except Exception as ytg_err:
                     logger.warning(f"[STEP 5.6] YTG post-validation non-blocking error: {ytg_err}")
-
-                # STEP 6: VALIDATE POST-REFRESH CANNIBALIZATION
-                try:
-                    if self.cannibalization_detector is not None:
-                        # Extract H2s from refreshed HTML
-                        from bs4 import BeautifulSoup
-                        soup = BeautifulSoup(refreshed_html, 'html.parser')
-                        new_h2_list = [h2.get_text(strip=True) for h2 in soup.find_all('h2')]
-
-                        # Re-analyze HTML to get cocon structure
-                        analyzer = HTMLAnalyzer(domain=row.blog_id)
-                        new_html_result = analyzer.analyze(refreshed_html, row.blogpost_url)
-
-                        cocon_structure_dict = {
-                            'parent_url': new_html_result.cocon_structure.parent_url,
-                            'parent_title': new_html_result.cocon_structure.parent_title,
-                            'sibling_urls': new_html_result.cocon_structure.sibling_urls,
-                        }
-
-                        # Re-run cannibalization detection
-                        new_cannibalization_report = self.cannibalization_detector.detect(
-                            url=row.blogpost_url,
-                            blog_id=row.blog_id,
-                            current_h2_list=new_h2_list,
-                            cocon_structure=cocon_structure_dict
-                        )
-
-                        if new_cannibalization_report.matches:
-                            logger.warning(
-                                f"[STEP 6] Post-refresh cannibalization still present: "
-                                f"{len(new_cannibalization_report.matches)} matches"
-                            )
-                            # Log cannibalizing H2s
-                            for match in new_cannibalization_report.matches:
-                                logger.warning(
-                                    f"[STEP 6]   - H2: '{match.current_h2[:50]}' "
-                                    f"cannibalizes '{match.sibling_h1[:50]}' (score={match.similarity_score:.2f})"
-                                )
-                        else:
-                            logger.info("[STEP 6] Post-refresh validation: No cannibalization detected ✓")
-
-                except Exception as cannibal_err:
-                    logger.error(f"[STEP 6] Post-refresh cannibalization validation failed: {cannibal_err}")
-                    # Continue workflow even if validation fails
 
                 # STEP 7: Mark as done (REFONTE Feb 2026: unified status)
                 new_status = "DONE"

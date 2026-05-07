@@ -40,11 +40,7 @@ class TestOutputManagerInit:
         """Test that valid site IDs are defined"""
         expected_sites = [
             "enseigna.fr",
-            "cours-particuliers.com",
-            "educationetdevenir.fr",
-            "moments-yoga.fr",
-            "mymusicteacher.fr",
-            "coachsportlyon.fr"
+            "superprof.fr",
         ]
         assert output_mgr.VALID_SITE_IDS == expected_sites
 
@@ -113,7 +109,7 @@ class TestSiteValidation:
         """Test that valid site IDs pass validation"""
         # Should not raise
         output_mgr._validate_site_id("enseigna.fr")
-        output_mgr._validate_site_id("moments-yoga.fr")
+        output_mgr._validate_site_id("superprof.fr")
 
     def test_validate_invalid_site_id(self, output_mgr):
         """Test that invalid site IDs raise ValueError"""
@@ -160,7 +156,7 @@ class TestTempCacheMethods:
         # Create temp files for multiple sites
         output_mgr.save_temp_html("enseigna.fr", "test1", "html1")
         output_mgr.save_temp_html("enseigna.fr", "test2", "html2")
-        output_mgr.save_temp_html("moments-yoga.fr", "test3", "html3")
+        output_mgr.save_temp_html("superprof.fr", "test3", "html3")
 
         # Clear only enseigna.fr
         removed = output_mgr.clear_temp_cache("enseigna.fr")
@@ -168,21 +164,21 @@ class TestTempCacheMethods:
         assert removed == 2
         assert output_mgr.get_temp_html("enseigna.fr", "test1") is None
         assert output_mgr.get_temp_html("enseigna.fr", "test2") is None
-        assert output_mgr.get_temp_html("moments-yoga.fr", "test3") is not None
+        assert output_mgr.get_temp_html("superprof.fr", "test3") is not None
 
     def test_clear_temp_cache_all_sites(self, output_mgr):
         """Test clearing temp cache for all sites"""
         # Create temp files for multiple sites
         output_mgr.save_temp_html("enseigna.fr", "test1", "html1")
-        output_mgr.save_temp_html("moments-yoga.fr", "test2", "html2")
-        output_mgr.save_temp_html("educationetdevenir.fr", "test3", "html3")
+        output_mgr.save_temp_html("superprof.fr", "test2", "html2")
+        output_mgr.save_temp_html("superprof.fr", "test3", "html3")
 
         # Clear all
         removed = output_mgr.clear_temp_cache(site_id=None)
 
         assert removed == 3
         assert output_mgr.get_temp_html("enseigna.fr", "test1") is None
-        assert output_mgr.get_temp_html("moments-yoga.fr", "test2") is None
+        assert output_mgr.get_temp_html("superprof.fr", "test2") is None
 
 
 class TestOutputMethods:
@@ -338,7 +334,7 @@ class TestValidationMethods:
         # Create some files
         output_mgr.save_temp_html("enseigna.fr", "test1", "html content")
         output_mgr.save_refreshed_html("enseigna.fr", "test2", "<html/>")
-        output_mgr.save_metadata("moments-yoga.fr", "test3", {"title": "Test"})
+        output_mgr.save_metadata("superprof.fr", "test3", {"title": "Test"})
 
         stats = output_mgr.get_workspace_stats()
 
@@ -349,7 +345,7 @@ class TestValidationMethods:
 
         assert stats["temp_cache"]["enseigna.fr"] == 1
         assert stats["outputs"]["enseigna.fr"] >= 1
-        assert stats["outputs"]["moments-yoga.fr"] >= 1
+        assert stats["outputs"]["superprof.fr"] >= 1
 
 
 class TestURLToSlug:
@@ -363,9 +359,9 @@ class TestURLToSlug:
 
     def test_url_to_slug_with_path(self, output_mgr):
         """Test converting URL with multiple path segments"""
-        url = "https://moments-yoga.fr/postures/guerrier-1/"
+        url = "https://enseigna.fr/avis/superprof-avis/"
         slug = output_mgr._url_to_slug(url)
-        assert slug == "postures-guerrier-1"
+        assert slug == "avis-superprof-avis"
 
     def test_url_to_slug_plain_string(self, output_mgr):
         """Test converting plain string"""

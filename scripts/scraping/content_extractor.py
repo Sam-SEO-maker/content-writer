@@ -78,7 +78,7 @@ class ContentExtractor:
             try:
                 with config_file.open("r", encoding="utf-8") as f:
                     config = json.load(f)
-                    site_id = config.get("id")
+                    site_id = config.get("id") or config.get("blog_id")
                     if site_id:
                         configs[site_id] = config
             except Exception as e:
@@ -461,8 +461,7 @@ class ContentExtractor:
         soup = BeautifulSoup(html, "lxml")
 
         # Extract images with full tag data (including figure/figcaption captions)
-        # Filter: only keep images from superteamseo.com (PBN CDN) or with wp-image class
-        # Excludes theme/sidebar/logo images from the blog domain itself
+        # Filter: only keep WordPress content images (wp-image class) or images in figures
         all_images = soup.find_all("img")
         images = []
         for img in all_images:
@@ -472,9 +471,8 @@ class ContentExtractor:
             css_class = img.get("class", [])
             css_str = " ".join(css_class) if isinstance(css_class, list) else str(css_class)
             is_wp_content = "wp-image" in css_str
-            is_pbn_cdn = "superteamseo.com" in src
             is_in_caption = img.find_parent(text=re.compile(r"\[caption")) is not None or img.find_parent("figure") is not None
-            if is_pbn_cdn or is_wp_content or is_in_caption:
+            if is_wp_content or is_in_caption:
                 images.append(img)
         image_urls = [img.get("src", "") for img in images if img.get("src")]
         image_tags = []

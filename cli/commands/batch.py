@@ -2,7 +2,7 @@
 Commandes de traitement batch.
 
 Usage:
-    cw batch keyword-discovery [--blog enseigna] [--post-type CHILD]
+    cw batch keyword-discovery [--blog enseigna]
     cw batch audit-gsc [--blog enseigna] [--limit 10]
     cw batch audit-serp [--blog enseigna]
     cw batch decision [--blog enseigna]
@@ -25,8 +25,7 @@ def batch():
 @batch.command(name='keyword-discovery')
 @click.option('--spreadsheet-id', required=True, help='Google Sheet ID')
 @click.option('--blog', help='Filtrer par blog_id')
-@click.option('--post-type', help='Filtrer par post_type (CHILD, PARENT, STANDALONE)')
-def keyword_discovery(spreadsheet_id, blog, post_type):
+def keyword_discovery(spreadsheet_id, blog):
     """
     STEP 0: Keyword Discovery.
 
@@ -36,8 +35,6 @@ def keyword_discovery(spreadsheet_id, blog, post_type):
     click.echo(f"\n🔍 STEP 0: KEYWORD DISCOVERY")
     if blog:
         click.echo(f"Blog: {blog}")
-    if post_type:
-        click.echo(f"Post type: {post_type}")
     click.echo()
 
     orchestrator = RefreshOrchestrator(
@@ -47,7 +44,7 @@ def keyword_discovery(spreadsheet_id, blog, post_type):
 
     click.echo("Découverte des mots-clés manquants...")
     try:
-        results = orchestrator.batch_keyword_discovery(blog_id=blog, post_type=post_type)
+        results = orchestrator.batch_keyword_discovery(blog_id=blog)
 
         click.echo(f"\n📊 RÉSULTATS:")
         click.echo(f"  Traités:     {results['processed']}")
@@ -71,9 +68,8 @@ def keyword_discovery(spreadsheet_id, blog, post_type):
 @batch.command(name='keyword-refresh')
 @click.option('--spreadsheet-id', required=True, help='Google Sheet ID')
 @click.option('--blog', help='Filtrer par blog_id')
-@click.option('--post-type', help='Filtrer par post_type (CHILD, PARENT, STANDALONE)')
 @click.option('--min-volume', default=10, type=int, show_default=True, help='Volume minimum accepté (keywords en-dessous seront re-cherchés)')
-def keyword_refresh(spreadsheet_id, blog, post_type, min_volume):
+def keyword_refresh(spreadsheet_id, blog, min_volume):
     """
     Re-vérifie et améliore les keywords existants avec volume insuffisant.
 
@@ -87,8 +83,6 @@ def keyword_refresh(spreadsheet_id, blog, post_type, min_volume):
     click.echo(f"\n🔄 KEYWORD REFRESH (seuil volume: {min_volume})")
     if blog:
         click.echo(f"Blog: {blog}")
-    if post_type:
-        click.echo(f"Post type: {post_type}")
     click.echo()
 
     orchestrator = RefreshOrchestrator(
@@ -101,7 +95,6 @@ def keyword_refresh(spreadsheet_id, blog, post_type, min_volume):
         results = orchestrator.batch_keyword_re_discovery(
             min_volume=min_volume,
             blog_id=blog,
-            post_type=post_type,
         )
 
         click.echo(f"\n📊 RÉSULTATS:")
@@ -360,3 +353,111 @@ def workflow_auto(spreadsheet_id, blog, auto_refresh):
     except Exception as e:
         click.echo(f"\n❌ ERREUR: {str(e)}", err=True)
         raise click.Abort()
+
+
+@batch.command(name='benchmark')
+@click.option('--blog', required=True, help='Blog ID (ex: superprof-ressources)')
+@click.option('--source-sheet', default='GSC_Perfs',
+              help="Nom de l'onglet contenant les URLs (défaut: GSC_Perfs)")
+@click.option('--rows', default='2:16',
+              help='Plage de lignes 1-indexées, format a:b (défaut: 2:16 = 15 URLs)')
+@click.option('--spreadsheet-id', default=None,
+              help="Spreadsheet ID (override sinon lu depuis la config du blog)")
+def benchmark(blog, source_sheet, rows, spreadsheet_id):
+    """
+    Benchmark pipeline mécanique (fetch + audit GSC + décision + sheets + contexte).
+
+    Lit des URLs depuis un onglet/plage, exécute le pipeline automatisé pour chaque
+    URL, et produit un rapport de timing (console + JSON).
+
+    NB: La génération LLM effective est out-of-process (Claude Code opérateur).
+    Ce benchmark couvre uniquement la partie automatisée.
+
+    Exemple:
+      cw batch benchmark --blog superprof-ressources --source-sheet GSC_Perfs --rows 2:16
+    """
+    import logging
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    from scripts.agent.benchmark_runner import run_benchmark
+
+    click.echo(f"\n🧪 BENCHMARK PIPELINE MÉCANIQUE")
+    click.echo(f"Blog:          {blog}")
+    click.echo(f"Source sheet:  {source_sheet}")
+    click.echo(f"Row range:     {rows}")
+    click.echo()
+
+    try:
+        report = run_benchmark(
+            blog_id=blog,
+            source_sheet=source_sheet,
+            row_range=rows,
+            spreadsheet_id=spreadsheet_id,
+        )
+    except Exception as e:
+        click.echo(f"\n❌ ERREUR: {str(e)}", err=True)
+        raise click.Abort()
+
+    if any(not t.success for t in report.timers):
+        raise click.exceptions.Exit(1)
+
+
+@batch.command(name='extract-tables')
+@click.option('--site-id', default='superprof-ressources', show_default=True,
+              help='Identifiant du blog (ex: superprof-ressources, enseigna.fr)')
+@click.option('--input-dir', type=click.Path(exists=True, file_okay=False, path_type=Path),
+              default=None, help='Dossier HTML source (défaut: _shared/outputs/{site_id}/html/)')
+@click.option('--output-dir', type=click.Path(file_okay=False, path_type=Path),
+              default=None, help='Dossier CSV destination (défaut: _shared/outputs/{site_id}/csv/)')
+def extract_tables(site_id, input_dir, output_dir):
+    """Extrait les tableaux HTML des articles en fichiers CSV pour TablePress.
+
+    Scanne tous les *_refreshed.html du dossier source et génère un CSV par
+    tableau trouvé : {slug}_table_1.csv, _table_2.csv, etc.
+
+    Exemple:
+      cw batch extract-tables --site-id superprof-ressources
+    """
+    import logging
+    logging.basicConfig(level=logging.WARNING, format="%(message)s")
+
+    from scripts.utils.table_csv_extractor import extract_tables_to_csv
+
+    # Use site_id verbatim for path (avoids OutputManager normalization aliases)
+    base_dir = Path(__file__).parents[2] / "_shared" / "outputs" / site_id
+    html_dir = input_dir or base_dir / "html"
+    csv_dir = output_dir or base_dir / "csv"
+
+    if not html_dir.exists():
+        click.echo(f"Dossier introuvable : {html_dir}", err=True)
+        raise click.Abort()
+
+    html_files = sorted(html_dir.glob("*_refreshed.html"))
+    if not html_files:
+        click.echo(f"Aucun fichier *_refreshed.html trouvé dans {html_dir}")
+        return
+
+    click.echo(f"\nExtraction CSV — {site_id}")
+    click.echo(f"Source : {html_dir}")
+    click.echo(f"Destination : {csv_dir}")
+    click.echo(f"Fichiers trouvés : {len(html_files)}\n")
+
+    total_tables = 0
+    files_with_tables = 0
+    files_without_tables = 0
+
+    for html_file in html_files:
+        html_content = html_file.read_text(encoding="utf-8")
+        file_slug = html_file.stem.removesuffix("_refreshed")
+        csv_files = extract_tables_to_csv(html_content, csv_dir, file_slug)
+
+        if csv_files:
+            files_with_tables += 1
+            total_tables += len(csv_files)
+            click.echo(f"  ✓ {file_slug} → {len(csv_files)} tableau(x)")
+        else:
+            files_without_tables += 1
+
+    click.echo(f"\nRésultat : {total_tables} tableaux extraits "
+               f"({files_with_tables} articles avec tableaux, "
+               f"{files_without_tables} sans tableau)")

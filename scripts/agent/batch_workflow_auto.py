@@ -615,7 +615,7 @@ async def main():
         max_parallel=5,
         max_retries=3,
         retry_delay=2.0,
-        # blog_id_filter="cours-particuliers"  # Optionnel
+        # blog_id_filter="enseigna"  # Optionnel
     )
 
     workflow = AutoBatchWorkflow(config)

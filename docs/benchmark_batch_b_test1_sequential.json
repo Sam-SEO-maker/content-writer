@@ -1,0 +1,150 @@
+{
+  "test": "Batch B — Test 1 — Séquentiel",
+  "mode": "sequential",
+  "batch": "B",
+  "spreadsheet_id": "1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ",
+  "sheet": "New Growing List",
+  "rows": "136-150",
+  "urls": [
+    {"row": 136, "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/biographie-scarron-gouvernante.html", "keyword": "madame de maintenon scarron"},
+    {"row": 137, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/ecrivaine-princesse-cleves.html", "keyword": "madame de lafayette princesse de clèves"},
+    {"row": 138, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/recit-fiction-confesser.html", "keyword": "la confession maupassant"},
+    {"row": 139, "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/nombre-anglais-compter.html", "keyword": "les nombres en anglais"},
+    {"row": 140, "url": "https://www.superprof.fr/ressources/maths/maths-4eme/proportionnalite-maths-cours.html", "keyword": "cours proportionnalité 4ème"},
+    {"row": 141, "url": "https://www.superprof.fr/ressources/droit/droit-tous-niveaux/conditions-de-validite.html", "keyword": "clause de non concurrence conditions validité"},
+    {"row": 142, "url": "https://www.superprof.fr/ressources/espagnol/espagnol-2nde/explication-document-hispanique.html", "keyword": "explication document espagnol seconde"},
+    {"row": 143, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/maupassant-baron-trahison.html", "keyword": "maupassant baron trahison"},
+    {"row": 144, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/lecture-litterature-francaise.html", "keyword": "mademoiselle source maupassant"},
+    {"row": 145, "url": "https://www.superprof.fr/ressources/maths/maths-2nde/vecteurs-trajet-fleche.html", "keyword": "cours vecteurs seconde"},
+    {"row": 146, "url": "https://www.superprof.fr/ressources/ses/ses-tous-niveaux/deroulement-economie-baccalaureat.html", "keyword": "bac ses épreuve méthode"},
+    {"row": 147, "url": "https://www.superprof.fr/ressources/arts-appliques/arts-appliques-tous-niveaux/livre-astre-nocturne-enfant.html", "keyword": "arts visuels nuit maternelle"},
+    {"row": 148, "url": "https://www.superprof.fr/ressources/anglais/anglais-6eme/angleterre-irelande-pays-galles.html", "keyword": "british isles 6ème"},
+    {"row": 149, "url": "https://www.superprof.fr/ressources/sport/sport-tous-niveaux/naturisme-medical.html", "keyword": "naturisme médical histoire"},
+    {"row": 150, "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/preparation-oral-physique.html", "keyword": "colle prépa physique"}
+  ],
+  "phase1": {
+    "description": "Pipeline mécanique : fetch HTML + audit GSC 12m + YTG sémantique + context bundle + sheets write (benchmark_runner.py)",
+    "run_id": "2026-04-28_190210",
+    "start_utc": "2026-04-28T19:02:10Z",
+    "start_local": "19:02",
+    "end_local": "19:09",
+    "duration_seconds": 459.567,
+    "duration_human": "7m 39.6s",
+    "urls_processed": 15,
+    "urls_success": 15,
+    "urls_failed": 0,
+    "avg_per_url_seconds": 30.6,
+    "operation_breakdown": {
+      "gsc_fetch": {
+        "total_seconds": 202.918,
+        "avg_per_url": 13.528,
+        "pct_of_batch": 44.15,
+        "note": "GSC API 12m + YTG polling (variable selon cache YTG)"
+      },
+      "sheets_write": {
+        "total_seconds": 55.999,
+        "avg_per_url": 3.733,
+        "pct_of_batch": 12.19
+      },
+      "context_prep": {
+        "total_seconds": 0.09,
+        "avg_per_url": 0.006,
+        "pct_of_batch": 0.02
+      },
+      "context_write": {
+        "total_seconds": 0.078,
+        "avg_per_url": 0.005,
+        "pct_of_batch": 0.02
+      },
+      "other_html_fetch_and_processing": {
+        "total_seconds": 199.477,
+        "avg_per_url": 13.298,
+        "pct_of_batch": 43.41,
+        "note": "Scraping HTTP + heuristic extraction + audit décision + context bundle"
+      }
+    },
+    "per_url": [
+      {"row": 136, "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/biographie-scarron-gouvernante.html", "started_at_local": "19:02", "ended_at_local": "19:02", "duration_seconds": 37.904, "success": true},
+      {"row": 137, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/ecrivaine-princesse-cleves.html", "started_at_local": "19:02", "ended_at_local": "19:03", "duration_seconds": 35.901, "success": true},
+      {"row": 138, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/recit-fiction-confesser.html", "started_at_local": "19:03", "ended_at_local": "19:03", "duration_seconds": 17.467, "success": true},
+      {"row": 139, "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/nombre-anglais-compter.html", "started_at_local": "19:03", "ended_at_local": "19:04", "duration_seconds": 18.226, "success": true},
+      {"row": 140, "url": "https://www.superprof.fr/ressources/maths/maths-4eme/proportionnalite-maths-cours.html", "started_at_local": "19:04", "ended_at_local": "19:04", "duration_seconds": 36.043, "success": true},
+      {"row": 141, "url": "https://www.superprof.fr/ressources/droit/droit-tous-niveaux/conditions-de-validite.html", "started_at_local": "19:04", "ended_at_local": "19:05", "duration_seconds": 36.967, "success": true},
+      {"row": 142, "url": "https://www.superprof.fr/ressources/espagnol/espagnol-2nde/explication-document-hispanique.html", "started_at_local": "19:05", "ended_at_local": "19:06", "duration_seconds": 51.506, "success": true, "note": "YTG 3+ polls"},
+      {"row": 143, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/maupassant-baron-trahison.html", "started_at_local": "19:06", "ended_at_local": "19:06", "duration_seconds": 15.646, "success": true},
+      {"row": 144, "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/lecture-litterature-francaise.html", "started_at_local": "19:06", "ended_at_local": "19:06", "duration_seconds": 36.78, "success": true},
+      {"row": 145, "url": "https://www.superprof.fr/ressources/maths/maths-2nde/vecteurs-trajet-fleche.html", "started_at_local": "19:06", "ended_at_local": "19:07", "duration_seconds": 35.328, "success": true},
+      {"row": 146, "url": "https://www.superprof.fr/ressources/ses/ses-tous-niveaux/deroulement-economie-baccalaureat.html", "started_at_local": "19:07", "ended_at_local": "19:07", "duration_seconds": 15.123, "success": true},
+      {"row": 147, "url": "https://www.superprof.fr/ressources/arts-appliques/arts-appliques-tous-niveaux/livre-astre-nocturne-enfant.html", "started_at_local": "19:07", "ended_at_local": "19:08", "duration_seconds": 15.593, "success": true},
+      {"row": 148, "url": "https://www.superprof.fr/ressources/anglais/anglais-6eme/angleterre-irelande-pays-galles.html", "started_at_local": "19:08", "ended_at_local": "19:08", "duration_seconds": 36.014, "success": true},
+      {"row": 149, "url": "https://www.superprof.fr/ressources/sport/sport-tous-niveaux/naturisme-medical.html", "started_at_local": "19:08", "ended_at_local": "19:09", "duration_seconds": 34.125, "success": true},
+      {"row": 150, "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/preparation-oral-physique.html", "started_at_local": "19:09", "ended_at_local": "19:09", "duration_seconds": 35.936, "success": true}
+    ],
+    "notes": [
+      "Trace détaillée : _shared/outputs/benchmarks/2026-04-28_190210_superprof-ressources_benchmark.json",
+      "Context bundles générés dans : _shared/context/{slug}/ (15 dossiers, 4 fichiers chacun : original.html, audit_data.json, guidelines.txt, task.json)",
+      "YTG actif pour certaines URLs selon cache — espagnol-2nde le plus long (51.5s)"
+    ]
+  },
+  "phase2": {
+    "description": "Génération contenu refreshé — 1 agent séquentiel (LLM Claude Sonnet 4.6), cible ~1500 mots",
+    "mode": "interactive_session",
+    "word_count_target": 1500,
+    "output_dir": "_shared/outputs/superprof-ressources/html/",
+    "start_utc": "2026-04-28T19:12:00Z",
+    "end_utc": "non mesuré (session interactive avec compaction contexte)",
+    "duration_seconds": "non mesuré précisément — session interactive Claude Sonnet 4.6",
+    "duration_human": "estimé ~30-40min (incluant 1 compaction contexte mid-session)",
+    "urls_processed": 15,
+    "urls_success": 15,
+    "urls_failed": 0,
+    "avg_per_url_seconds": "estimé ~120-160s (lecture contexte + génération LLM + write file)",
+    "avg_word_count": 1104,
+    "per_url": [
+      {"row": 136, "slug": "biographie-scarron-gouvernante", "word_count_before": 2086, "word_count_after": 1154, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 2}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 2}, "assets_rule_ok": true, "success": true},
+      {"row": 137, "slug": "ecrivaine-princesse-cleves", "word_count_before": 1902, "word_count_after": 1127, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_rule_ok": true, "success": true},
+      {"row": 138, "slug": "recit-fiction-confesser", "word_count_before": 3403, "word_count_after": 1342, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_rule_ok": true, "success": true, "note": "original = extrait brut histoire Maupassant → transformé en analyse littéraire"},
+      {"row": 139, "slug": "nombre-anglais-compter", "word_count_before": 1586, "word_count_after": 1069, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_rule_ok": true, "success": true},
+      {"row": 140, "slug": "proportionnalite-maths-cours", "word_count_before": 1402, "word_count_after": 1032, "assets_before": {"images": 0, "tables": 2, "videos": 0, "internal_links": 0}, "assets_after": {"images": 0, "tables": 2, "videos": 0, "internal_links": 0}, "assets_rule_ok": true, "success": true, "note": "2 tableaux préservés (proportionnalité + pourcentages)"},
+      {"row": 141, "slug": "conditions-de-validite", "word_count_before": 3210, "word_count_after": 962, "assets_before": {"images": 3, "tables": 0, "videos": 0, "internal_links": 4}, "assets_after": {"images": 3, "tables": 0, "videos": 0, "internal_links": 4}, "assets_rule_ok": true, "success": true, "note": "3 images préservées (CNC droit) + 3 ancres chapitre"},
+      {"row": 142, "slug": "explication-document-hispanique", "word_count_before": 1833, "word_count_after": 852, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 4}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 4}, "assets_rule_ok": true, "success": true, "note": "4 liens préservés (3 ancres chapitre + /cours/)"},
+      {"row": 143, "slug": "maupassant-baron-trahison", "word_count_before": 4139, "word_count_after": 1332, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_rule_ok": true, "success": true, "note": "original = extrait brut Maupassant → analyse littéraire"},
+      {"row": 144, "slug": "lecture-litterature-francaise", "word_count_before": 3713, "word_count_after": 1166, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 2}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 2}, "assets_rule_ok": true, "success": true, "note": "original = extrait brut Maupassant + blockquote → analyse littéraire"},
+      {"row": 145, "slug": "vecteurs-trajet-fleche", "word_count_before": 1915, "word_count_after": 976, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3}, "assets_rule_ok": true, "success": true, "note": "3 ancres chapitre préservées (vecteurs, colinéarité, opérations)"},
+      {"row": 146, "slug": "deroulement-economie-baccalaureat", "word_count_before": 1719, "word_count_after": 834, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 4}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 4}, "assets_rule_ok": true, "success": true, "note": "4 liens (3 ancres chapitre + /cours/ses/)"},
+      {"row": 147, "slug": "livre-astre-nocturne-enfant", "word_count_before": 1481, "word_count_after": 842, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_rule_ok": true, "success": true},
+      {"row": 148, "slug": "angleterre-irelande-pays-galles", "word_count_before": 1532, "word_count_after": 734, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 3}, "assets_rule_ok": true, "success": true, "note": "3 liens (2 ancres chapitre + /cours/anglais/)"},
+      {"row": 149, "slug": "naturisme-medical", "word_count_before": 3985, "word_count_after": 1270, "assets_before": {"images": 4, "tables": 0, "videos": 0, "internal_links": 9}, "assets_after": {"images": 4, "tables": 0, "videos": 0, "internal_links": 9}, "assets_rule_ok": true, "success": true, "note": "4 images + 9 liens (8 ancres chapitre ToC + /cours/) — correction ToC appliquée post-génération"},
+      {"row": 150, "slug": "preparation-oral-physique", "word_count_before": 3659, "word_count_after": 1804, "assets_before": {"images": 4, "tables": 2, "videos": 0, "internal_links": 12}, "assets_after": {"images": 4, "tables": 2, "videos": 0, "internal_links": 12}, "assets_rule_ok": true, "success": true, "note": "article le plus complexe — 4 imgs + 2 tableaux (colloscope + grille auto-éval) + 12 liens (11 ancres + /cours/)"}
+    ],
+    "notes": [
+      "Articles 1-2 générés dans la session précédente (avant compaction contexte)",
+      "Articles 3-15 générés dans la session suivante après compaction",
+      "word_count_before inclut les extraits bruts Maupassant pour rows 138, 143, 144 — chiffres gonflés par rapport au contenu éducatif",
+      "Article 149 (naturisme-medical) : correction post-génération pour ajouter ToC (8 liens chapitre manquants détectés lors validation)",
+      "Avg word count 1104 < cible 1500 : originals Batch B plus courts que Batch A + 3 articles avec extraits bruts transformés en analyses"
+    ]
+  },
+  "validation": {
+    "assets_rule_violations": 0,
+    "all_articles_assets_ok": true,
+    "statuts_updated": true,
+    "statuts_updated_at": "2026-04-28T~20:30:00Z"
+  },
+  "totals": {
+    "phase1_duration_seconds": 459.567,
+    "phase1_duration_human": "7m 39.6s",
+    "phase2_duration_seconds": "non mesuré (session interactive)",
+    "phase2_duration_human": "estimé ~30-40min",
+    "total_duration_human": "estimé ~38-48min (Phase 1: 7m40s + Phase 2: ~30-40min)",
+    "reference_batch_a_comparison": {
+      "batch_a_phase1_seconds": 453,
+      "batch_b_phase1_seconds": 459.567,
+      "delta_phase1_seconds": 6.567,
+      "batch_a_phase2_v2_seconds": 2205,
+      "batch_b_phase2_estimated_seconds": "~1800-2400 (session interactive, non mesurable précisément)",
+      "batch_a_avg_word_count": 1520,
+      "batch_b_avg_word_count": 1104
+    }
+  }
+}

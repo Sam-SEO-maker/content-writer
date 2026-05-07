@@ -6,7 +6,7 @@ Corrects articles based on YourTextGuru analysis:
 - UNDER-OPTIMIZED: enriches missing terms (blue) naturally
 
 Usage:
-    corrector = YTGCorrector(site_id="coachsportlyon.fr")
+    corrector = YTGCorrector(site_id="enseigna.fr")
     results = corrector.run_batch()
 """
 
@@ -65,7 +65,7 @@ class YTGCorrector:
 
     MAX_RETRIES = 1
 
-    def __init__(self, site_id: str = "coachsportlyon.fr"):
+    def __init__(self, site_id: str = "enseigna.fr"):
         self.site_id = site_id
         self.base_path = PROJECT_ROOT / "_shared" / "outputs" / site_id
         self.analyzer = YTGAnalyzer()

@@ -10,8 +10,8 @@ import click
 from pathlib import Path
 from dataclasses import dataclass
 
+import requests
 from scripts.agent import RefreshOrchestrator
-from scripts.wordpress.stseo_client import STSEOClient
 
 
 @dataclass
@@ -76,16 +76,20 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
         spreadsheet_id=spreadsheet_id
     )
 
-    # Fetch content via STSEO API
-    click.echo("[2/6] Récupération contenu via STSEO API...")
-    stseo = STSEOClient()
-    stseo_result = stseo.get_post_content_by_link(url)
-
-    if not stseo_result or not stseo_result.get("post_content"):
-        click.echo("  ✗ Impossible de récupérer le contenu via STSEO", err=True)
+    # Fetch content via direct HTTP scraping
+    click.echo("[2/6] Récupération contenu par scraping HTTP...")
+    try:
+        resp = requests.get(
+            url,
+            timeout=30,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
+            allow_redirects=True,
+        )
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        click.echo(f"  ✗ Impossible de récupérer le contenu: {e}", err=True)
         raise click.Abort()
-
-    html = stseo_result["post_content"]
     click.echo(f"  ✓ HTML récupéré ({len(html)} chars)")
 
     # Process URL (audit + decision)

@@ -49,7 +49,7 @@ class TitleOptimizer:
         original_title: str,
         main_keyword: str,
         blog_id: str,
-        post_type: str,
+        post_type: str = "",  # kept for backwards compat, unused
         gsc_metrics: Optional[dict] = None,
         serp_metrics: Optional[dict] = None,
     ) -> str:
@@ -60,7 +60,6 @@ class TitleOptimizer:
             original_title: Titre original
             main_keyword: Mot-clé principal
             blog_id: ID du blog (pour guidelines)
-            post_type: Type de post (PARENT, CHILD, STANDALONE)
             gsc_metrics: Métriques GSC (impressions, clicks, ctr, position)
             serp_metrics: Métriques SERP (format TOP 3, length, structure)
 
@@ -89,7 +88,7 @@ class TitleOptimizer:
         guidelines = self._load_blog_config(blog_id)
 
         # Step 4: Apply intelligent optimizations based on blog and keywords
-        title = self._enhance_for_blog(title, blog_id, main_keyword, post_type)
+        title = self._enhance_for_blog(title, blog_id, main_keyword)
 
         # Step 5: Apply optimizations based on metrics
         if gsc_metrics:
@@ -99,7 +98,7 @@ class TitleOptimizer:
             title = self._optimize_for_serp(title, serp_metrics, main_keyword)
 
         # Step 6: Format title according to blog guidelines
-        title = self._format_title(title, blog_id, post_type)
+        title = self._format_title(title, blog_id)
 
         # Step 7: Ensure length is optimal
         title = self._enforce_length(title, guidelines["max_length"])
@@ -172,7 +171,7 @@ class TitleOptimizer:
             return "Guide Complet"
 
     def _enhance_for_blog(
-        self, title: str, blog_id: str, main_keyword: str, post_type: str
+        self, title: str, blog_id: str, main_keyword: str
     ) -> str:
         """
         Améliore intelligemment le titre en fonction de la configuration du blog.
@@ -259,7 +258,7 @@ class TitleOptimizer:
 
         return title
 
-    def _format_title(self, title: str, blog_id: str, post_type: str) -> str:
+    def _format_title(self, title: str, blog_id: str) -> str:
         """
         Formate le titre selon les guidelines du blog.
 
@@ -312,8 +311,8 @@ class TitleOptimizer:
         original_title: str,
         main_keyword: str,
         blog_id: str,
-        post_type: str,
         current_content_sample: str,
+        post_type: str = "",  # kept for backwards compat, unused
         gsc_metrics: Optional[dict] = None,
     ) -> str:
         """
@@ -330,7 +329,6 @@ class TitleOptimizer:
 
 **Titre actuel**: "{original_title}"
 **Keyword principal**: "{main_keyword}"
-**Type de post**: {post_type}
 
 **Contraintes**:
 - Longueur optimale: {guidelines['max_length']} caractères max

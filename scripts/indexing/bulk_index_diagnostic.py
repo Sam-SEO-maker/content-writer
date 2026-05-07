@@ -8,7 +8,7 @@ et inscrit les URLs à problème dans le spreadsheet Refreshs_Audit.
 Usage:
     # Dry-run pour tester (10 URLs)
     python scripts/indexing/bulk_index_diagnostic.py \
-        --blog coachsportlyon.fr \
+        --blog enseigna.fr \
         --spreadsheet-id <SHEET_ID> \
         --limit 10 \
         --dry-run \
@@ -16,12 +16,12 @@ Usage:
 
     # Production (scan complet)
     python scripts/indexing/bulk_index_diagnostic.py \
-        --blog coachsportlyon.fr \
+        --blog enseigna.fr \
         --spreadsheet-id <SHEET_ID>
 
     # Update-only (URLs existantes seulement)
     python scripts/indexing/bulk_index_diagnostic.py \
-        --blog coachsportlyon.fr \
+        --blog enseigna.fr \
         --spreadsheet-id <SHEET_ID> \
         --update-only
 """
@@ -59,7 +59,7 @@ def fetch_all_urls_for_blog(blog_id: str, verbose: bool = False) -> List[str]:
     Récupère toutes les URLs d'un blog depuis son sitemap.
 
     Args:
-        blog_id: Identifiant du blog (ex: "coachsportlyon")
+        blog_id: Identifiant du blog (ex: "enseigna")
         verbose: Mode verbose pour logs détaillés
 
     Returns:
@@ -353,7 +353,7 @@ def main():
 Exemples:
   # Dry-run pour tester (10 URLs)
   python scripts/indexing/bulk_index_diagnostic.py \\
-    --blog coachsportlyon.fr \\
+    --blog enseigna.fr \\
     --spreadsheet-id <SHEET_ID> \\
     --limit 10 \\
     --dry-run \\
@@ -361,12 +361,12 @@ Exemples:
 
   # Production (scan complet)
   python scripts/indexing/bulk_index_diagnostic.py \\
-    --blog coachsportlyon.fr \\
+    --blog enseigna.fr \\
     --spreadsheet-id <SHEET_ID>
 
   # Update-only (URLs existantes seulement)
   python scripts/indexing/bulk_index_diagnostic.py \\
-    --blog coachsportlyon.fr \\
+    --blog enseigna.fr \\
     --spreadsheet-id <SHEET_ID> \\
     --update-only
         """
@@ -377,7 +377,7 @@ Exemples:
         "--blog",
         type=str,
         required=True,
-        help="Blog unique à traiter (coachsportlyon.fr, moments-yoga.fr, etc.)"
+        help="Blog unique à traiter (enseigna.fr, superprof.fr, etc.)"
     )
     parser.add_argument(
         "--spreadsheet-id",

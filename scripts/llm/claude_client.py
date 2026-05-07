@@ -248,11 +248,7 @@ Utiliser un angle différent ou résumer l'information.
         # Mapper blog_id vers domaines autoritaires recommandés
         authoritative_domains = {
             "enseigna": ["education.gouv.fr", "eduscol.fr", "onisep.fr"],
-            "cours-particuliers": ["education.gouv.fr", "eduscol.fr"],
-            "educationetdevenir": ["education.gouv.fr", "onisep.fr", "insee.fr"],
-            "moments-yoga": ["has-sante.fr", "inserm.fr", "sports.gouv.fr"],
-            "mymusicteacher": ["culture.gouv.fr"],
-            "coachsportlyon": ["sports.gouv.fr", "has-sante.fr", "inserm.fr"]
+            "superprof-ressources": ["education.gouv.fr", "eduscol.fr", "onisep.fr"],
         }
 
         recommended_domains = authoritative_domains.get(blog_id, ["education.gouv.fr"])

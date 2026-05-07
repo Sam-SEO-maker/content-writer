@@ -17,8 +17,8 @@ from scripts.scraping import WebScraper
 from scripts.audit import HTMLAnalyzer
 
 # Test URL
-url = "https://cours-particuliers.com/quel-budget-prevoir-pour-apprendre-langlais-en-angleterre/"
-blog_id = "cours-particuliers"
+url = "https://enseigna.fr/avis-superprof/"
+blog_id = "enseigna"
 
 print("=" * 80)
 print("ANTI-CANNIBALIZATION SYSTEM TEST")
@@ -39,7 +39,7 @@ print(f"[OK] Fetched {len(html)} characters")
 
 # Step 2: Analyze HTML to extract H2s and cocon structure
 print("\n[2/5] Analyzing HTML...")
-analyzer = HTMLAnalyzer(domain="cours-particuliers.com")
+analyzer = HTMLAnalyzer(domain="enseigna.fr")
 html_result = analyzer.analyze(html, url)
 
 h2_list = html_result.headings.h2_list

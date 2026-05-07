@@ -251,12 +251,8 @@ class EditorialAuditor:
 
         # From blog ID (fallback)
         ymyl_by_blog = {
-            "moments-yoga.fr": "very_high",
-            "coachsportlyon.fr": "very_high",
             "enseigna.fr": "high",
-            "educationetdevenir.fr": "high",
-            "cours-particuliers.com": "high",
-            "mymusicteacher.fr": "medium"
+            "superprof.fr": "low",
         }
 
         return ymyl_by_blog.get(blog_id, "low")

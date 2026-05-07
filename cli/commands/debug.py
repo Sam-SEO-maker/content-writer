@@ -12,8 +12,8 @@ import click
 import traceback
 from pathlib import Path
 
+import requests
 from scripts.agent import RefreshOrchestrator
-from scripts.wordpress.stseo_client import STSEOClient
 from _shared.config.sites import SITE_CONFIGS
 
 
@@ -60,16 +60,20 @@ def workflow(url, blog, spreadsheet_id, strategy):
         spreadsheet_id=spreadsheet_id
     )
 
-    # Fetch content via STSEO API
-    click.echo("[2/3] Récupération contenu via STSEO API...")
-    stseo = STSEOClient()
-    stseo_result = stseo.get_post_content_by_link(url)
-
-    if not stseo_result or not stseo_result.get("post_content"):
-        click.echo("  ✗ Impossible de récupérer le contenu via STSEO", err=True)
+    # Fetch content via direct HTTP scraping
+    click.echo("[2/3] Récupération contenu par scraping HTTP...")
+    try:
+        resp = requests.get(
+            url,
+            timeout=30,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
+            allow_redirects=True,
+        )
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        click.echo(f"  ✗ Impossible de récupérer le contenu: {e}", err=True)
         raise click.Abort()
-
-    html = stseo_result["post_content"]
     click.echo(f"  ✓ HTML récupéré ({len(html)} chars)")
 
     # Process URL
@@ -158,12 +162,11 @@ def extract_structures(spreadsheet_id):
     """
     Extrait les structures H1/H2 de toutes les URLs.
 
-    Génère articles_structure_*.json pour cocon identify.
+    Génère articles_structure_*.json pour analyse.
     """
     import json
     from datetime import datetime
     from scripts.sheets import SheetsClient
-    from scripts.wordpress.stseo_client import STSEOClient
     from scripts.audit import HTMLAnalyzer
 
     click.echo(f"\n📚 EXTRACTION STRUCTURES H1/H2")
@@ -193,7 +196,6 @@ def extract_structures(spreadsheet_id):
 
     # Fetch and extract structures
     click.echo("[2/3] Extraction structures H1/H2...")
-    stseo = STSEOClient()
     analyzer = HTMLAnalyzer()
 
     for idx, article in enumerate(articles, 1):
@@ -201,8 +203,8 @@ def extract_structures(spreadsheet_id):
         click.echo(f"  [{idx}/{len(articles)}] {url[:60]}...")
 
         try:
-            stseo_result = stseo.get_post_content_by_link(url)
-            html = stseo_result.get("post_content") if stseo_result else None
+            resp = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"}, allow_redirects=True)
+            html = resp.text if resp.ok else None
             if html:
                 audit = analyzer.analyze_html(html, url)
                 article['h1'] = audit.h1_title
@@ -228,4 +230,4 @@ def extract_structures(spreadsheet_id):
 
     click.echo(f"  ✓ Fichier créé: {json_file}")
     click.echo(f"\n✅ Extraction terminée")
-    click.echo(f"Utilisez maintenant: cw cocon identify --spreadsheet-id {spreadsheet_id}")
+    click.echo(f"Fichier de structures généré: {json_file}")

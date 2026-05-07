@@ -55,27 +55,36 @@ _shared/temp/
 **Structure par site**:
 ```
 _shared/outputs/{site_id}/
-├── {slug}_refreshed.html          # HTML WordPress-ready (après refresh)
-├── {slug}_metadata.json           # Title, meta, keywords, assets counts
-├── {slug}_audit.json              # Audit report (GSC + SERP + HTML analysis)
-├── {slug}_serp.json               # SERP analysis (TOP 3, PAA, intent)
-├── {slug}_gsc.json                # GSC metrics (CTR, impressions, position)
-└── editorial_audits/              # Sous-dossier pour audits éditoriaux
+├── html/                          # HTML WordPress-ready (après refresh)
+│   ├── {slug}_refreshed.html
+│   └── {slug}_refreshed.gutenberg.html
+├── metadata/                      # Métadonnées et rapports d'audit JSON
+│   ├── {slug}_metadata.json       # Title, meta, keywords, assets counts
+│   ├── {slug}_audit.json          # Audit report (GSC + SERP + HTML analysis)
+│   ├── {slug}_serp.json           # SERP analysis (TOP 3, PAA, intent)
+│   └── {slug}_gsc.json            # GSC metrics (CTR, impressions, position)
+├── csv/                           # Tableaux d'articles extraits (TablePress-ready)
+└── editorial_audits/              # Audits éditoriaux quality gate
     └── {slug}_editorial_audit.md  # Quality gate report (1-10 score)
 ```
 
 **Exemple concret**:
 ```
-_shared/outputs/enseigna.fr/
-├── avis-acadomia_refreshed.html
-├── avis-acadomia_metadata.json
-├── avis-acadomia_audit.json
+_shared/outputs/enseigna/
+├── html/
+│   └── preply-avis_refreshed.gutenberg.html
+├── metadata/
+│   └── preply-avis_metadata.json
 └── editorial_audits/
-    └── avis-acadomia_editorial_audit.md
+    └── preply-avis_editorial_audit.md
 
 _shared/outputs/superprof-ressources/
-├── apprendre-piano_refreshed.html
-├── apprendre-piano_metadata.json
+├── html/
+│   └── apprendre-piano_refreshed.html
+├── metadata/
+│   └── apprendre-piano_metadata.json
+├── csv/
+│   └── tableau-comparaison-cours.csv
 └── editorial_audits/
     └── apprendre-piano_editorial_audit.md
 ```

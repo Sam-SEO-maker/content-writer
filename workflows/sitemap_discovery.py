@@ -12,13 +12,13 @@ Fonctionnalités :
 
 Usage:
     # Découvrir les nouvelles URLs pour un blog
-    python sitemap_discovery.py --blog educationetdevenir.fr --detect-new
+    python sitemap_discovery.py --blog enseigna.fr --detect-new
 
     # Trouver le contenu obsolète (> 6 mois)
-    python sitemap_discovery.py --blog educationetdevenir.fr --find-stale --months 6
+    python sitemap_discovery.py --blog enseigna.fr --find-stale --months 6
 
     # Exporter vers Google Sheets
-    python sitemap_discovery.py --blog educationetdevenir.fr --find-stale --export-to-sheets
+    python sitemap_discovery.py --blog enseigna.fr --find-stale --export-to-sheets
 
     # Tous les blogs d'un coup
     python sitemap_discovery.py --all-blogs --find-stale --months 12
@@ -45,11 +45,7 @@ from _shared.core.models import StaleContent
 # Blog IDs valides (CLAUDE.md multi-tenant architecture)
 VALID_BLOGS = [
     "enseigna.fr",
-    "cours-particuliers.com",
-    "educationetdevenir.fr",
-    "moments-yoga.fr",
-    "mymusicteacher.fr",
-    "coachsportlyon.fr"
+    "superprof.fr",
 ]
 
 
@@ -223,16 +219,16 @@ def main():
         epilog="""
 Exemples:
   # Découvrir nouvelles URLs
-  python sitemap_discovery.py --blog educationetdevenir.fr --detect-new
+  python sitemap_discovery.py --blog enseigna.fr --detect-new
 
   # Trouver contenu obsolète (> 6 mois)
-  python sitemap_discovery.py --blog educationetdevenir.fr --find-stale --months 6
+  python sitemap_discovery.py --blog enseigna.fr --find-stale --months 6
 
   # Avec priorité haute uniquement
   python sitemap_discovery.py --blog enseigna.fr --find-stale --min-priority 4
 
   # Exporter vers Google Sheets (dry-run)
-  python sitemap_discovery.py --blog moments-yoga.fr --find-stale --export-to-sheets --dry-run
+  python sitemap_discovery.py --blog superprof.fr --find-stale --export-to-sheets --dry-run
 
   # Tous les blogs d'un coup
   python sitemap_discovery.py --all-blogs --find-stale --months 12

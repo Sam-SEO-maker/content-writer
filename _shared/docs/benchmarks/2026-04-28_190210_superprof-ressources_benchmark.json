@@ -1,0 +1,163 @@
+{
+  "run_id": "2026-04-28_190210",
+  "blog_id": "superprof-ressources",
+  "source": {
+    "sheet": "New Growing List",
+    "rows": "136:150"
+  },
+  "batch_started_at": "19:02",
+  "batch_ended_at": "19:09",
+  "batch_duration_sec": 459.567,
+  "urls_count": 15,
+  "urls_success": 15,
+  "urls_failed": 0,
+  "aggregate": {
+    "sheets_write": {
+      "total_sec": 55.999,
+      "avg_sec": 3.733,
+      "pct_of_batch": 12.19
+    },
+    "gsc_fetch": {
+      "total_sec": 202.918,
+      "avg_sec": 13.528,
+      "pct_of_batch": 44.15
+    },
+    "context_prep": {
+      "total_sec": 0.09,
+      "avg_sec": 0.009,
+      "pct_of_batch": 0.02
+    },
+    "context_write": {
+      "total_sec": 0.078,
+      "avg_sec": 0.005,
+      "pct_of_batch": 0.02
+    },
+    "other": {
+      "total_sec": 199.477,
+      "avg_sec": 13.298,
+      "pct_of_batch": 43.41
+    }
+  },
+  "per_url": [
+    {
+      "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/biographie-scarron-gouvernante.html",
+      "row_index": 136,
+      "started_at": "19:02",
+      "ended_at": "19:02",
+      "duration_sec": 37.904,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/ecrivaine-princesse-cleves.html",
+      "row_index": 137,
+      "started_at": "19:02",
+      "ended_at": "19:03",
+      "duration_sec": 35.901,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/recit-fiction-confesser.html",
+      "row_index": 138,
+      "started_at": "19:03",
+      "ended_at": "19:03",
+      "duration_sec": 17.467,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/nombre-anglais-compter.html",
+      "row_index": 139,
+      "started_at": "19:03",
+      "ended_at": "19:04",
+      "duration_sec": 18.226,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/maths/maths-4eme/proportionnalite-maths-cours.html",
+      "row_index": 140,
+      "started_at": "19:04",
+      "ended_at": "19:04",
+      "duration_sec": 36.043,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/droit/droit-tous-niveaux/conditions-de-validite.html",
+      "row_index": 141,
+      "started_at": "19:04",
+      "ended_at": "19:05",
+      "duration_sec": 36.967,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/espagnol/espagnol-2nde/explication-document-hispanique.html",
+      "row_index": 142,
+      "started_at": "19:05",
+      "ended_at": "19:06",
+      "duration_sec": 51.506,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/maupassant-baron-trahison.html",
+      "row_index": 143,
+      "started_at": "19:06",
+      "ended_at": "19:06",
+      "duration_sec": 15.646,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/francais/francais-tous-niveaux/lecture-litterature-francaise.html",
+      "row_index": 144,
+      "started_at": "19:06",
+      "ended_at": "19:06",
+      "duration_sec": 36.78,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/maths/maths-2nde/vecteurs-trajet-fleche.html",
+      "row_index": 145,
+      "started_at": "19:06",
+      "ended_at": "19:07",
+      "duration_sec": 35.328,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/ses/ses-tous-niveaux/deroulement-economie-baccalaureat.html",
+      "row_index": 146,
+      "started_at": "19:07",
+      "ended_at": "19:07",
+      "duration_sec": 15.123,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/arts-appliques/arts-appliques-tous-niveaux/livre-astre-nocturne-enfant.html",
+      "row_index": 147,
+      "started_at": "19:07",
+      "ended_at": "19:08",
+      "duration_sec": 15.593,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/anglais/anglais-6eme/angleterre-irelande-pays-galles.html",
+      "row_index": 148,
+      "started_at": "19:08",
+      "ended_at": "19:08",
+      "duration_sec": 36.014,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/sport/sport-tous-niveaux/naturisme-medical.html",
+      "row_index": 149,
+      "started_at": "19:08",
+      "ended_at": "19:09",
+      "duration_sec": 34.125,
+      "success": true
+    },
+    {
+      "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/preparation-oral-physique.html",
+      "row_index": 150,
+      "started_at": "19:09",
+      "ended_at": "19:09",
+      "duration_sec": 35.936,
+      "success": true
+    }
+  ]
+}

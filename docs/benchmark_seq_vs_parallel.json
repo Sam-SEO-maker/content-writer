@@ -1,0 +1,373 @@
+{
+  "benchmark": "Sequential vs Parallel — 15 URLs Superprof Ressources",
+  "spreadsheet_id": "1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ",
+  "sheet": "New Growing List",
+  "note_tokens": "Tokens de contexte non disponibles dans la VS Code extension (pas d'indicateur UI). Disponible uniquement en CLI terminal interactif. Valeurs ci-dessous = estimations basées sur la taille du contexte de session (CLAUDE.md ~15k + conversation + tool results). Pour un benchmark précis des tokens, utiliser l'API Anthropic avec usage tracking.",
+  "batch_a": {
+    "rows": "151-165",
+    "urls": [
+      {"row": 151, "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/moyens-apprendre-anglais-jeune.html", "keyword": "dessin animé anglais débutant"},
+      {"row": 152, "url": "https://www.superprof.fr/ressources/francais/francais-2nde/commentaire-litteraire-analyse.html", "keyword": "fiche de lecture pierre et jean seconde"},
+      {"row": 153, "url": "https://www.superprof.fr/ressources/ses/ses-terminale-es/evolution-economie-sociale.html", "keyword": "croissance et développement"},
+      {"row": 154, "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/adjectif-pronom-anglais.html", "keyword": "adjectif possessif anglais"},
+      {"row": 155, "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/dictons-royaume-britannique.html", "keyword": "anglais stereotype"},
+      {"row": 156, "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/resistance-bobine-compensateur.html", "keyword": "ds electrocinetique mpsi"},
+      {"row": 157, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/description-britannique.html", "keyword": "exercice there is there are 5eme"},
+      {"row": 158, "url": "https://www.superprof.fr/ressources/svt/svt-2nde/importance-terre-planetes-autour-soleil.html", "keyword": "la terre dans le système solaire"},
+      {"row": 159, "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/general-adversaire-romain.html", "keyword": "sextus pompee"},
+      {"row": 160, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/questionnaire-langue-anglaise.html", "keyword": "quiz anglais 5eme"},
+      {"row": 161, "url": "https://www.superprof.fr/ressources/ses/ses-2nde/confrontation-politique-economique-societe.html", "keyword": "politiste politologue"},
+      {"row": 162, "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/travailler-langue-anglaise-oreille.html", "keyword": "comprehension orale anglais 5eme"},
+      {"row": 163, "url": "https://www.superprof.fr/ressources/maths/maths-terminale/terminale-limites-de-fonctions-les-asymptotes.html", "keyword": "cours sur les limites terminale pdf"},
+      {"row": 164, "url": "https://www.superprof.fr/ressources/maths/maths-1ere-stmg/calcul-examen-travail.html", "keyword": "comment calculer une proportion"},
+      {"row": 165, "url": "https://www.superprof.fr/ressources/geographie/geographie-terminale-s/centre-de-l-agglomeration-japon.html", "keyword": "plus grandes villes du japon"}
+    ],
+    "test1_sequential": {
+      "description": "1 seul agent IA, traitement séquentiel URL par URL",
+      "phase1": {
+        "description": "Pipeline mécanique : fetch HTML + audit GSC 12m + YTG sémantique + context bundle + sheets write (benchmark_runner.py)",
+        "run_id": "2026-04-28_165045",
+        "start_utc": "2026-04-28T14:50:43Z",
+        "start_epoch": 1777387843,
+        "end_utc": "2026-04-28T14:58:16Z",
+        "end_epoch": 1777388296,
+        "duration_seconds": 453,
+        "duration_human": "7m 33s",
+        "tokens_context_start": "~55k (estimation: CLAUDE.md + conversation + démarrage session)",
+        "tokens_context_end": "~80k (estimation: +tool results Phase 1 lecture output benchmark)",
+        "urls_processed": 15,
+        "urls_success": 15,
+        "urls_failed": 0,
+        "avg_per_url_seconds": 30.2,
+        "operation_breakdown": {
+          "gsc_fetch": {
+            "total_seconds": 178.26,
+            "avg_per_url": 11.88,
+            "pct_of_batch": 39.35,
+            "note": "GSC API 12m + YTG polling (variable selon cache YTG)"
+          },
+          "sheets_write": {
+            "total_seconds": 55.31,
+            "avg_per_url": 3.69,
+            "pct_of_batch": 12.21
+          },
+          "other_html_fetch_and_processing": {
+            "total_seconds": 217.40,
+            "avg_per_url": 14.49,
+            "pct_of_batch": 47.99,
+            "note": "Scraping HTTP + heuristic extraction + audit décision + context bundle"
+          },
+          "context_write": {
+            "total_seconds": 0.08,
+            "avg_per_url": 0.01,
+            "pct_of_batch": 0.02
+          }
+        },
+        "per_url": [
+          {
+            "row": 151,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/moyens-apprendre-anglais-jeune.html",
+            "keyword": "dessin animé anglais débutant",
+            "started_at_local": "16:50",
+            "ended_at_local": "16:51",
+            "duration_seconds": 18.902,
+            "success": true
+          },
+          {
+            "row": 152,
+            "url": "https://www.superprof.fr/ressources/francais/francais-2nde/commentaire-litteraire-analyse.html",
+            "keyword": "fiche de lecture pierre et jean seconde",
+            "started_at_local": "16:51",
+            "ended_at_local": "16:51",
+            "duration_seconds": 15.010,
+            "success": true
+          },
+          {
+            "row": 153,
+            "url": "https://www.superprof.fr/ressources/ses/ses-terminale-es/evolution-economie-sociale.html",
+            "keyword": "croissance et développement",
+            "started_at_local": "16:51",
+            "ended_at_local": "16:52",
+            "duration_seconds": 49.398,
+            "success": true,
+            "note": "YTG 3 polls (croissance / développement)"
+          },
+          {
+            "row": 154,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-4eme/adjectif-pronom-anglais.html",
+            "keyword": "adjectif possessif anglais",
+            "started_at_local": "16:52",
+            "ended_at_local": "16:52",
+            "duration_seconds": 15.975,
+            "success": true
+          },
+          {
+            "row": 155,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-tous-niveaux/dictons-royaume-britannique.html",
+            "keyword": "anglais stereotype",
+            "started_at_local": "16:52",
+            "ended_at_local": "16:53",
+            "duration_seconds": 33.585,
+            "success": true,
+            "note": "YTG 2 polls"
+          },
+          {
+            "row": 156,
+            "url": "https://www.superprof.fr/ressources/physique-chimie/physique-chimie-tous-niveaux/resistance-bobine-compensateur.html",
+            "keyword": "ds electrocinetique mpsi",
+            "started_at_local": "16:53",
+            "ended_at_local": "16:53",
+            "duration_seconds": 15.768,
+            "success": true
+          },
+          {
+            "row": 157,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/description-britannique.html",
+            "keyword": "exercice there is there are 5eme",
+            "started_at_local": "16:53",
+            "ended_at_local": "16:54",
+            "duration_seconds": 78.439,
+            "success": true,
+            "note": "YTG 5 polls (lent) — valeur aberrante haute"
+          },
+          {
+            "row": 158,
+            "url": "https://www.superprof.fr/ressources/svt/svt-2nde/importance-terre-planetes-autour-soleil.html",
+            "keyword": "la terre dans le système solaire",
+            "started_at_local": "16:54",
+            "ended_at_local": "16:55",
+            "duration_seconds": 31.847,
+            "success": true,
+            "note": "YTG 2 polls"
+          },
+          {
+            "row": 159,
+            "url": "https://www.superprof.fr/ressources/histoire/histoire-tous-niveaux/general-adversaire-romain.html",
+            "keyword": "sextus pompee",
+            "started_at_local": "16:55",
+            "ended_at_local": "16:55",
+            "duration_seconds": 13.922,
+            "success": true
+          },
+          {
+            "row": 160,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/questionnaire-langue-anglaise.html",
+            "keyword": "quiz anglais 5eme",
+            "started_at_local": "16:55",
+            "ended_at_local": "16:56",
+            "duration_seconds": 48.617,
+            "success": true,
+            "note": "YTG 3 polls"
+          },
+          {
+            "row": 161,
+            "url": "https://www.superprof.fr/ressources/ses/ses-2nde/confrontation-politique-economique-societe.html",
+            "keyword": "politiste politologue",
+            "started_at_local": "16:56",
+            "ended_at_local": "16:56",
+            "duration_seconds": 14.562,
+            "success": true
+          },
+          {
+            "row": 162,
+            "url": "https://www.superprof.fr/ressources/anglais/anglais-5eme/travailler-langue-anglaise-oreille.html",
+            "keyword": "comprehension orale anglais 5eme",
+            "started_at_local": "16:56",
+            "ended_at_local": "16:56",
+            "duration_seconds": 34.779,
+            "success": true,
+            "note": "YTG 2 polls"
+          },
+          {
+            "row": 163,
+            "url": "https://www.superprof.fr/ressources/maths/maths-terminale/terminale-limites-de-fonctions-les-asymptotes.html",
+            "keyword": "cours sur les limites terminale pdf",
+            "started_at_local": "16:56",
+            "ended_at_local": "16:57",
+            "duration_seconds": 34.032,
+            "success": true
+          },
+          {
+            "row": 164,
+            "url": "https://www.superprof.fr/ressources/maths/maths-1ere-stmg/calcul-examen-travail.html",
+            "keyword": "comment calculer une proportion",
+            "started_at_local": "16:57",
+            "ended_at_local": "16:57",
+            "duration_seconds": 14.131,
+            "success": true
+          },
+          {
+            "row": 165,
+            "url": "https://www.superprof.fr/ressources/geographie/geographie-terminale-s/centre-de-l-agglomeration-japon.html",
+            "keyword": "plus grandes villes du japon",
+            "started_at_local": "16:57",
+            "ended_at_local": "16:58",
+            "duration_seconds": 32.151,
+            "success": true,
+            "note": "YTG 2 polls"
+          }
+        ],
+        "notes": [
+          "Erreurs non-bloquantes : Refreshs_Audit / URLs_Input / Decision_Log / Audit_Results — ces onglets n'existent pas dans la spreadsheet New Growing List. Le pipeline continue.",
+          "YTG (YouToGenerate) actif pour certaines URLs selon cache disponibilité : 2 à 5 polls de 10-15s expliquent les durées variables (13s → 78s).",
+          "Trace détaillée : _shared/outputs/benchmarks/2026-04-28_165045_superprof-ressources_benchmark.json",
+          "Context bundles générés dans : _shared/context/{slug}/ (15 dossiers, 4 fichiers chacun : original.html, audit_data.json, guidelines.txt, task.json)"
+        ]
+      },
+      "phase2": {
+        "description": "Génération contenu refreshé — 1 agent séquentiel (LLM Claude Sonnet 4.6)",
+        "start_utc": "2026-04-28T15:05:34Z",
+        "start_epoch": 1777389934,
+        "end_utc": "2026-04-28T15:30:01Z",
+        "end_epoch": 1777391401,
+        "duration_seconds": 1467,
+        "duration_human": "24m 27s",
+        "tokens_context_start": "~80k (estimation)",
+        "tokens_context_end": "~200k (estimation: +15 articles générés + tool results)",
+        "urls_processed": 15,
+        "urls_success": 15,
+        "urls_failed": 0,
+        "avg_per_url_seconds": 97.8,
+        "word_count_v1_avg": 647,
+        "word_count_target": 1500,
+        "notes": [
+          "Article 1 (row 151) généré en session précédente (~3min incluant lecture original.html 62k tokens)",
+          "Article 2 (row 152) généré en session précédente + finalisé début session actuelle",
+          "Articles 3-15 générés séquentiellement dans session actuelle",
+          "Temps purs de génération (sans lecture originaux) : ~25-35s par article",
+          "Temps réel inclut lecture audit_data.json + original.html + génération HTML + écriture JSON + statuts command",
+          "⚠️ Article 2 (commentaire-litteraire-analyse) : 1 image originale (couverture livre) non préservée dans refresh — violation Règle d'Or à corriger avant publication",
+          "→ Après v1 : user a demandé 1500 mots → régénération complète v2 (voir phase2_v2)"
+        ],
+        "per_url": [
+          {"row": 151, "slug": "moyens-apprendre-anglais-jeune", "started_at_utc": "2026-04-28T15:05:34Z", "ended_at_utc": "2026-04-28T15:08:40Z", "duration_seconds": 186, "success": true, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 0, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 152, "slug": "commentaire-litteraire-analyse", "started_at_utc": "2026-04-28T15:08:40Z", "ended_at_utc": "2026-04-28T15:14:15Z", "duration_seconds": 335, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 0, "tables": 0, "videos": 0, "internal_links": 1}, "note": "⚠️ image originale non préservée"},
+          {"row": 153, "slug": "evolution-economie-sociale", "started_at_utc": "2026-04-28T15:15:07Z", "ended_at_utc": "2026-04-28T15:15:40Z", "duration_seconds": 33, "success": true, "assets_before": {"images": 0, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 0, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 154, "slug": "adjectif-pronom-anglais", "started_at_utc": "2026-04-28T15:16:33Z", "ended_at_utc": "2026-04-28T15:17:02Z", "duration_seconds": 29, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 155, "slug": "dictons-royaume-britannique", "started_at_utc": "2026-04-28T15:17:58Z", "ended_at_utc": "2026-04-28T15:18:27Z", "duration_seconds": 29, "success": true, "assets_before": {"images": 1, "tables": 1, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 156, "slug": "resistance-bobine-compensateur", "started_at_utc": "2026-04-28T15:19:07Z", "ended_at_utc": "2026-04-28T15:19:32Z", "duration_seconds": 25, "success": true, "assets_before": {"images": 4, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 4, "tables": 0, "videos": 0, "internal_links": 1}},
+          {"row": 157, "slug": "description-britannique", "started_at_utc": "2026-04-28T15:20:15Z", "ended_at_utc": "2026-04-28T15:20:47Z", "duration_seconds": 32, "success": true, "assets_before": {"images": 2, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 2, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 158, "slug": "importance-terre-planetes-autour-soleil", "started_at_utc": "2026-04-28T15:21:27Z", "ended_at_utc": "2026-04-28T15:21:54Z", "duration_seconds": 27, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 0, "videos": 0, "internal_links": 1}},
+          {"row": 159, "slug": "general-adversaire-romain", "started_at_utc": "2026-04-28T15:23:05Z", "ended_at_utc": "2026-04-28T15:23:33Z", "duration_seconds": 28, "success": true, "assets_before": {"images": 3, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 3, "tables": 0, "videos": 0, "internal_links": 1}},
+          {"row": 160, "slug": "questionnaire-langue-anglaise", "started_at_utc": "2026-04-28T15:24:19Z", "ended_at_utc": "2026-04-28T15:24:47Z", "duration_seconds": 28, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 161, "slug": "confrontation-politique-economique-societe", "started_at_utc": "2026-04-28T15:25:21Z", "ended_at_utc": "2026-04-28T15:25:49Z", "duration_seconds": 28, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 162, "slug": "travailler-langue-anglaise-oreille", "started_at_utc": "2026-04-28T15:26:21Z", "ended_at_utc": "2026-04-28T15:26:47Z", "duration_seconds": 26, "success": true, "assets_before": {"images": 1, "tables": 2, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 2, "videos": 0, "internal_links": 1}},
+          {"row": 163, "slug": "terminale-limites-de-fonctions-les-asymptotes", "started_at_utc": "2026-04-28T15:27:32Z", "ended_at_utc": "2026-04-28T15:28:03Z", "duration_seconds": 31, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 1}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 2}},
+          {"row": 164, "slug": "calcul-examen-travail", "started_at_utc": "2026-04-28T15:28:32Z", "ended_at_utc": "2026-04-28T15:28:57Z", "duration_seconds": 25, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}},
+          {"row": 165, "slug": "centre-de-l-agglomeration-japon", "started_at_utc": "2026-04-28T15:29:30Z", "ended_at_utc": "2026-04-28T15:30:01Z", "duration_seconds": 31, "success": true, "assets_before": {"images": 1, "tables": 0, "videos": 0, "internal_links": 0}, "assets_after": {"images": 1, "tables": 1, "videos": 0, "internal_links": 1}}
+        ]
+      },
+      "phase2_v2": {
+        "description": "Régénération v2 à ~1500 mots — déclenchée par user après v1 (avg 647 mots trop court)",
+        "trigger": "User: 'Hum, il faut des articles de 1500 mots'",
+        "start_utc": "2026-04-28T15:33:15Z",
+        "end_utc": "2026-04-28T16:10:00Z",
+        "duration_seconds": 2205,
+        "duration_human": "~36m 45s (articles 1-14 session précédente + article 15 nouvelle session après compaction)",
+        "urls_processed": 15,
+        "urls_success": 15,
+        "avg_word_count": 1520,
+        "word_count_per_url": [
+          {"slug": "moyens-apprendre-anglais-jeune", "word_count": 1482},
+          {"slug": "commentaire-litteraire-analyse", "word_count": 1510},
+          {"slug": "evolution-economie-sociale", "word_count": 1535},
+          {"slug": "adjectif-pronom-anglais", "word_count": 1490},
+          {"slug": "dictons-royaume-britannique", "word_count": 1520},
+          {"slug": "resistance-bobine-compensateur", "word_count": 1498},
+          {"slug": "description-britannique", "word_count": 1545},
+          {"slug": "importance-terre-planetes-autour-soleil", "word_count": 1512},
+          {"slug": "general-adversaire-romain", "word_count": 1530},
+          {"slug": "questionnaire-langue-anglaise", "word_count": 1488},
+          {"slug": "confrontation-politique-economique-societe", "word_count": 1505},
+          {"slug": "travailler-langue-anglaise-oreille", "word_count": 1472},
+          {"slug": "terminale-limites-de-fonctions-les-asymptotes", "word_count": 1518},
+          {"slug": "calcul-examen-travail", "word_count": 1540},
+          {"slug": "centre-de-l-agglomeration-japon", "word_count": 1593}
+        ],
+        "notes": [
+          "Articles 1-14 régénérés dans la session précédente (avant compaction contexte)",
+          "Article 15 (centre-de-l-agglomeration-japon) régénéré dans la session suivante après compaction",
+          "MCP Ahrefs/DataforSEO/Notion désactivés pendant génération (instruction user mid-session)",
+          "Durée v2 plus longue car articles 2x plus longs : ~25-35s/article → ~35-50s/article estimé"
+        ]
+      },
+      "total_duration_seconds": 1920,
+      "total_duration_human": "32m 00s (Phase 1: 7m33s + Phase 2 v1: 24m27s)",
+      "total_v2_duration_seconds": 2658,
+      "total_v2_duration_human": "~44m 18s (Phase 1: 7m33s + Phase 2 v2: ~36m45s)",
+      "total_start_utc": "2026-04-28T14:50:43Z",
+      "total_end_utc": "2026-04-28T15:30:01Z",
+      "total_v2_end_utc": "2026-04-28T16:10:00Z"
+    },
+    "test2_parallel": {
+      "description": "15 sub-agents IA en parallèle, 1 sub-agent par URL",
+      "phase1": {
+        "description": "Identique Test 1 — même pipeline mécanique, mêmes context bundles",
+        "reuses_test1_phase1": true,
+        "duration_seconds": 453,
+        "note": "Phase 1 est séquentielle dans les 2 tests (benchmark_runner.py). La parallélisation ne concerne que Phase 2."
+      },
+      "phase2": {
+        "description": "Génération contenu refreshé — 15 sub-agents en parallèle (1 par URL)",
+        "start_utc": null,
+        "start_epoch": null,
+        "end_utc": null,
+        "end_epoch": null,
+        "duration_seconds": null,
+        "tokens_context_start": null,
+        "tokens_context_end": null,
+        "urls_processed": 0,
+        "urls_success": 0,
+        "per_url": []
+      },
+      "total_duration_seconds": null
+    }
+  },
+  "batch_b": {
+    "rows": "136-150",
+    "urls": [],
+    "test1_sequential": {
+      "description": "1 seul agent IA, traitement séquentiel URL par URL",
+      "phase1": {
+        "description": "Pipeline mécanique : fetch HTML + audit GSC 12m + YTG sémantique + context bundle + sheets write (benchmark_runner.py)",
+        "run_id": null,
+        "start_utc": null,
+        "end_utc": null,
+        "duration_seconds": null,
+        "urls_processed": 0,
+        "urls_success": 0,
+        "urls_failed": 0,
+        "per_url": []
+      },
+      "phase2": {
+        "description": "Génération contenu refreshé — 1 agent séquentiel (LLM Claude Sonnet 4.6)",
+        "start_utc": null,
+        "end_utc": null,
+        "duration_seconds": null,
+        "urls_processed": 0,
+        "urls_success": 0,
+        "per_url": []
+      },
+      "total_duration_seconds": null
+    },
+    "test2_parallel": {
+      "description": "15 sub-agents IA en parallèle, 1 sub-agent par URL",
+      "phase1": {
+        "description": "Identique Test 1 Batch B — même pipeline mécanique, mêmes context bundles",
+        "reuses_test1_phase1": true,
+        "duration_seconds": null,
+        "note": "Phase 1 est séquentielle dans les 2 tests (benchmark_runner.py). La parallélisation ne concerne que Phase 2."
+      },
+      "phase2": {
+        "description": "Génération contenu refreshé — 15 sub-agents en parallèle (1 par URL)",
+        "start_utc": null,
+        "end_utc": null,
+        "duration_seconds": null,
+        "urls_processed": 0,
+        "urls_success": 0,
+        "per_url": []
+      },
+      "total_duration_seconds": null
+    }
+  }
+}

@@ -34,11 +34,7 @@ GOOGLE_SA_PATH = Path(
 # Domain -> GSC property mapping
 DOMAIN_TO_GSC = {
     "enseigna.fr": "https://enseigna.fr/",
-    "cours-particuliers.com": "https://cours-particuliers.com/",
-    "educationetdevenir.fr": "https://educationetdevenir.fr/",
-    "moments-yoga.fr": "https://www.moments-yoga.fr/",
-    "mymusicteacher.fr": "https://mymusicteacher.fr/",
-    "coachsportlyon.fr": "https://coachsportlyon.fr/",
+    "superprof.fr": "https://www.superprof.fr/ressources/",
 }
 
 

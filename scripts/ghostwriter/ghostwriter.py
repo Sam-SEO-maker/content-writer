@@ -13,6 +13,7 @@ from _shared.core.models import ContentDiff, RewriteResult
 from _shared.core.prompt_composer import PromptComposer
 from scripts.audit.semantic_checker import SemanticChecker
 from scripts.cta.superprof_rotator import SuperprofRotator
+from scripts.utils.output_manager import title_to_slug
 from .diff_engine import DiffEngine
 
 
@@ -29,18 +30,10 @@ class Ghostwriter:
 
     # Fallback mapping blog_id → semantic category (mirrors RefreshOrchestrator)
     BLOG_CATEGORY_MAP = {
-        "coachsportlyon": "sport",
-        "coachsportlyon.fr": "sport",
-        "moments-yoga": "wellness",
-        "moments-yoga.fr": "wellness",
-        "mymusicteacher": "music",
-        "mymusicteacher.fr": "music",
         "enseigna": "education",
         "enseigna.fr": "education",
-        "cours-particuliers": "education",
-        "cours-particuliers.com": "education",
-        "educationetdevenir": "education",
-        "educationetdevenir.fr": "education",
+        "superprof-ressources": "education",
+        "superprof.fr": "education",
     }
 
     def __init__(self):
@@ -88,10 +81,6 @@ class Ghostwriter:
                 audit_data.get("recommendations", [])
             )
 
-        # Extraire la structure du cocon sémantique
-        cocon_structure = assets.get("cocon_structure") or {}
-        post_type = audit_data.get("post_type", "STANDALONE")
-
         context = {
             "instruction": self._generate_instruction(strategy_config, rewrite_scope),
             "original_content": {
@@ -113,20 +102,10 @@ class Ghostwriter:
                 "ctr": audit_data.get("performance", {}).get("ctr_30d", 0),
                 "alerts": audit_data.get("alerts", []),
                 "recommendations": audit_data.get("recommendations", []),
-                # NEW: GSC queries for semantic optimization
                 "gsc_queries": self._format_gsc_queries(audit_data.get("performance", {}).get("keywords", [])),
             },
 
-            # Structure du cocon sémantique (NOUVEAU)
-            "cocon_structure": {
-                "post_type": post_type,
-                "parent": {
-                    "url": cocon_structure.get("parent_url"),
-                    "title": cocon_structure.get("parent_title"),
-                } if cocon_structure.get("parent_url") else None,
-                "siblings": cocon_structure.get("sibling_urls", []),
-                "maillage_rules": self._get_maillage_rules(post_type),
-            },
+            "maillage_rules": self._get_maillage_rules(),
 
             "assets_to_preserve": {
                 "rule": "NE JAMAIS supprimer d'images contextuelles ou de liens. Seulement maintenir ou enrichir.",
@@ -181,120 +160,7 @@ class Ghostwriter:
         # YTG term colors (bleu/rouge/orange) pour guidage par terme
         context["ytg_term_colors"] = audit_data.get("ytg_term_colors", {})
 
-        # NEW: Add anti-cannibalization rules if blacklist exists
-        if "cocon_cannibalization" in audit_data:
-            blacklist = audit_data["cocon_cannibalization"].get("blacklist", [])
-            if blacklist:
-                context["anti_cannibalization_rules"] = self._format_blacklist_prompt(blacklist)
-
-        # NEW: Add mandatory H2 whitelist for PARENT articles
-        if "cocon_whitelist" in audit_data:
-            whitelist_data = audit_data["cocon_whitelist"]
-            if whitelist_data.get("is_parent_article", False):
-                mandatory_h2s = whitelist_data.get("mandatory_h2_titles", [])
-                if mandatory_h2s:
-                    context["parent_h2_whitelist"] = self._format_whitelist_prompt(mandatory_h2s)
-
         return context
-
-    def _format_blacklist_prompt(self, blacklist: list[str]) -> str:
-        """
-        Format the anti-cannibalization blacklist for the LLM prompt.
-
-        Args:
-            blacklist: List of H2 topics to avoid (formatted strings)
-
-        Returns:
-            Formatted markdown prompt section
-        """
-        if not blacklist:
-            return ""
-
-        prompt = """## RÈGLE ANTI-CANNIBALISATION (PRIORITAIRE)
-
-Les sujets suivants sont déjà couverts par des articles frères (siblings) dans le cocon sémantique.
-
-**INTERDICTION ABSOLUE** de développer ces sujets dans des H2 longs (5+ paragraphes):
-
-"""
-        for i, topic in enumerate(blacklist, 1):
-            prompt += f"{i}. {topic}\n"
-            prompt += "   → Remplacer par: 1-2 phrases + lien interne\n\n"
-
-        prompt += """**RÈGLE DE REMPLACEMENT**:
-Si un H2 actuel traite un sujet blacklisté:
-- Supprimer 80% du contenu développé
-- Garder 1-2 phrases d'introduction contextuelle
-- Ajouter lien interne vers article dédié
-- Exemple: "Le choix de la ville influence votre expérience. Pour un comparatif détaillé, consultez notre guide: [lien vers sibling]."
-"""
-
-        return prompt
-
-    def _format_whitelist_prompt(self, mandatory_h2s: list[str]) -> str:
-        """
-        Format the mandatory H2 whitelist for PARENT articles.
-
-        Args:
-            mandatory_h2s: List of H1 titles from child articles (= mandatory H2s)
-
-        Returns:
-            Formatted markdown prompt section
-        """
-        if not mandatory_h2s:
-            return ""
-
-        prompt = """## STRUCTURE H2 OBLIGATOIRE (ARTICLE PARENT)
-
-Cet article est un **PARENT** dans un cocon sémantique.
-
-**RÈGLE ABSOLUE** : Les H2 doivent correspondre **EXACTEMENT** aux H1 des articles enfants.
-
-### H2 OBLIGATOIRES (liste exhaustive)
-
-"""
-        for i, h2 in enumerate(mandatory_h2s, 1):
-            prompt += f"{i}. **{h2}**\n"
-
-        prompt += f"""
-**TOTAL : {len(mandatory_h2s)} H2 OBLIGATOIRES**
-
----
-
-### INTERDICTIONS (ARTICLE PARENT)
-
-- ❌ **AUCUN autre H2** n'est autorisé en dehors de cette liste
-- ❌ Pas de H2 "Conclusion", "Introduction", "Pour aller plus loin"
-- ❌ Pas de H2 "FAQ" ou "Questions fréquentes" (sauf si dans la liste ci-dessus)
-- ❌ Pas de reformulation des H2 (utiliser **EXACTEMENT** le texte des H1 enfants)
-- ❌ Pas de H2 génériques comme "Nos conseils", "Ce qu'il faut retenir"
-
-### OBLIGATIONS (ARTICLE PARENT)
-
-- ✅ Utiliser **TOUS** les H2 de la liste (aucun oubli, aucune exception)
-- ✅ Respecter un ordre logique pour la progression du lecteur
-- ✅ Chaque H2 contient **UN SEUL** lien vers l'article enfant correspondant
-- ✅ Le lien est intégré **NATURELLEMENT** dans la première phrase après le H2
-- ✅ Ancre descriptive et naturelle (pas "cliquez ici", "voir cet article")
-
-### FORMAT ATTENDU
-
-```html
-<h2>Titre H1 enfant exact</h2>
-
-<p>Paragraphe introductif qui contextualise le sujet et contient <a href="URL-enfant">ancre naturelle vers l'article détaillé</a> pour approfondir ce point.</p>
-
-<p>Développement du sujet (2-3 paragraphes, 150-250 mots)...</p>
-```
-
-**VALIDATION** : Avant de finaliser, vérifier que :
-1. Nombre de H2 = {len(mandatory_h2s)} (exact)
-2. Chaque H2 correspond à un H1 enfant (copié exactement)
-3. Aucun H2 hors de la liste
-4. Chaque H2 a son lien vers l'enfant correspondant
-"""
-
-        return prompt
 
     def _format_gsc_queries(self, keywords: list[dict]) -> dict:
         """
@@ -398,26 +264,9 @@ Cet article est un **PARENT** dans un cocon sémantique.
             return f'<figure><img src="{src}" alt="{alt}"><figcaption>{caption}</figcaption></figure>'
         return f'<img src="{src}" alt="{alt}">'
 
-    @staticmethod
-    def _get_html_subdir(post_type: str) -> str:
-        """Return the HTML output subdirectory based on post_type."""
-        if post_type == "PARENT":
-            return "html_parent_posts"
-        elif post_type == "CHILD":
-            return "html_child_posts"
-        return "html"
-
-    def _get_maillage_rules(self, post_type: str) -> dict:
-        """
-        Retourne les règles de maillage interne selon le type d'article.
-
-        Args:
-            post_type: Type d'article (PARENT, CHILD, STANDALONE)
-
-        Returns:
-            Règles de maillage applicables
-        """
-        base_rules = {
+    def _get_maillage_rules(self) -> dict:
+        """Retourne les règles de maillage interne."""
+        return {
             "forbidden": [
                 "NE JAMAIS créer de section 'Articles connexes' ou 'Pour aller plus loin'",
                 "NE JAMAIS lister les liens internes sous forme de liste à puces",
@@ -429,22 +278,8 @@ Cet article est un **PARENT** dans un cocon sémantique.
                 "Espacer les liens internes de 150-200 mots minimum",
                 "Placer les images EN CONTEXTE, près du texte qu'elles illustrent",
             ],
-            "spacing_words": 150,  # Minimum de mots entre deux liens
+            "spacing_words": 150,
         }
-
-        if post_type == "PARENT":
-            base_rules["parent_specific"] = [
-                "Chaque H2 = titre H1 exact de l'article enfant correspondant",
-                "Chaque H2 contient UN SEUL lien vers l'article enfant",
-                "Pas de liens répétés vers le même enfant",
-            ]
-        elif post_type == "CHILD":
-            base_rules["child_specific"] = [
-                "Lien vers l'article PARENT obligatoire dans l'INTRODUCTION (1er ou 2e paragraphe)",
-                "Liens vers les autres articles CHILD répartis dans le corps du texte",
-            ]
-
-        return base_rules
 
     def _generate_instruction(self, strategy_config: dict, rewrite_scope: str) -> str:
         """Retourne le nom de la stratégie et son périmètre d'action."""
@@ -532,7 +367,7 @@ Retourne l'article complet réécrit en HTML:
 ### Liens
 - 1 seul lien Superprof (ancre variée, naturelle)
 - 1-2 liens externes vers sources d'autorité
-- Liens internes vers articles du cocon sémantique
+- Liens internes vers articles connexes
 
 ### Image à la Une
 - NE PAS inclure dans le HTML (gérée par WordPress)
@@ -542,16 +377,7 @@ Retourne l'article complet réécrit en HTML:
 
     @staticmethod
     def _title_to_slug(title: str) -> str:
-        """Convert article title to a clean filename slug."""
-        import re
-        import unicodedata
-        s = unicodedata.normalize('NFD', title)
-        s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
-        s = s.lower()
-        s = re.sub(r'[^a-z0-9\s]', '', s)
-        s = re.sub(r'\s+', '-', s.strip())
-        s = re.sub(r'-+', '-', s)
-        return s[:150] or ""
+        return title_to_slug(title)
 
     @staticmethod
     def _clean_anchor_strong(html: str) -> str:
@@ -726,7 +552,7 @@ Retourne l'article complet réécrit en HTML:
             context_dir: Répertoire contenant les fichiers de contexte
                         (original.html, audit_data.json, guidelines.txt, task.json)
             output_dir: Répertoire de sortie pour le HTML généré
-            blog_id: ID du blog (ex: "cours-particuliers.com")
+            blog_id: ID du blog (ex: "enseigna.fr")
 
         Returns:
             Dict avec status, output_files, metadata
@@ -849,7 +675,7 @@ Retourne l'article complet réécrit en HTML:
                 "assets_before": assets.get("counts") or {},
             },
             "output_files": {
-                "html": str(output_dir / self._get_html_subdir(audit_data.get("post_type", "STANDALONE")) / f"{self._title_to_slug(audit_data.get('title', '')) or context_dir.name}_refreshed.html"),
+                "html": str(output_dir / "html" / f"{self._title_to_slug(audit_data.get('title', '')) or context_dir.name}_refreshed.html"),
                 "metadata": str(output_dir / "json" / f"{context_dir.name}_metadata.json")
             }
         }
@@ -901,24 +727,11 @@ Retourne l'article complet réécrit en HTML:
         Ce prompt n'injecte que des données spécifiques à l'article.
         """
         current_year = datetime.now().year
-        parent_whitelist_prompt = rewrite_context.get("parent_h2_whitelist", "")
-        anti_cann = rewrite_context.get("anti_cannibalization_rules", "")
 
         prompt_parts = [
             "# TÂCHE: Refresh SEO Article",
             "",
         ]
-
-        # Structure H2 obligatoire pour articles PARENT (données cocon, priorité absolue)
-        if parent_whitelist_prompt:
-            prompt_parts.extend([
-                "## STRUCTURE H2 OBLIGATOIRE (ARTICLE PARENT — PRIORITÉ ABSOLUE)",
-                "",
-                parent_whitelist_prompt,
-                "",
-                "---",
-                "",
-            ])
 
         # Données chiffrées de l'article (compteurs, année)
         prompt_parts.extend([
@@ -934,15 +747,6 @@ Retourne l'article complet réécrit en HTML:
             f"Ne pas modifier les URLs ni les citations académiques.",
             "",
         ])
-
-        # Anti-cannibalisation (données cocon, si applicable)
-        if anti_cann:
-            prompt_parts.extend([
-                anti_cann,
-                "",
-                "---",
-                "",
-            ])
 
         # Instructions éditoriales (catégorie + stratégie + site depuis les .md)
         prompt_parts.extend([
@@ -1247,68 +1051,3 @@ Retourne l'article complet réécrit en HTML:
 
         return "".join(prompt_parts)
 
-    def validate_parent_h2_structure(
-        self,
-        generated_html: str,
-        mandatory_h2s: list[str],
-        strict: bool = True
-    ) -> dict:
-        """
-        Validate that generated HTML respects mandatory H2 structure for PARENT articles.
-
-        Args:
-            generated_html: Generated HTML content
-            mandatory_h2s: List of mandatory H2 titles (from child H1s)
-            strict: If True, reject any H2 not in the whitelist
-
-        Returns:
-            {
-                "valid": bool,
-                "errors": list[str],
-                "h2_found": list[str],
-                "h2_missing": list[str],
-                "h2_extra": list[str]  # H2s not in whitelist (if strict=True)
-            }
-        """
-        import re
-        from bs4 import BeautifulSoup
-
-        # Extract H2s from generated HTML
-        soup = BeautifulSoup(generated_html, 'html.parser')
-        generated_h2s = [h2.get_text(strip=True) for h2 in soup.find_all('h2')]
-
-        # Normalize for comparison (lowercase, strip, remove extra spaces)
-        def normalize(text):
-            return re.sub(r'\s+', ' ', text.lower().strip())
-
-        mandatory_normalized = {normalize(h2): h2 for h2 in mandatory_h2s}
-        generated_normalized = {normalize(h2): h2 for h2 in generated_h2s}
-
-        # Find missing and extra H2s
-        missing = []
-        for norm_h2, original_h2 in mandatory_normalized.items():
-            if norm_h2 not in generated_normalized:
-                missing.append(original_h2)
-
-        extra = []
-        if strict:
-            for norm_h2, original_h2 in generated_normalized.items():
-                if norm_h2 not in mandatory_normalized:
-                    extra.append(original_h2)
-
-        # Build validation result
-        errors = []
-        if missing:
-            errors.append(f"{len(missing)} H2 obligatoires manquants: {', '.join(missing[:3])}")
-        if extra and strict:
-            errors.append(f"{len(extra)} H2 hors whitelist: {', '.join(extra[:3])}")
-
-        return {
-            "valid": len(errors) == 0,
-            "errors": errors,
-            "h2_found": generated_h2s,
-            "h2_missing": missing,
-            "h2_extra": extra,
-            "h2_expected_count": len(mandatory_h2s),
-            "h2_actual_count": len(generated_h2s),
-        }
