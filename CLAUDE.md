@@ -103,12 +103,7 @@ Chaque refresh doit inclure :
 | **enseigna** | enseigna.fr | Reviews soutien scolaire | Expert analytique | Medium |
 | **superprof-ressources** | superprof.fr/ressources/ | Blog éducatif Superprof FR | Naturel, plutôt informel, encourageant | Low |
 
-> ⚠️ Pour `superprof-ressources`, les règles complètes sont dans les **3 guides Superprof** stockés dans `_shared/prompts/sites/superprof-ressources/` :
-> - `guide-1-blog-writing-foundations.md` (voice & tone, brand values, qualité)
-> - `guide-2-blog-writing-reference.md` (SEO, linking, blocs WordPress, formatage)
-> - `guide-3-working-with-refreshes.md` (process refresh, règles critiques)
->
-> Le tone & voice définitif sera communiqué par la PO Manager. En attendant, suivre Guide 1.
+> Les règles complètes pour `superprof-ressources` sont dans `_shared/prompts/sites/superprof-ressources.md` (prompt de génération principal) et `_shared/prompts/sites/superprof-ressources-reference.md` (référence HTML Gutenberg canonique).
 
 ### Architecture Prompts 4 Niveaux
 
@@ -300,7 +295,16 @@ Category (stats, experts, PAA)
 **Voir les détails complets dans `_shared/prompts/sites/{site_id}.md`**
 
 - **enseigna** : Vouvoiement, analytique, blacklist concurrents, CESU obligatoire, rating ≤8/10
-- **superprof-ressources** : Tone naturel/informel, paragraphes 3-5 phrases, formulations positives, AI uniquement pour inspiration, anchor text strict (jamais de money KW vers blog→blog) — voir les 3 guides Notion convertis dans `_shared/prompts/sites/superprof-ressources/`
+- **superprof-ressources** : Tone naturel/informel, paragraphes 3-5 phrases, formulations positives, AI uniquement pour inspiration, anchor text strict (jamais de money KW vers blog→blog) — voir `_shared/prompts/sites/superprof-ressources.md`
+
+### Callouts & CTA — INTERDITS sur Enseigna et Superprof Ressources
+
+❌ **Ne jamais inclure** les blocs callout ou CTA dans les articles de ces deux blogs :
+- `<!-- wp:html -->` avec `background-color: #4caf50` (CTA vert)
+- `<!-- wp:html -->` avec `background-color: #fff9e6` (callout jaune "Bon réflexe")
+- `<!-- wp:html -->` avec `background-color: #e8f4f8` (callout bleu "Info highlight")
+
+Ces blocs appartiennent à un ancien système de rédaction et ne doivent pas être reportés.
 
 ### Anti-Patterns Universels
 

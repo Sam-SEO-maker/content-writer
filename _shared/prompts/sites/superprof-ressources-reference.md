@@ -2,13 +2,13 @@
 
 **Objectif** : ce fichier contient le HTML propre, formaté Gutenberg, que le LLM doit suivre comme **référence canonique** pour structurer ses outputs dans `_shared/outputs/{site}/html/`.
 
-**Usage** : chargé dynamiquement par le pipeline en complément de `seraphine.md`. Le LLM doit reproduire à l'identique :
+**Usage** : chargé dynamiquement par le pipeline en complément de `sites/superprof-ressources.md`. Le LLM doit reproduire à l'identique :
 - la structure des blocs Gutenberg (commentaires `<!-- wp:* -->`)
 - les classes CSS WordPress (`wp-block-*`, `advgb-*`, `superprof-*`)
 - les attributs JSON dans les commentaires d'ouverture de bloc
 - l'ordre et l'imbrication des balises
 
-**Règle** : si un détail de format diverge entre cette référence et `seraphine.md`, **cette référence prévaut** (elle reflète la réalité WordPress backoffice).
+**Règle** : si un détail de format diverge entre cette référence et `superprof-ressources.md`, **cette référence prévaut** (elle reflète la réalité WordPress backoffice).
 
 ---
 
@@ -304,19 +304,19 @@
 
 <!-- wp:list {"ordered":true,"className":"references"} -->
 <ol class="wp-block-list references"><!-- wp:list-item -->
-<li>Institut Géographique National (IGN). <em>Atlas de France — Territoire et société.</em> IGN, Paris, 2023, <a href="https://www.ign.fr" target="_blank" rel="noopener">https://www.ign.fr</a>. Consulté le 28 avril 2026.</li>
+<li>Institut Géographique National (IGN). <em>Atlas de France — Territoire et société.</em> IGN, Paris, 2023, <a href="https://www.ign.fr" target="_blank" rel="noopener">https://www.ign.fr</a>.</li>
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->
-<li>INSEE. "Superficie des régions françaises." <em>Institut national de la statistique et des études économiques</em>, 2023, <a href="https://www.insee.fr/fr/statistiques/2011101" target="_blank" rel="noopener">https://www.insee.fr/fr/statistiques/2011101</a>. Consulté le 28 avril 2026.</li>
+<li>INSEE. "Superficie des régions françaises." <em>Institut national de la statistique et des études économiques</em>, 2023, <a href="https://www.insee.fr/fr/statistiques/2011101" target="_blank" rel="noopener">https://www.insee.fr/fr/statistiques/2011101</a>.</li>
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->
-<li>Ministère de la Transition écologique. <em>Chiffres clés du climat France, Europe et Monde.</em> SDES, Paris, 2024, <a href="https://www.statistiques.developpement-durable.gouv.fr" target="_blank" rel="noopener">https://www.statistiques.developpement-durable.gouv.fr</a>. Consulté le 28 avril 2026.</li>
+<li>Ministère de la Transition écologique. <em>Chiffres clés du climat France, Europe et Monde.</em> SDES, Paris, 2024, <a href="https://www.statistiques.developpement-durable.gouv.fr" target="_blank" rel="noopener">https://www.statistiques.developpement-durable.gouv.fr</a>.</li>
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->
-<li>UNESCO. "Val de Loire — paysage culturel." <em>Liste du patrimoine mondial de l'UNESCO</em>, 2000, <a href="https://whc.unesco.org/fr/list/933" target="_blank" rel="noopener">https://whc.unesco.org/fr/list/933</a>. Consulté le 28 avril 2026.</li>
+<li>UNESCO. "Val de Loire — paysage culturel." <em>Liste du patrimoine mondial de l'UNESCO</em>, 2000, <a href="https://whc.unesco.org/fr/list/933" target="_blank" rel="noopener">https://whc.unesco.org/fr/list/933</a>.</li>
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->

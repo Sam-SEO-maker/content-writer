@@ -47,9 +47,8 @@
   },
 
   "editorial_guides": [
-    "_shared/prompts/sites/superprof-ressources/guide-1-blog-writing-foundations.md",
-    "_shared/prompts/sites/superprof-ressources/guide-2-blog-writing-reference.md",
-    "_shared/prompts/sites/superprof-ressources/guide-3-working-with-refreshes.md"
+    "_shared/prompts/sites/superprof-ressources.md",
+    "_shared/prompts/sites/superprof-ressources-reference.md"
   ],
 
   "brand_rules": {
@@ -84,5 +83,12 @@
     ],
     "timeout": 30,
     "requires_playwright": false
+  },
+
+  "wp_api_config": {
+    "api_base_url": "https://www.superprof.fr/ressources/wp-json/wp/v2",
+    "user_env_var": "WP_SUPERPROF_RESSOURCES_USER",
+    "password_env_var": "WP_SUPERPROF_RESSOURCES_APP_PASSWORD",
+    "timeout": 30
   }
 }

@@ -67,7 +67,7 @@
       }
     },
     "education_general": {
-      "file": "sites/superprof-ressources/superprof-ressources.md",
+      "file": "sites/superprof-ressources.md",
       "applicable_blogs": ["superprof-ressources"],
       "keywords": ["cours", "soutien", "aide", "apprentissage", "tuteur", "professeur"],
       "tone": "natural_informal",
