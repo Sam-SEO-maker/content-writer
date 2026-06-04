@@ -12,7 +12,7 @@ import os
 import click
 from pathlib import Path
 
-import requests
+from scripts.agent import RefreshOrchestrator
 from scripts.audit import EditorialAuditor, GSCAnalyzer, SERPAnalyzer
 from scripts.sheets import SheetsClient
 
@@ -37,28 +37,22 @@ def editorial(url, blog, spreadsheet_id):
     click.echo(f"URL:  {url}")
     click.echo(f"Blog: {blog}\n")
 
-    # Fetch content via direct HTTP scraping
-    click.echo("[1/2] Récupération contenu par scraping HTTP...")
-    try:
-        resp = requests.get(
-            url,
-            timeout=30,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
-            allow_redirects=True,
-        )
-        resp.raise_for_status()
-        html = resp.text
-    except Exception as e:
-        click.echo(f"  ✗ Impossible de récupérer le contenu: {e}", err=True)
+    # Fetch content via WP API (ou HTTP scraping fallback)
+    click.echo("[1/2] Récupération contenu...")
+    orchestrator = RefreshOrchestrator(base_path=Path.cwd())
+    fetch_result = orchestrator._fetch_html(url, blog_id=blog)
+    if not fetch_result.get("clean_body"):
+        click.echo("  ✗ Impossible de récupérer le contenu", err=True)
         raise click.Abort()
-    click.echo(f"  ✓ HTML récupéré ({len(html)} chars)")
+    method = fetch_result["extraction_metadata"].get("method_used", "unknown")
+    click.echo(f"  ✓ Contenu récupéré via {method} ({len(fetch_result['clean_body'])} chars)")
 
     # Run editorial audit
     click.echo("[2/2] Audit éditorial...")
     auditor = EditorialAuditor(blog_id=blog, base_path=Path.cwd())
 
     try:
-        report = auditor.audit_article(html, url)
+        report = auditor.audit_article(fetch_result["clean_body"], url)
 
         click.echo(f"\n📊 RÉSULTATS:")
         click.echo(f"  Score global:     {report.overall_score:.1f}/10")
@@ -106,14 +100,14 @@ def serp(url, keyword):
     analyzer = SERPAnalyzer()
 
     try:
-        # Si pas de keyword, essayer d'extraire du title
+        # Si pas de keyword, déduire depuis le slug de l'URL
         if not keyword:
-            scraper = WebScraper()
-            html = scraper.fetch_html(url)
-            # Extraire title (simpliste)
-            import re
-            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
-            keyword = title_match.group(1) if title_match else url
+            from urllib.parse import urlparse
+            path = urlparse(url).path
+            parts = [p for p in path.split("/") if p]
+            last = parts[-1].replace(".html", "") if parts else ""
+            keyword = last.replace("-", " ") if last else url
+            click.echo(f"  (Mot-clé déduit du slug : '{keyword}')")
 
         result = analyzer.analyze_serp(keyword)
 

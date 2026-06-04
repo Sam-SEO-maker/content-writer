@@ -10,7 +10,6 @@ import click
 from pathlib import Path
 from dataclasses import dataclass
 
-import requests
 from scripts.agent import RefreshOrchestrator
 
 
@@ -76,21 +75,14 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
         spreadsheet_id=spreadsheet_id
     )
 
-    # Fetch content via direct HTTP scraping
-    click.echo("[2/6] Récupération contenu par scraping HTTP...")
-    try:
-        resp = requests.get(
-            url,
-            timeout=30,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentWriter/1.0)"},
-            allow_redirects=True,
-        )
-        resp.raise_for_status()
-        html = resp.text
-    except Exception as e:
-        click.echo(f"  ✗ Impossible de récupérer le contenu: {e}", err=True)
+    # Fetch content via WP API (ou HTTP scraping fallback)
+    click.echo("[2/6] Récupération contenu...")
+    fetch_result = orchestrator._fetch_html(url, blog_id=blog)
+    if not fetch_result.get("clean_body"):
+        click.echo("  ✗ Impossible de récupérer le contenu", err=True)
         raise click.Abort()
-    click.echo(f"  ✓ HTML récupéré ({len(html)} chars)")
+    method = fetch_result["extraction_metadata"].get("method_used", "unknown")
+    click.echo(f"  ✓ Contenu récupéré via {method} ({len(fetch_result['clean_body'])} chars)")
 
     # Process URL (audit + decision)
     click.echo("[3/6] Audit + décision stratégie...")
@@ -98,7 +90,7 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
         result = orchestrator.process_url(
             url=url,
             blog_id=blog,
-            html_content=html,
+            html_content=fetch_result["clean_body"],
             force_action=strategy,
             custom_prompt=None,
             provided_keyword=keyword
@@ -121,24 +113,18 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             click.echo(f"\n⚠ Action '{result.action_taken}' - pas de génération nécessaire")
             return
 
-        # Extract content with assets for context preparation
+        # Assets déjà extraits par _fetch_html()
         click.echo("[4/6] Extraction contenu + assets...")
-        from scripts.scraping import ContentExtractor
-        extractor = ContentExtractor()
-        extraction_result = extractor.extract_with_assets(html, blog, url)
-
-        clean_body = extraction_result.get("clean_body", "")
-        assets_baseline = extraction_result.get("assets_baseline", {})
-        asset_counts = assets_baseline.get("counts", {})
-
+        clean_body = fetch_result["clean_body"]
+        asset_counts = fetch_result["assets_baseline"].get("counts", {})
         click.echo(f"  ✓ Body: {len(clean_body)} chars")
         click.echo(f"  ✓ Images: {asset_counts.get('images', 0)}, "
                     f"Tables: {asset_counts.get('tables', 0)}, "
                     f"Links: {asset_counts.get('internal_links', 0)}")
 
-        # Extract title from HTML
+        # Extract title from article HTML
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(fetch_result["full_html"], 'html.parser')
         h1_tag = soup.find('h1')
         title = h1_tag.get_text(strip=True) if h1_tag else ""
 
@@ -155,7 +141,7 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             original_html=clean_body,
             action=result.action_taken,
             row=row,
-            extraction_result=extraction_result
+            extraction_result=fetch_result
         )
 
         # Compose generation prompt via ghostwriter

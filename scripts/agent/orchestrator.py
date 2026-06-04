@@ -32,7 +32,7 @@ from ..ghostwriter import Ghostwriter, TitleOptimizer
 from ..assets import AssetManager
 from ..sheets import SheetsClient, WorkflowTracker
 from ..cache import DocumentCache
-from ..scraping import ContentExtractor
+from ..scraping import ContentExtractor, WordPressAPIClient
 from ..scraping.content_extractor import _convert_wp_shortcodes
 from ..audit.semantic_checker import SemanticChecker  # NEW: Post-generation semantic density check
 from ..audit.ytg_analyzer import YTGAnalyzer, YTGGuideResult  # YTG semantic guides
@@ -132,6 +132,7 @@ class RefreshOrchestrator:
         self._blog_engines: dict[str, AuditEngine] = {}
         self._gsc_analyzers: dict[str, GSCAnalyzer] = {}
         self._serp_analyzers: dict[str, SERPAnalyzer] = {}
+        self._wp_api_clients: dict[str, Optional[WordPressAPIClient]] = {}
 
         # Load sites.json for blog_id mapping (domain → id)
         self._sites_config = self._load_sites_config()
@@ -207,33 +208,61 @@ class RefreshOrchestrator:
             self._serp_analyzers[blog_id] = SERPAnalyzer()
         return self._serp_analyzers[blog_id]
 
+    def _get_wp_api_client(self, blog_id: str) -> Optional[WordPressAPIClient]:
+        """
+        Retourne un WordPressAPIClient pour ce blog, ou None si non configuré.
+
+        Lit wp_api_config dans _shared/config/blogs/{blog_id}.json.
+        Le client est instancié une seule fois par blog_id (cache).
+        """
+        if blog_id in self._wp_api_clients:
+            return self._wp_api_clients[blog_id]
+
+        config_path = self.base_path / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+        client = None
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                blog_config = json.load(f)
+
+            wp_cfg = blog_config.get("wp_api_config")
+            if wp_cfg:
+                client = WordPressAPIClient(
+                    api_base_url=wp_cfg["api_base_url"],
+                    user_env_var=wp_cfg["user_env_var"],
+                    password_env_var=wp_cfg["password_env_var"],
+                    timeout=wp_cfg.get("timeout", 30),
+                )
+        except FileNotFoundError:
+            pass
+        except (KeyError, ValueError) as e:
+            logging.getLogger("RefreshOrchestrator").warning(
+                f"wp_api_config invalid for {blog_id}: {e}"
+            )
+
+        self._wp_api_clients[blog_id] = client
+        return client
+
     def _fetch_html(self, url: str, blog_id: str = "") -> dict:
         """
         Récupère le contenu HTML d'une URL.
 
-        Fetch du contenu via HTTP direct — ContentExtractor pour extraction du body.
+        Priorité :
+        1. WordPress REST API (si wp_api_config présent dans la config du blog)
+        2. Fallback : HTTP direct + ContentExtractor (scraping page publique)
 
         Args:
             url: URL de l'article
-            blog_id: ID du blog pour temp cache
+            blog_id: ID du blog pour sélection client WP API et temp cache
 
         Returns:
             {
-                "full_html": str,              # Original HTML complet
+                "full_html": str,              # HTML du contenu (rendu ou page complète)
                 "clean_body": str,             # Corps d'article extrait
-                "extraction_metadata": dict,   # Méthode utilisée, stats
+                "extraction_metadata": dict,   # Méthode utilisée, stats, wp_post_id si API
                 "assets_baseline": dict        # Counts pour Rule of Gold
             }
         """
-        import logging
         logger = logging.getLogger("RefreshOrchestrator")
-
-        empty_result = {
-            "full_html": "",
-            "clean_body": "",
-            "extraction_metadata": {"method_used": "failed"},
-            "assets_baseline": {"counts": {"images": 0, "tables": 0, "videos": 0, "internal_links": 0}}
-        }
 
         # Resolve blog_id to domain for OutputManager (expects "enseigna.fr" not "enseigna")
         output_site_id = blog_id
@@ -243,7 +272,45 @@ class RefreshOrchestrator:
                     output_site_id = domain
                     break
 
-        # Direct HTTP fetch + ContentExtractor (selector-based extraction)
+        def _save_temp_cache(html: str) -> None:
+            if not output_site_id:
+                return
+            try:
+                url_slug = self.output_mgr._url_to_slug(url)
+                self.output_mgr.save_temp_html(output_site_id, url_slug, html)
+            except ValueError as e:
+                logger.debug(f"Skipping temp cache: {e}")
+
+        # --- Stratégie 1 : WordPress REST API ---
+        wp_client = self._get_wp_api_client(blog_id)
+        if wp_client:
+            try:
+                post_data = wp_client.get_post_by_url(url)
+                if post_data:
+                    rendered = post_data["rendered"]
+                    assets_baseline = self.content_extractor._extract_assets_baseline(rendered)
+                    word_count = len(rendered.split())
+                    _save_temp_cache(rendered)
+                    logger.info(
+                        f"Content via wp_api (post_id={post_data['id']}): "
+                        f"{word_count} words, {assets_baseline['counts']['images']} images"
+                    )
+                    return {
+                        "full_html": rendered,
+                        "clean_body": rendered,
+                        "extraction_metadata": {
+                            "method_used": "wp_api",
+                            "word_count": word_count,
+                            "wp_post_id": post_data["id"],
+                            "wp_slug": post_data["slug"],
+                            "wp_raw": post_data["raw"],
+                        },
+                        "assets_baseline": assets_baseline,
+                    }
+            except Exception as e:
+                logger.warning(f"WP API failed for {url}, falling back to scraping: {e}")
+
+        # --- Stratégie 2 : HTTP direct + ContentExtractor ---
         try:
             resp = requests.get(
                 url,
@@ -259,13 +326,7 @@ class RefreshOrchestrator:
             )
             assets_baseline = self.content_extractor._extract_assets_baseline(clean_body)
             word_count = len(clean_body.split())
-
-            if output_site_id:
-                try:
-                    url_slug = self.output_mgr._url_to_slug(url)
-                    self.output_mgr.save_temp_html(output_site_id, url_slug, clean_body)
-                except ValueError as save_err:
-                    logger.debug(f"Skipping temp cache: {save_err}")
+            _save_temp_cache(clean_body)
 
             logger.info(
                 f"Content via direct_http ({extraction_meta.get('method_used')}): "
@@ -288,7 +349,7 @@ class RefreshOrchestrator:
                 "full_html": "",
                 "clean_body": "",
                 "extraction_metadata": {"method_used": "error", "error": str(e)[:200]},
-                "assets_baseline": {"counts": {"images": 0, "tables": 0, "videos": 0, "internal_links": 0}}
+                "assets_baseline": {"counts": {"images": 0, "tables": 0, "videos": 0, "internal_links": 0}},
             }
 
     def _get_notion_refresh_tracker_db_id(self) -> str:
