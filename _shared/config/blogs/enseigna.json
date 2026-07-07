@@ -4,6 +4,13 @@
   "domain": "enseigna.fr",
   "gsc_property": "https://enseigna.fr/",
 
+  "wp_api_config": {
+    "api_base_url": "https://enseigna.fr/wp-json/wp/v2",
+    "user_env_var": "WP_ENSEIGNA_USER",
+    "password_env_var": "WP_ENSEIGNA_APP_PASSWORD",
+    "timeout": 30
+  },
+
   "content_type": "review_comparatif",
   "subject_category": "education_reviews",
 

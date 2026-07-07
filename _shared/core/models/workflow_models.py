@@ -24,6 +24,7 @@ class RefreshWorkflowResult:
     assets_valid: bool
     errors: list[str]
     execution_time_seconds: float
+    main_keyword: str = field(default="")
 
 
 @dataclass

@@ -155,6 +155,45 @@ class WordPressAPIClient:
             logger.error(f"WP API error for media_id {media_id}: {e}")
             return None
 
+    def update_post(
+        self,
+        post_id: int,
+        title: Optional[str] = None,
+        content: Optional[str] = None,
+        meta: Optional[dict] = None,
+        status: Optional[str] = None,
+    ) -> dict:
+        """
+        Update an existing post via the REST API (authenticated, write).
+
+        Only the provided fields are sent. Returns:
+            {"ok": bool, "status_code": int, "id": int, "error": str|None}
+        """
+        endpoint = f"{self.api_base_url}/posts/{post_id}"
+        payload: dict = {}
+        if title is not None:
+            payload["title"] = title
+        if content is not None:
+            payload["content"] = content
+        if status is not None:
+            payload["status"] = status
+        if meta:
+            payload["meta"] = meta
+
+        try:
+            resp = requests.post(
+                endpoint,
+                json=payload,
+                auth=self._auth,
+                timeout=max(self.timeout, 60),
+                headers={"User-Agent": "ContentWriter/1.0"},
+            )
+            ok = resp.status_code in (200, 202)
+            err = None if ok else (resp.text[:300])
+            return {"ok": ok, "status_code": resp.status_code, "id": post_id, "error": err}
+        except requests.RequestException as e:
+            return {"ok": False, "status_code": 0, "id": post_id, "error": str(e)[:300]}
+
     @staticmethod
     def _extract_slug(url: str) -> str:
         """

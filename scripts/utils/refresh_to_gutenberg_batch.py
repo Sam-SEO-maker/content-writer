@@ -9,9 +9,11 @@ Pour chaque article dans `_shared/outputs/{site}/html/*_refreshed.html` (ou test
 - Sauvegarde en *_refreshed.gutenberg.html (ou *_seraphine.gutenberg.html pour les tests Andra)
 
 Usage:
-    python scripts/utils/refresh_to_gutenberg_batch.py [--dry-run]
+    python scripts/utils/refresh_to_gutenberg_batch.py [--dry-run] [--keep-source]
 
-Sans suppression : le fichier source brut est conservé à côté.
+Par défaut, le .html nu source est SUPPRIMÉ une fois le .gutenberg.html écrit
+avec succès (c'est l'artefact de build, pas un livrable). Utiliser --keep-source
+pour le conserver (ex. si un audit/linking qui lit *_refreshed.html doit suivre).
 """
 from __future__ import annotations
 
@@ -84,7 +86,8 @@ def get_h1_from_metadata(meta: dict) -> Optional[str]:
     return meta.get("h1") or meta.get("seo", {}).get("h1")
 
 
-def convert_file(html_path: Path, metadata_dir: Optional[Path], dry_run: bool = False) -> dict:
+def convert_file(html_path: Path, metadata_dir: Optional[Path], dry_run: bool = False,
+                 delete_source: bool = True) -> dict:
     """Convertit un fichier HTML brut en Gutenberg flat."""
     raw = html_path.read_text(encoding="utf-8")
 
@@ -116,13 +119,20 @@ def convert_file(html_path: Path, metadata_dir: Optional[Path], dry_run: bool = 
         if "gutenberg" not in out_path.stem:
             out_path = html_path.with_name(html_path.stem + ".gutenberg.html")
 
+    deleted_source = False
     if not dry_run:
         out_path.write_text(final, encoding="utf-8")
+        # Le .html nu est la source de build, pas un livrable : on le supprime
+        # une fois le gutenberg écrit avec succès (sauf --keep-source).
+        if delete_source and out_path.exists() and out_path.stat().st_size > 0:
+            html_path.unlink()
+            deleted_source = True
 
-    return {"path": html_path, "out": out_path, "h1": h1, "source": source, "status": "OK"}
+    return {"path": html_path, "out": out_path, "h1": h1, "source": source,
+            "status": "OK", "deleted_source": deleted_source}
 
 
-def process_site(site_dir: Path, dry_run: bool = False) -> list:
+def process_site(site_dir: Path, dry_run: bool = False, delete_source: bool = True) -> list:
     """Traite tous les *_refreshed.html d'un dossier site."""
     html_dir = site_dir / "html"
     metadata_dir = site_dir / "metadata"
@@ -133,11 +143,11 @@ def process_site(site_dir: Path, dry_run: bool = False) -> list:
     for f in sorted(html_dir.glob("*_refreshed.html")):
         if "gutenberg" in f.stem:
             continue
-        results.append(convert_file(f, metadata_dir if metadata_dir.exists() else None, dry_run))
+        results.append(convert_file(f, metadata_dir if metadata_dir.exists() else None, dry_run, delete_source))
     return results
 
 
-def process_tests_andra(dry_run: bool = False) -> list:
+def process_tests_andra(dry_run: bool = False, delete_source: bool = True) -> list:
     """Traite les fichiers tests/seraphine_andra/html/*_seraphine.html."""
     tests_dir = OUTPUTS_ROOT / "superprof-ressources" / "tests" / "seraphine_andra" / "html"
     if not tests_dir.exists():
@@ -147,14 +157,17 @@ def process_tests_andra(dry_run: bool = False) -> list:
     for f in sorted(tests_dir.glob("*_seraphine.html")):
         if "gutenberg" in f.stem:
             continue
-        results.append(convert_file(f, metadata_dir=None, dry_run=dry_run))
+        results.append(convert_file(f, metadata_dir=None, dry_run=dry_run, delete_source=delete_source))
     return results
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="Simulate without writing files")
+    ap.add_argument("--keep-source", action="store_true",
+                    help="Conserve le .html nu source (par défaut : supprimé après build gutenberg réussi)")
     args = ap.parse_args()
+    delete_source = not args.keep_source
 
     print("=" * 70)
     print("Batch HTML → Gutenberg conversion")
@@ -163,7 +176,7 @@ def main() -> int:
     all_results = []
     for site in ("superprof-ressources", "enseigna"):
         site_dir = OUTPUTS_ROOT / site
-        results = process_site(site_dir, dry_run=args.dry_run)
+        results = process_site(site_dir, dry_run=args.dry_run, delete_source=delete_source)
         if results:
             print(f"\n[{site}] {len(results)} fichiers traités")
             for r in results:
@@ -171,10 +184,12 @@ def main() -> int:
                 msg = f"  {emoji} {r['path'].name} → {r['status']}"
                 if r["status"] == "OK":
                     msg += f" (H1 from {r['source']})"
+                    if r.get("deleted_source"):
+                        msg += " [source supprimée]"
                 print(msg)
             all_results.extend(results)
 
-    tests_results = process_tests_andra(dry_run=args.dry_run)
+    tests_results = process_tests_andra(dry_run=args.dry_run, delete_source=delete_source)
     if tests_results:
         print(f"\n[tests Andra] {len(tests_results)} fichiers traités")
         for r in tests_results:

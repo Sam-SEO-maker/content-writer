@@ -134,7 +134,7 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             blog_id=blog,
             blogpost_url=url,
             title=title,
-            main_keyword=keyword or "",
+            main_keyword=keyword or result.main_keyword or "",
         )
 
         context_dir = orchestrator._prepare_context_for_claude_code(

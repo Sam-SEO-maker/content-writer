@@ -83,6 +83,14 @@ class AuditEngine:
 
         # 4. Analyse SERP (si mot-clé principal trouvé OR fourni)
         main_keyword = provided_keyword or gsc_analysis.performance.main_keyword
+        # Fallback 12m : si le 30j GSC ne retourne pas de keyword (trafic insuffisant sur 30j)
+        if not main_keyword:
+            main_keyword = self.gsc_analyzer.fetch_top_keyword_12m(url)
+            if main_keyword:
+                self.logger.info(f"[full_audit] Keyword 30j vide → fallback GSC 12m: '{main_keyword}'")
+                # Propager dans gsc_analysis.performance pour que to_dict le reprenne
+                if gsc_analysis and gsc_analysis.performance:
+                    gsc_analysis.performance.main_keyword = main_keyword
         self.logger.debug(f"[full_audit] main_keyword resolved: provided='{provided_keyword}' → final='{main_keyword}'")
         serp_analysis = None
         intent_analysis = None

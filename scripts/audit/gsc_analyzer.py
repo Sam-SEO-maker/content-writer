@@ -195,6 +195,80 @@ class GSCAnalyzer:
                 avg_position_30d=0,
             )
 
+    def fetch_top_keyword_12m(self, url: str) -> "Optional[str]":
+        """Retourne le mot-clé cible sur 12 mois : max clicks, sinon max impressions."""
+        if not self._gsc_service:
+            return None
+        today = datetime.now()
+        start_date = (today - timedelta(days=365)).strftime("%Y-%m-%d")
+        end_date = today.strftime("%Y-%m-%d")
+
+        request_body = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "dimensions": ["query"],
+            "dimensionFilterGroups": [{"filters": [{"dimension": "page", "expression": url}]}],
+            "rowLimit": 50,
+        }
+        try:
+            response = self._gsc_service.searchanalytics().query(
+                siteUrl=self.gsc_property, body=request_body
+            ).execute()
+        except Exception as e:
+            print(f"Erreur GSC 12m pour {url}: {e}")
+            return None
+
+        rows = response.get("rows", [])
+        if not rows:
+            return None
+
+        best_by_clicks = max(rows, key=lambda r: r.get("clicks", 0))
+        if best_by_clicks.get("clicks", 0) > 0:
+            return best_by_clicks["keys"][0]
+
+        best_by_impressions = max(rows, key=lambda r: r.get("impressions", 0))
+        return best_by_impressions["keys"][0] if best_by_impressions.get("impressions", 0) > 0 else None
+
+    def fetch_top_keywords_12m(self, url: str, limit: int = 20) -> list[dict]:
+        """
+        Retourne les N meilleures requêtes GSC sur 12 mois, triées clicks DESC puis
+        impressions DESC.
+
+        Chaque élément : {"query": str, "clicks": int, "impressions": int}
+        """
+        if not self._gsc_service:
+            return []
+        today = datetime.now()
+        start_date = (today - timedelta(days=365)).strftime("%Y-%m-%d")
+        end_date = today.strftime("%Y-%m-%d")
+
+        request_body = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "dimensions": ["query"],
+            "dimensionFilterGroups": [{"filters": [{"dimension": "page", "expression": url}]}],
+            "rowLimit": max(limit, 50),
+        }
+        try:
+            response = self._gsc_service.searchanalytics().query(
+                siteUrl=self.gsc_property, body=request_body
+            ).execute()
+        except Exception as e:
+            print(f"Erreur GSC fetch_top_keywords_12m pour {url}: {e}")
+            return []
+
+        rows = response.get("rows", [])
+        keywords = [
+            {
+                "query": r["keys"][0],
+                "clicks": int(r.get("clicks", 0)),
+                "impressions": int(r.get("impressions", 0)),
+            }
+            for r in rows
+        ]
+        keywords.sort(key=lambda k: (-k["clicks"], -k["impressions"]))
+        return keywords[:limit]
+
     def _calculate_trends_direct(
         self,
         url: str,
