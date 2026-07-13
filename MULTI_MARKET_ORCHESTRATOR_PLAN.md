@@ -405,47 +405,119 @@ Déplacer vers des skills (sections spécifiques) :
 - Workflow 7 étapes (l.171-290), Formats & Métadonnées (l.435-537), Checklist Spreadsheet
   (l.538-566), Template Article Refresh (l.567-641), détail des 6 stratégies.
 
-### B. Créer les skills natifs sous `.claude/skills/`
+### B. Créer les skills natifs sous `.claude/skills/` — un TOOLKIT, pas un monolithe
 
-Découpage recommandé (ordre de valeur), un dossier par skill avec `SKILL.md` :
+**Principe (correction d'orientation).** La version initiale de ce plan faisait de `refresh-article` **le** cœur monolithique qui contient tout. L'investigation du code (2026-07-13) inverse ce constat : **8 des 12 capacités SEO sont déjà des modules autonomes adossés à une commande `cw`** — elles sont déjà invocables indépendamment. Le SEO doit donc être exposé comme un **toolkit de skills discrètes et réutilisables**, chacune faisant une chose (« maille cet article », « donne les perfs de cette URL », « audite la SERP »), et `/refresh` devient un **orchestrateur mince qui les séquence**, pas un contenant qui les ré-inline.
 
-1. **`refresh-article`** — Workflow 7 étapes complet (le cœur). Ressources annexes :
-   les 5 `strategies/*.md` référencés à la demande. Ce skill est le pendant naturel de la
-   slash command `/refresh` du Volet 1 : la commande invoque `cw refresh` (déterministe,
-   CLI), le skill documente pour l'agent *comment interpréter* le résultat et préparer la
-   génération quand une intervention plus riche que le simple wrapper CLI est nécessaire.
-2. **`qc-sp-ressources`** — Checklist QC Superprof (défauts récurrents : count-up numérique,
-   emoji FAQ, pas de H3 isolé, tableau→CSV…). Le plus autonome → **skill témoin à faire en 1er**.
-3. **`generate-enseigna-avis`** — Génération article avis (ACF JSON, verdict rapide en fin,
-   pas de déclaration d'indépendance). Ressource : `sites/enseigna/acf-fields-template.md`.
-4. **`sp-ressources-gutenberg`** — Format Gutenberg maison (5 blocs obligatoires, AdvGB,
-   infobox). Ressource : `superprof-ressources-reference.md`.
-5. **`format-wordpress`** — Section Formats & Métadonnées (HTML clean, double output Gutenberg,
-   règles accents/tiret/ancres). Référençable par les autres skills.
+Deux axes de classement :
+- **Lecture vs transformation** : les skills de *lecture* (perfs, indexation) sont sans effet de bord → **auto-déclenchables** (`disable-model-invocation: false`) ; les skills de *transformation* (refresh, netlinking, publish) sont lourdes/à blast radius → **déclenchées par l'utilisateur** (`disable-model-invocation: true`).
+- **Coût de construction** : beaucoup wrappent juste un `cw` déterministe ou un tool MCP déjà branché → **quasi zéro code**.
+
+#### Famille 1 — Performance / Reporting SEO (lecture seule, auto-déclenchable)
+
+Répond à « récupère les perfs SEO de cette URL ». Sans effet de bord, donc sûre à auto-déclencher. Presque entièrement gratuite : wrappe le MCP `gsc-remote` déjà branché (`.mcp.json`).
+
+| Skill | Wrappe | Effort |
+|---|---|---|
+| **`/performances-url <url>`** | MCP `gsc-remote get_search_by_page_query` **ou** `GSCAnalyzer.analyze(url)` (`gsc_analyzer.py:72`, sort clics/impressions/CTR/position + tendances + quick wins) | **~zéro code** (MCP) |
+| **`/diagnostic-indexation <url>`** | MCP `inspect_url_enhanced` + `check_indexing_issues` ; batch multi-tenant déjà via `cw report monday-indexation` | **zéro code** (MCP) |
+| **`/comparer-periodes <url\|site>`** | MCP `compare_search_periods` | **zéro code** (MCP) |
+| **`/rapport-gsc [--site\|--mensuel]`** | `cw audit gsc-state --site` (état top-N) ; volet mensuel/tendance = scripts `scripts/reports/*monthly_report.py` **sans CLI** | **mixte** : état = wrappe `cw` ; mensuel = à exposer (`cw report gsc-monthly`) |
+
+> Source complémentaire optionnelle : MCP Ahrefs (`site-explorer-organic-keywords`, `pages-by-traffic`) pour positions + trafic estimé, en regard des données réelles GSC.
+
+#### Famille 2 — Capacités SEO discrètes (transformation, invocables seules)
+
+Chacune wrappe une commande `cw` **déjà existante** (Tier A → quasi zéro code) :
+
+| Skill | Wrappe `cw` | Invocable seule |
+|---|---|---|
+| **`/audit-serp <url>`** | `cw audit serp` (`audit.py:84`) | oui |
+| **`/audit-editorial <url>`** | `cw audit editorial --blog` (quality gate, score<4 bloque) | oui |
+| **`/keyword-discovery`** | `cw batch keyword-discovery --blog` | oui (batch) |
+| **`/audit-gsc`** | `cw batch audit-gsc` | oui (batch) |
+| **`/netlinking <url>`** | `cw linking avis [--apply]` (`EnseignaAvisLinker` + `SuperprofRotator`) | **oui** ← ex. canonique : « maille cet article » sans lancer un refresh entier |
+| **`/ytg-guide`** | `cw ytg create-guide --keyword` (brief sémantique pré-génération) | oui |
+| **`/ytg-qc`** | `cw ytg qc --blog --slug [--fix]` (gate post-génération) | oui |
+
+À exposer (Tier B — module autonome mais pas de `cw`, ajouter un wrapper mince) : **`/wp-publish`** (`push_to_wp`), **`/gutenberg-format`** (`gutenberg_formatter`), **`/netlinking-internal`** (`LinkInjector` — mais préférer étendre `EnseignaAvisLinker`, cf. §3).
+
+#### Famille 3 — Skills de rédaction / format (le contenu éditorial)
+
+Les 5 skills déjà prévues, qui portent le *comment rédiger* (chargées par le subagent générateur) :
+1. **`qc-sp-ressources`** — checklist QC Superprof. Le plus autonome → **skill témoin à faire en 1er**.
+2. **`generate-enseigna-avis`** — article avis (ACF JSON, verdict rapide en fin, pas de déclaration d'indépendance).
+3. **`sp-ressources-gutenberg`** — format Gutenberg maison (5 blocs, AdvGB, infobox).
+4. **`format-wordpress`** — Formats & Métadonnées (HTML clean, accents/tiret/ancres). Référençable par les autres.
+5. *(le contenu généré lui-même est produit par le subagent `content-generator`, cf. §3 « Bout-en-bout ».)*
+
+#### Famille 4 — Orchestrateur mince
+
+**`refresh`** ne contient plus tout : il **séquence** les skills des familles 1-3 pour le flux complet (audit → décision → génération → QC YTG → netlinking → publish), comme documenté dans les 7+ étapes. Il invoque `cw refresh` (déterministe) puis délègue génération/correction au subagent. Deux pièces encore à **construire** avant d'être exposables : la **génération** (stub `orchestrator.py:1852/1935`) et la **cannibalisation** (couplée dans `AuditEngine`, la commande `cw audit cannibalization` annoncée n'existe pas → extraire d'abord).
 
 **Frontmatter type** (avec le flag clé découvert) :
 ```yaml
+# Skill de transformation (lourde) → déclenchée par l'utilisateur
 ---
-name: refresh-article
-description: Refresh SEO d'un article existant (workflow 7 étapes) pour enseigna ou
-  superprof-ressources à partir de signaux GSC/DataForSEO. À invoquer via /refresh-article.
+name: refresh
+description: Orchestre le refresh SEO complet d'un article (audit → décision → génération →
+  QC YTG → netlinking) pour un tenant, à partir de signaux GSC/DataForSEO. Invoquer via /refresh.
 disable-model-invocation: true   # workflow lourd → déclenché par l'utilisateur, pas auto
 ---
+
+# Skill de lecture (légère) → auto-déclenchable
+---
+name: performances-url
+description: Récupère les performances SEO d'une URL (clics, impressions, CTR, position,
+  tendances) via GSC. Lecture seule, aucun effet de bord.
+disable-model-invocation: false   # sûre → Claude peut la charger quand on parle perfs
+---
 ```
-Le `disable-model-invocation: true` est recommandé pour les **workflows lourds** (refresh,
-génération) qu'on veut déclencher soi-même — la description reste en index mais Claude ne
-charge jamais le corps à tort. Le laisser à `false` (défaut) pour les skills utilement
-auto-déclenchés (ex. `qc-sp-ressources` peut se déclencher quand on parle QC).
+Règle du flag : **`true` pour les skills de transformation lourdes** (refresh, génération,
+netlinking, publish) qu'on déclenche soi-même ; **`false` (défaut) pour les skills de lecture
+et QC légères** (famille Performance, `qc-sp-ressources`) utilement auto-déclenchées quand le
+sujet arrive dans la conversation.
 
 Taille cible d'un SKILL.md : même ordre de grandeur que CLAUDE.md (~200 lignes), le détail
 lourd part en fichiers annexes lus à la demande.
 
 **Articulation avec le subagent de génération du Volet 1** : le subagent `content-generator`
-(section « Prochaines étapes concrètes », point 3 du Volet 1) et les skills `refresh-article`
-/ `generate-enseigna-avis` / `sp-ressources-gutenberg` ne sont pas redondants — le subagent est
-le *contexte d'exécution* (tourne sous l'abonnement Max, isole les tokens de génération de la
-session principale), les skills sont la *documentation procédurale* que ce subagent doit charger
-pour savoir comment rédiger. Le subagent doit lire le SKILL.md pertinent, pas l'inverse.
+(section « Prochaines étapes concrètes », point 3 du Volet 1) et les skills de rédaction
+(`generate-enseigna-avis` / `sp-ressources-gutenberg` / `format-wordpress`) ne sont pas
+redondants — le subagent est le *contexte d'exécution* (tourne sous l'abonnement Max, isole les
+tokens de génération de la session principale), les skills sont la *documentation procédurale*
+qu'il charge pour savoir comment rédiger. Le subagent lit le SKILL.md pertinent, pas l'inverse.
+
+**Ordre de construction du toolkit** (valeur/coût) : commencer par les skills **~zéro code** à
+plus fort levier — la Famille 1 (Performance, wrappe le MCP `gsc-remote`) et les 7 skills Tier A
+de la Famille 2 (wrappent un `cw` existant) sont livrables presque immédiatement et prouvent le
+modèle toolkit. Puis la Famille 3 (rédaction, dont `qc-sp-ressources` comme témoin). L'orchestrateur
+`refresh` (Famille 4) vient **en dernier**, car il dépend des deux pièces à construire (génération,
+cannibalisation) — inutile d'assembler un flux dont deux briques n'existent pas encore.
+
+#### Backlog de skills SEO (futures) — liste, PAS des fichiers
+
+> **Le SEO se skillifie bien plus loin que le refresh.** Investigation 2026-07-13 : ~15 skills
+> supplémentaires sont possibles, la plupart à coût faible. **Important — ceci n'alourdit PAS le
+> repo générique** : une skill non écrite ne coûte rien, et une skill invoquée ne charge son corps
+> qu'à la demande (*progressive disclosure*, ~200 tokens d'index par skill). Ce backlog est de la
+> **documentation de priorisation**, pas des `SKILL.md` à créer maintenant. Deux garde-fous : (1)
+> ne créer un dossier de skill que quand on la construit vraiment ; (2) **ne skillifier que des
+> capacités portables** — les modules client-spécifiques (`enseigna_*`, `superprof_*`) restent des
+> *templates*, pas des skills du repo générique (cohérent avec les verrous §4bis).
+
+**Backlog A — zéro code (wrappent un MCP déjà branché : `gsc-remote`, `dataforseo-remote`, Ahrefs).** Ouvre des familles SEO **absentes du projet aujourd'hui**, surtout l'off-page :
+- **Off-page / Backlinks** (aucune ligne de code backlinks n'existe dans le repo) : `/backlinks-audit` (profil référents/ancres/spam/liens cassés), `/link-gap` (domaines liant les concurrents pas nous), `/rank-tracker` (positions dans le temps).
+- **Recherche & concurrence** : `/content-gap` (KW où les concurrents rankent), `/search-intent` (intention à l'échelle), `/trends` (courbes de demande).
+- **Technique** : `/audit-technique` (Lighthouse/on-page via `on_page_lighthouse`), `/sitemap` (`gsc-remote manage_sitemaps`).
+- **GEO/AEO** : `/brand-radar` (visibilité de marque dans les réponses IA — Ahrefs `brand-radar-*`).
+
+**Backlog B — wrappent du code déjà écrit (juste un `SKILL.md` à ajouter) :**
+- `/optimiser-titre` (`TitleOptimizer`), `/extraire-paa` (`SERPAnalyzer`), `/detecter-intention` (`IntentDetector`), `/demander-indexation` (`cw indexing request`), `/scan-sitemap-obsolete` (`SitemapAnalyzer.find_stale_content`), `/audit-onpage` (`HTMLAnalyzer`).
+- ⚠️ Dédupliquer avant de construire : `/scan-sitemap-obsolete` & `/demander-indexation` vs `/diagnostic-indexation` ; `/gsc-monthly` vs `/rapport-gsc`.
+
+**Backlog C — à construire (vrais chantiers, pas des wrappers) :**
+- `/cocon-validator` (construire/valider l'arbre PARENT/CHILD — substrat présent mais aucun code de graphe ; répond au besoin cocons de `CLAUDE.md`), `/schema-jsonld` (données structurées schema.org — greenfield), `/meta-description` (génération dédiée — aujourd'hui seulement extraite).
 
 ### C. Ajouter un `.claudeignore` (pertinence des recherches, PAS budget tokens)
 
