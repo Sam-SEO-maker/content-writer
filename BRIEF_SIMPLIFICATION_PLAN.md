@@ -119,7 +119,7 @@ Purge du code mort déjà identifié aux Constats d'investigation, en PR autonom
 - Simplifier `compose()` à 2 niveaux (`strategy + site`), supprimer les niveaux morts (categories/templates) pour aligner code et réalité.
 
 ### Étape E — Config des pays dans Notion → sync vers `sites.json`
-**Décision (retour ingénieur IA + tranchée avec l'utilisateur) : la config des pays *vit* dans Notion.** Notion est l'**interface humaine de saisie** de la liste des tenants « blog Superprof pays » (une page/base : pays, structure `/blog` vs `/ressources`, statut actif, domaine, propriété GSC…). Ce n'est **que de la config**, pas du pilotage : Notion ne déclenche aucun refresh, ne porte aucun statut de workflow.
+**Décision : la config des pays *vit* dans Notion.** Notion est l'**interface humaine de saisie** de la liste des tenants « blog Superprof pays » (une page/base : pays, structure `/blog` vs `/ressources`, statut actif, domaine, propriété GSC…). Ce n'est **que de la config**, pas du pilotage : Notion ne déclenche aucun refresh, ne porte aucun statut de workflow.
 
 Modèle de flux (unidirectionnel, sans lecture Notion au runtime) :
 ```
