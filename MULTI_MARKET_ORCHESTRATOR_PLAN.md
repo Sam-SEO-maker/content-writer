@@ -396,6 +396,7 @@ ajouter un `.claudeignore` pour la *pertinence des recherches* (pas le budget to
 
 **Reste dans CLAUDE.md** (universel, toujours en contexte) :
 - **Rôle & Mission** (condensé), **Architecture Multi-Tenant + règle d'override** (l'agent doit savoir en permanence qu'il y a N tenants et comment ils se résolvent), **Composition des prompts** en **pointeur** (savoir *que* le prompt = strategy + site, pas le détail), les **3 Piliers**.
+- **La *carte* des étapes du workflow** — la liste des titres (Identification → GSC → DataForSEO → SERP → Décision → Génération → QC YTG → Maillage → Sync), **une ligne par étape**. C'est de l'**orientation** : l'agent doit savoir en permanence quelle est la chaîne pour invoquer la bonne skill au bon moment. Seul le **détail procédural** de chaque étape descend en skill (voir ci-dessous). ⚠️ Ne pas confondre : la *carte* reste, le *mode d'emploi* descend.
 - **Règle d'Or** en **une ligne** seulement (invariant de sécurité « jamais réduire les assets ») — le détail (JSON de validation avant/après, exemples) descend dans la skill `refresh`.
 - CLAUDE.md devient aussi l'**index des skills** (une ligne par skill : quand l'invoquer) — même rôle d'index que le Volet 1 lui assignait pour les slash commands `/refresh`, `/audit`, etc. Les deux index (commandes + skills) cohabitent dans le même CLAUDE.md allégé, pas dans deux fichiers séparés.
 
@@ -403,7 +404,7 @@ ajouter un `.claudeignore` pour la *pertinence des recherches* (pas le budget to
 - **Règles Éditoriales** (anti-patterns, callouts interdits) → skills de rédaction (`format-wordpress`, `generate-enseigna-avis`, `sp-ressources-gutenberg`).
 - **E-E-A-T (framework)** → skills de rédaction / génération (cadre de rédaction, pas d'orientation).
 - **Détail de la Règle d'Or** → skill `refresh`.
-- Workflow 7 étapes, Formats & Métadonnées, Checklist Spreadsheet, Template Article Refresh, détail des 6 stratégies → skills correspondantes (déjà prévu).
+- **Détail procédural de chaque étape du workflow** (comment auditer, quel score bloque, comment composer le prompt…), Formats & Métadonnées, Checklist Spreadsheet, Template Article Refresh, détail des 6 stratégies → skills correspondantes. *(La carte des étapes, elle, reste dans CLAUDE.md — cf. ci-dessus. Cohérent avec `BRIEF_SIMPLIFICATION_PLAN.md` : « Reste : les 7 étapes + un index de pointeurs ».)*
 
 > Effet : CLAUDE.md ne porte plus que l'**orientation** + les **index**. Toute connaissance procédurale ou de rédaction est en skill, chargée à la demande. Cible ~150 lignes (vs 668), et le contexte permanent chute d'autant.
 
