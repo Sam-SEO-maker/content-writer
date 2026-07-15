@@ -238,6 +238,15 @@
       "onboardable": true
     },
     {
+      "tenant_id": "en-is-blog",
+      "type": "blog",
+      "country": "IS",
+      "language": "en",
+      "gsc_property": "https://www.superprof.is/blog/",
+      "url_base": "/blog/",
+      "onboardable": true
+    },
+    {
       "tenant_id": "en-ke-blog",
       "type": "blog",
       "country": "KE",
@@ -261,6 +270,15 @@
       "country": "MT",
       "language": "en",
       "gsc_property": "https://www.superprof.com.mt/blog/",
+      "url_base": "/blog/",
+      "onboardable": true
+    },
+    {
+      "tenant_id": "en-mu-blog",
+      "type": "blog",
+      "country": "MU",
+      "language": "en",
+      "gsc_property": "https://www.superprof.mu/blog/",
       "url_base": "/blog/",
       "onboardable": true
     },
@@ -580,15 +598,6 @@
       "onboardable": true
     },
     {
-      "tenant_id": "fr-mu-blog",
-      "type": "blog",
-      "country": "MU",
-      "language": "fr",
-      "gsc_property": "https://www.superprof.mu/blog/",
-      "url_base": "/blog/",
-      "onboardable": true
-    },
-    {
       "tenant_id": "fr-sn-blog",
       "type": "blog",
       "country": "SN",
@@ -630,15 +639,6 @@
       "country": "ID",
       "language": "id",
       "gsc_property": "https://www.superprof.co.id/blog/",
-      "url_base": "/blog/",
-      "onboardable": true
-    },
-    {
-      "tenant_id": "is-is-blog",
-      "type": "blog",
-      "country": "IS",
-      "language": "is",
-      "gsc_property": "https://www.superprof.is/blog/",
       "url_base": "/blog/",
       "onboardable": true
     },

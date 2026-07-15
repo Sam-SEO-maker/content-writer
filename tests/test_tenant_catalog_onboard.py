@@ -65,6 +65,11 @@ def test_language_overrides_verified_on_real_content():
     # Maroc/Sénégal francophones confirmés
     assert resolve_meta("https://www.superprof.ma/blog/")[1] == "fr"
     assert resolve_meta("https://www.superprof.com.sn/blog/")[1] == "fr"
+    # Islande/Maurice : blogs en anglais (balayage 90 blogs 2026-07-15)
+    assert resolve_meta("https://www.superprof.is/blog/")[1] == "en"
+    assert resolve_meta("https://www.superprof.mu/blog/")[1] == "en"
+    # Corée : reste coréen (indéterminé au fetch, défaut sûr)
+    assert resolve_meta("https://www.superprof.co.kr/blog/")[1] == "ko"
 
 
 # --- Onboarding -------------------------------------------------------------

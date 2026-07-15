@@ -90,12 +90,15 @@ _SUBDOMAIN_META = {
 
 # Overrides de langue VÉRIFIÉS sur le contenu réel du blog (WebFetch), quand la
 # langue de rédaction Superprof diffère de l'heuristique pays→langue. Clé = TLD.
-# Vérifié 2026-07-15 : le Golfe et le Maghreb publient en arabe, PAS en anglais/
-# français comme l'heuristique le supposait. (EAU .ae reste en ANGLAIS — vérifié.)
+# Balayage systématique des 90 blogs le 2026-07-15 (5 sous-agents WebFetch) :
+# 88/90 conformes à l'heuristique ; seules exceptions ci-dessous. EAU .ae reste
+# en ANGLAIS (vérifié). Corée .co.kr reste 'ko' (indéterminé au fetch, défaut sûr).
 _LANG_OVERRIDES = {
     "qa": "ar",      # Qatar — blog en arabe (pas en)
     "com.om": "ar",  # Oman — blog en arabe (pas en)
     "com.tn": "ar",  # Tunisie — blog en arabe (pas fr)
+    "is": "en",      # Islande — blog en anglais (pas is) — confirmé
+    "mu": "en",      # Maurice — chrome/contenu observé en anglais (à confirmer ; défaut en)
 }
 
 _DOMAIN_RE = re.compile(r"https?://(?:www\.)?superprof\.([a-z.]+?)/")
