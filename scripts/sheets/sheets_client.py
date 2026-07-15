@@ -126,21 +126,26 @@ class SheetsClient:
             spreadsheet_id: ID du Google Sheet
         """
         self.spreadsheet_id = spreadsheet_id
+        self.auth_mode = kwargs.get("auth_mode", "service_account")
         self._sheets_service = None
 
-        # Utiliser l'API directe via service account
-        if GOOGLE_API_AVAILABLE and SERVICE_ACCOUNT_PATH.exists():
+        # Utiliser l'API directe (auth selon auth_mode : SA par défaut, oauth_user en option)
+        if GOOGLE_API_AVAILABLE:
             self._init_direct_api()
             # NOTE: _ensure_audit_columns() désactivé (legacy Audit_Results sheet)
             # Architecture V2.0 utilise Refreshs_Audit avec structure fixe
 
     def _init_direct_api(self):
-        """Initialise la connexion directe a l'API Google Sheets."""
+        """Initialise la connexion directe a l'API Google Sheets (auth selon auth_mode)."""
         try:
-            credentials = service_account.Credentials.from_service_account_file(
-                str(SERVICE_ACCOUNT_PATH),
-                scopes=['https://www.googleapis.com/auth/spreadsheets']
+            from _shared.core.google_auth import get_credentials
+            credentials = get_credentials(
+                scopes=['https://www.googleapis.com/auth/spreadsheets'],
+                auth_mode=self.auth_mode,
             )
+            if credentials is None:
+                self._sheets_service = None
+                return
             self._sheets_service = build('sheets', 'v4', credentials=credentials)
         except Exception as e:
             print(f"Erreur init API directe: {e}")

@@ -30,12 +30,9 @@ def load_blog_config_as_site_config(blog_id: str, base_path: Optional[Path] = No
     if base_path is None:
         base_path = Path(__file__).parent.parent.parent
 
-    # Essayer les différentes extensions possibles
-    config_paths = [
-        base_path / "_shared" / "config" / "blogs" / f"{blog_id}.json",
-        base_path / "_shared" / "config" / "blogs" / f"{blog_id}.fr.json",
-        base_path / "_shared" / "config" / "blogs" / f"{blog_id}.com.json",
-    ]
+    # Config tenant unique (layout monorepo) : tenants/{id}/config/tenant.json
+    from _shared.core.tenant_paths import TenantPaths
+    config_paths = [TenantPaths(base_path=base_path).blog_config(blog_id)]
 
     config_file = None
     for path in config_paths:

@@ -1,0 +1,24 @@
+# CODEOWNERS — propriété par dossier pour le monorepo multi-tenant.
+# Chaque tenant est possédé par son responsable ; le moteur central par le mainteneur.
+# Doc : https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Un responsable de tenant ne peut modifier que son dossier tenants/{id}/ ;
+# toute modif du moteur central requiert la revue du mainteneur.
+
+# --- Défaut : moteur central (mainteneur) --------------------------------------
+*                                   @Sam-SEO-maker
+
+# --- Moteur / cœur (explicite, verrouillé) -------------------------------------
+/_shared/core/                      @Sam-SEO-maker
+/scripts/                           @Sam-SEO-maker
+/cli/                               @Sam-SEO-maker
+/content_writer.py                  @Sam-SEO-maker
+/.claude/                           @Sam-SEO-maker
+/.github/                           @Sam-SEO-maker
+
+# --- Dossiers tenants ----------------------------------------------------------
+# Un responsable ne possède QUE son sous-arbre. Ajouter le handle GitHub du
+# responsable à la ligne de son tenant lorsqu'un collaborateur est onboardé.
+# Exemple : /tenants/es-es-ressources/  @Sam-SEO-maker @responsable-es
+/tenants/enseigna/                  @Sam-SEO-maker
+/tenants/superprof-ressources/      @Sam-SEO-maker

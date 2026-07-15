@@ -484,7 +484,8 @@ def _load_blog_ytg_config(blog_id: str) -> dict:
     from pathlib import Path
 
     base = Path(__file__).resolve().parent.parent.parent
-    cfg_path = base / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+    from _shared.core.tenant_paths import TenantPaths
+    cfg_path = TenantPaths(base_path=base).blog_config(blog_id)
     if not cfg_path.exists():
         click.echo(f"[ERREUR] Config blog introuvable: {cfg_path}", err=True)
         sys.exit(1)
@@ -590,8 +591,9 @@ def qc(blog_id, slug, fix, json_out):
                    "à revoir avant push WP.")
 
     if json_out:
-        out = (Path(__file__).resolve().parent.parent.parent
-               / "_shared" / "outputs" / blog_id / "ytg_qc_report.json")
+        from _shared.core.tenant_paths import TenantPaths
+        _root = Path(__file__).resolve().parent.parent.parent
+        out = TenantPaths(base_path=_root).output_dir(blog_id) / "ytg_qc_report.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         click.echo(f"\n[YTG QC] Rapport écrit: {out}")
@@ -618,8 +620,9 @@ def qc(blog_id, slug, fix, json_out):
             click.echo("[YTG QC] Aucune tâche de correction préparée (analyse par terme KO).")
             return
 
-        manifest = (Path(__file__).resolve().parent.parent.parent
-                    / "_shared" / "outputs" / blog_id / "ytg_fix_manifest.json")
+        from _shared.core.tenant_paths import TenantPaths
+        manifest = (TenantPaths(base_path=Path(__file__).resolve().parent.parent.parent)
+                    .output_dir(blog_id) / "ytg_fix_manifest.json")
         click.echo(f"[YTG QC] {len(tasks)} tâche(s) de correction prête(s).")
         click.echo(f"[YTG QC] Manifest : {manifest}")
         click.echo(

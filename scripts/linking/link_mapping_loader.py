@@ -28,19 +28,20 @@ class LinkMappingLoader:
 
     def __init__(self, base_path: Optional[Path] = None):
         self.base_path = base_path or Path(__file__).parent.parent.parent
-        self.config_dir = self.base_path / "_shared" / "config" / "linking_maps"
+        from _shared.core.tenant_paths import TenantPaths
+        self._tenant_paths = TenantPaths(base_path=self.base_path)
 
     def load_csv(self, site_id: str) -> list[LinkMapping]:
         """
-        Load linking map CSV for a specific site.
+        Load linking map CSV for a specific tenant.
 
         Args:
-            site_id: Blog identifier (e.g., "enseigna.fr")
+            site_id: identifiant tenant (ex: "superprof-ressources")
 
         Returns:
             List of validated LinkMapping objects
         """
-        filepath = self.config_dir / f"{site_id}.csv"
+        filepath = self._tenant_paths.linking_maps_dir(site_id) / "links.csv"
         if not filepath.exists():
             raise FileNotFoundError(
                 f"Linking map not found: {filepath}\n"

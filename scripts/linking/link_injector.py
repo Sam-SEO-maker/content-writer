@@ -50,7 +50,8 @@ class LinkInjector:
         self.anchor_gen = AnchorGenerator()
         self.validator = InjectionValidator(self.domain)
 
-        self.outputs_dir = self.base_path / "_shared" / "outputs" / site_id
+        from _shared.core.tenant_paths import TenantPaths
+        self.outputs_dir = TenantPaths(base_path=self.base_path).output_dir(site_id)
         self.html_dir = self.outputs_dir / "html"
         self.json_dir = self.outputs_dir / "json"
 

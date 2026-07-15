@@ -4,20 +4,22 @@
   "domain": "superprof.fr",
   "url_base": "https://www.superprof.fr/ressources/",
   "gsc_property": "https://www.superprof.fr/ressources/",
+  "auth_mode": "service_account",
   "gsc_credentials_filename": "google-service-account.json",
-
   "content_type": "blog_article",
   "subject_category": "education_general",
   "language": "fr",
-
   "ytg": {
     "enabled": true,
     "gate": false,
     "group_id": 82174,
     "lang": "fr",
-    "keyword_sources": ["sheet", "gsc", "slug"]
+    "keyword_sources": [
+      "sheet",
+      "gsc",
+      "slug"
+    ]
   },
-
   "tone_profile": {
     "style": "natural_informal",
     "formality": "informal",
@@ -33,11 +35,16 @@
     "registre_tu_vous": "TODO_a_confirmer_PO",
     "todo": "Tone & voice complet en attente de la PO Manager — pour l'instant, suivre Guide 1 (Voice & Tone). Le registre tu/vous n'est PAS spécifié dans les guides anglais (Guide 1 dit seulement 'natural and tends toward informal')."
   },
-
   "seo_settings": {
     "word_count_by_type": {
-      "theorie": { "min": 1200, "max": 1600 },
-      "exercices": { "min": 600, "max": 1000 }
+      "theorie": {
+        "min": 1200,
+        "max": 1600
+      },
+      "exercices": {
+        "min": 600,
+        "max": 1000
+      }
     },
     "word_count_default_type": "theorie",
     "min_word_count": 1200,
@@ -45,7 +52,6 @@
     "max_external_links": 2,
     "money_keywords_in_blog_anchors_forbidden": true
   },
-
   "refresh_thresholds": {
     "stale_months": 12,
     "critical_months": 24,
@@ -53,31 +59,43 @@
     "impression_high_threshold": 1000,
     "position_decline_alert": 5
   },
-
   "editorial_guides": [
-    "_shared/prompts/sites/superprof-ressources.md",
-    "_shared/prompts/sites/superprof-ressources-reference.md"
+    "tenants/superprof-ressources/prompts/site.md",
+    "tenants/superprof-ressources/prompts/reference.md"
   ],
-
   "brand_rules": {
     "name": "Superprof",
-    "forbidden_spellings": ["Super Prof", "SuperProf", "SP"],
+    "forbidden_spellings": [
+      "Super Prof",
+      "SuperProf",
+      "SP"
+    ],
     "no_pronouns": true
   },
-
   "linking_rules": {
-    "blog_to_blog_anchor_types": ["warm", "cold"],
-    "blog_to_landing_anchor_types": ["money"],
+    "blog_to_blog_anchor_types": [
+      "warm",
+      "cold"
+    ],
+    "blog_to_landing_anchor_types": [
+      "money"
+    ],
     "landing_url_marker": "/lessons/",
     "blog_url_marker": "/blog/"
   },
-
-  "sheets_config": {
+  "sheets": {
     "spreadsheet_id": "1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ",
+    "spreadsheet_env": "SPREADSHEET_ID_SUPERPROF",
     "spreadsheet_name": "Articles Ressources",
-    "main_sheet": "⬆️ Growing"
+    "tabs": [
+      {
+        "name": "New Growing List",
+        "col_url": 0,
+        "col_keyword": 1
+      }
+    ],
+    "status_col": "F"
   },
-
   "scraping_config": {
     "article_body": "article.post-content, article.entry-content, .post-content, .entry-content",
     "exclude_selectors": [
@@ -92,7 +110,6 @@
     "timeout": 30,
     "requires_playwright": false
   },
-
   "wp_api_config": {
     "api_base_url": "https://www.superprof.fr/ressources/wp-json/wp/v2",
     "user_env_var": "WP_SUPERPROF_RESSOURCES_USER",

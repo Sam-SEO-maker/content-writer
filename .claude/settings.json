@@ -14,10 +14,14 @@
       "Write(.claude/plans/**)",
 
       "Bash(python content_writer.py:*)",
+      "Bash(python3 content_writer.py:*)",
       "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
       "Bash(pytest:*)",
       "Bash(python -c:*)",
+      "Bash(python3 -c:*)",
       "Bash(python -m:*)",
+      "Bash(python3 -m:*)",
 
       "Bash(ls:*)",
       "Bash(find:*)",

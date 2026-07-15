@@ -67,7 +67,8 @@ class YTGCorrector:
 
     def __init__(self, site_id: str = "enseigna.fr"):
         self.site_id = site_id
-        self.base_path = PROJECT_ROOT / "_shared" / "outputs" / site_id
+        from _shared.core.tenant_paths import TenantPaths
+        self.base_path = TenantPaths(base_path=PROJECT_ROOT).output_dir(site_id)
         self.analyzer = YTGAnalyzer()
         self.rate_limiter = RateLimiter()
         self._guide_index: Optional[dict] = None

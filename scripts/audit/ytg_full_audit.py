@@ -65,7 +65,8 @@ SLUGS = [
 ]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-BASE = PROJECT_ROOT / "_shared" / "outputs" / "enseigna.fr"
+from _shared.core.tenant_paths import TenantPaths
+BASE = TenantPaths(base_path=PROJECT_ROOT).output_dir("enseigna")
 
 
 def main():

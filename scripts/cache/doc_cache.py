@@ -117,11 +117,11 @@ class DocumentCache:
 
     def _load_blog_configs(self):
         """Charge toutes les configurations de blogs."""
-        blogs_dir = self.base_path / "_shared" / "config" / "blogs"
-        if blogs_dir.exists():
-            for config_file in blogs_dir.glob("*.json"):
-                blog_id = config_file.stem
-                self._blog_configs[blog_id] = self._load_json(f"_shared/config/blogs/{config_file.name}")
+        from _shared.core.tenant_paths import TenantPaths
+        for blog_id, config_file in TenantPaths(base_path=self.base_path).blog_config_files():
+            self._blog_configs[blog_id] = self._load_json(
+                str(config_file.relative_to(self.base_path))
+            )
 
     def _load_prompts_dispatch(self):
         """Charge la configuration de dispatch des prompts."""

@@ -45,9 +45,9 @@
       "registre": "TODO_a_confirmer_PO",
       "language": "fr",
       "editorial_guides": [
-        "_shared/prompts/sites/superprof-ressources/guide-1-blog-writing-foundations.md",
-        "_shared/prompts/sites/superprof-ressources/guide-2-blog-writing-reference.md",
-        "_shared/prompts/sites/superprof-ressources/guide-3-working-with-refreshes.md"
+        "tenants/superprof-ressources/prompts/guides/guide-1-blog-writing-foundations.md",
+        "tenants/superprof-ressources/prompts/guides/guide-2-blog-writing-reference.md",
+        "tenants/superprof-ressources/prompts/guides/guide-3-working-with-refreshes.md"
       ],
       "notion_commandes_db_id": "",
       "notion_sujets_db_id": ""

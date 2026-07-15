@@ -44,11 +44,13 @@ def cli(ctx):
 # Import des groupes de commandes
 from cli.commands import refresh, workflow, audit, batch, indexing, debug, linking
 from cli.commands import ytg, notion_cmd, report
+from cli.commands import finalize as finalize_cmd
 from cli.commands import statuts as statuts_cmd
 from cli.commands import ngl_status as ngl_status_cmd
 
 # Enregistrer les commandes
 cli.add_command(refresh.refresh)
+cli.add_command(finalize_cmd.finalize)
 cli.add_command(workflow.workflow)
 cli.add_command(audit.audit)
 cli.add_command(batch.batch)

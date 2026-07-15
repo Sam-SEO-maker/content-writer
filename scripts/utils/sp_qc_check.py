@@ -20,7 +20,8 @@ import re
 import sys
 from pathlib import Path
 
-OUT = Path("_shared/outputs/superprof-ressources")
+from _shared.core.tenant_paths import TenantPaths
+OUT = TenantPaths().output_dir("superprof-ressources")
 HTML = OUT / "html"
 CSVDIR = OUT / "csv"
 

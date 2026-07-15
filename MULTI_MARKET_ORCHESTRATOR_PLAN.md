@@ -255,6 +255,11 @@ Ne pas créer un nouveau repo — monorepo unique privé, moteur central + **dos
 ```
 tenants/
 ├── {tenant}/                       # tout le client au même endroit, self-service
+│   ├── .claude/skills/             # ← skills de génération/QC PROPRES au tenant
+│   │                               #   (ex: generate-enseigna-avis, sp-ressources-gutenberg)
+│   │                               #   discovery scopée native de Claude Code : lancé depuis
+│   │                               #   tenants/{tenant}/, seul ce dossier + les skills transverses
+│   │                               #   racine sont chargés. PAS de symlink, PAS de dossier plat global.
 │   ├── prompts/site.md             # ← ex _shared/prompts/sites/{id}.md
 │   ├── config/tenant.json          # ← ex _shared/config/blogs/{id}.json (wp_api_config, tone…)
 │   ├── config/landings.csv         # ← ex superprof_landings.json (dé-hardcodé)
@@ -262,22 +267,26 @@ tenants/
 │   └── outputs/                    # ← ex _shared/outputs/{id}/
 └── …                               # nouveau tenant (tout type) = 1 dossier
 
+.claude/skills/                     # ← noyau TRANSVERSE UNIQUEMENT, vu par tous les tenants :
+                                    #   format-wordpress + recherche-sources. Aucun skill de tenant ici.
+
 _shared/config/
 └── sites.json                      # index global MINCE — 1 entrée/tenant, types hétérogènes
                                     #   ("structure_type": "blog"|"ressources"|…, "language": …)
 ```
 
-Un nouveau tenant (quel que soit le client) = **1 dossier `tenants/{tenant}/` à créer** (site.md + config + entrée dans l'index `sites.json`) + credentials `.env` — aucune ligne de code Python à toucher.
+Un nouveau tenant (quel que soit le client) = **1 dossier `tenants/{tenant}/` à créer** (site.md + config + `.claude/skills/` propres + entrée dans l'index `sites.json`) + credentials `.env` — aucune ligne de code Python à toucher. **Isolement des skills confirmé natif** (vérifié 2026-07-15, doc « large codebases ») : un responsable pays lance `claude` depuis `tenants/{son-tenant}/` et ne voit QUE ses skills + les 2 transverses racine, jamais ceux des 99 autres tenants. Le `.claude/skills/` de son tenant, vide + README au départ, EST sa liste des skills à créer. `CODEOWNERS` par `tenants/{tenant}/` → chacun ne possède que son sous-arbre, zéro conflit git sur un dossier partagé. C'est ce qui rend le modèle tenable à ~100 tenants × ~100 utilisateurs.
 
 > **Réconciliation avec `BRIEF_SIMPLIFICATION_PLAN.md` (Étape F)** : les deux plans convergent désormais sur le **layout regroupé `tenants/{tenant}/`** et le monorepo privé + `CODEOWNERS`. L'ancienne recommandation « garder l'éclatement en 4 arbres plats parallèles » créait la friction « toucher 4 dossiers » pour un responsable pays ; on la remplace par le regroupement. Prérequis à acter au passage : dé-hardcoder `superprof_landings.json` (`superprof_rotator.py:22`, `build_superprof_landings.py:28`) et `push_to_wp.py:22` (`BLOG_CFG` figé superprof-only), et purger les dossiers fantômes `categories/`/`templates/`/`prompts/formats/` résolus par le composer mais absents du disque.
 
 **Ce qui reste à concevoir (pas à coder maintenant, juste cadrer)** :
 - Convention de nommage `{tenant}` : un slug libre, non contraint à un schéma Superprof. Pour les blogs Superprof pays, `{lang}-{country}-{structure}` (ex: `es-es-blog`, `pt-br-ressources`) évite les collisions et permet un même pays avec 2 structures ; pour les autres clients, un slug parlant suffit (`enseigna`, `apuntes`, `resources-com`). Aucun tenant n'est privilégié dans l'index.
 - Un `--market` catalogue (`cw market list`) pour qu'un collaborateur découvre les IDs valides sans lire de JSON.
+- **Index unique des marchés = `sites.json`** (pas de second fichier `markets.json` — une seule source de vérité runtime, sinon on recrée une divergence type contradiction E-E-A-T §Brief). Chaîne amont→aval : **page Notion « config pays »** (source éditée par les humains — https://app.notion.com/p/superprof/b4f6b521eeb14e29a56a527febd9d278?v=2301f405403544ae9abf5e84fefa95bf ) →[sync unidirectionnel, Étape 6]→ `sites.json` (index machine) → `cw market list` (vue humaine) → moteur (runtime, lit `sites.json`, jamais Notion). La page Notion est le tableau de bord ; `sites.json` en est la projection synchronisée.
 
-### 4bis. Deux verrous multi-tenant à lever (bloquants pour l'onboarding d'un collaborateur)
+### 4bis. Trois verrous multi-tenant à lever (bloquants pour l'onboarding d'un collaborateur)
 
-Investigation 2026-07-13 : le repo est aujourd'hui **mono-utilisateur déguisé en multi-tenant**. Deux points forcent une édition du code Python à chaque nouveau collaborateur — à corriger pour que « déposer un dossier tenant » suffise réellement.
+Investigation 2026-07-13 (points A/B) puis 2026-07-15 (point C) : le repo est aujourd'hui **mono-utilisateur déguisé en multi-tenant**. Trois points forcent une édition d'un fichier NOYAU (code Python, ou subagent partagé) à chaque nouveau collaborateur — à corriger pour que « déposer un dossier tenant » suffise réellement.
 
 **A. Google Sheet : nom d'onglet, colonnes et ID à externaliser en config.**
 Aujourd'hui hardcodés dans les scripts, pas lus depuis la config :
@@ -291,6 +300,10 @@ Aujourd'hui hardcodés dans les scripts, pas lus depuis la config :
 Aujourd'hui : **compte de service partagé unique** (`GOOGLE_SA_PATH`) pour GSC *et* Sheets — un collaborateur devrait recevoir une clé sensible et être ajouté à chaque propriété/sheet. Mais un **flow OAuth navigateur existe déjà**, débranché : `scripts/setup/generate_gsc_token.py` (`InstalledAppFlow` + `run_local_server`, scopes GSC+Sheets corrects → `token.json`). Rien ne lit ce `token.json` au runtime.
 **Décision (tranchée, mode autonome) : supporter les DEUX via un flag `auth_mode: service_account | oauth_user` par tenant.** Le service account reste par défaut (il fonctionne déjà sur vos propriétés, zéro friction pour vous) ; un collaborateur externe passe en `oauth_user` : il lance une fois le flow Chrome existant, consent, et l'app utilise **ses** accès GSC/Sheets — sans clé partagée.
 **Action** : les 3 helpers d'auth (`_init_direct_api` dans `sheets_client.py:140` et `gsc_analyzer.py:63`, `_build_clients` dans `superprof_gsc_audit.py:64`) tentent `Credentials.from_authorized_user_file(token.json)` (avec refresh) selon `auth_mode`, sinon retombent sur `from_service_account_file`. Distribuer un `credentials.json` (client OAuth desktop). La propriété GSC est déjà paramétrée (`GSCAnalyzer(gsc_property=...)`, `sites.json`). Scopes identiques entre les deux chemins → rien à ajuster côté scopes.
+
+**C. Mapping blog→skill de génération/QC hardcodé dans le subagent noyau (identifié 2026-07-15).**
+Aujourd'hui : `.claude/agents/content-generator.md` (L33-35) liste en dur `enseigna → generate-enseigna-avis` et `superprof-ressources → sp-ressources-gutenberg (+ qc-sp-ressources)`. C'est le **même mal que l'erreur du passé** (métier FR câblé dans le code), juste déplacé en Markdown : un collaborateur PT/US devrait éditer ce fichier NOYAU partagé pour brancher SON skill. Les skills typés par tenant sont légitimes (chaque tenant a besoin des siens, cf. §4 `.claude/skills/` par tenant) — le défaut est le **point de branchement en dur dans le subagent partagé**, pas leur existence.
+**Action** : externaliser le mapping en config par tenant : ajouter `generation_skill` et `qc_skill` (nullable) à l'entrée du tenant (`tenants/{tenant}/config/tenant.json` ou `sites.json`). Réécrire `content-generator.md` pour qu'il **résolve le skill à invoquer depuis la config du tenant** (« utilise le skill nommé dans `generation_skill`, puis `qc_skill` s'il est non-null ») au lieu de lister enseigna/superprof. Résultat : ajouter un tenant = 1 dossier `.claude/skills/` + 2 champs config, **zéro édition du noyau**. Combiné à la discovery scopée (§4), c'est ce qui ferme complètement le couplage moteur↔tenant côté génération.
 
 > Ces deux verrous sont la condition pour que la promesse « onboarding = 1 dossier `tenants/{tenant}/`, zéro code » soit vraie. À intégrer au séquencement (phase monorepo/config).
 
@@ -653,7 +666,7 @@ d'or à respecter par l'agent qui l'exécute :
 | **3bis. Bout-en-bout (génération → outputs → QC → maillage)** | Brancher la chaîne complète : subagent générateur lit `generation_prompt.txt` → écrit via `save_refreshed_html()` → auto `YTGQualityCheck.check_html()` → boucle correction (`A_CORRIGER` re-corrige, `BLOQUE` stop+alerte) → **maillage** (`SuperprofRotator` pour tenant Superprof / `EnseignaAvisLinker` pour avis Enseigna) ; refondre le tail `process_url`. **Rédaction sous abonnement Max, jamais API payante.** | §3 « Bout-en-bout » | Un `/refresh <url>` va de l'URL au contenu écrit dans `_shared/outputs/{tenant}/` + verdict YTG + liens injectés, sans reprise manuelle. |
 | **4. Monorepo `tenants/{tenant}/`** | `git mv` des 4 arbres `{id}` → `tenants/{id}/` ; racines de chemins (composer, doc_cache, link loader, output dir) ; **dé-hardcode superprof-only** (`superprof_rotator`, `push_to_wp`, `build_superprof_landings`) ; **externaliser onglet/colonnes/sheet_id Sheet par tenant** (§4bis-A, virer `NGL_SHEET` & littéraux) ; **`auth_mode` service_account\|oauth_user** en rebranchant le flow Chrome existant (§4bis-B) ; `sites.json` → index mince ; `CODEOWNERS`. | Brief **F** + §4/§4bis | Refresh enseigna OK depuis `tenants/enseigna/` ; tenant factice non-Superprof chargé **sans modif code** (onglet/sheet en config) ; un collègue s'authentifie via Chrome (OAuth) sur SA propre sheet + GSC. |
 | **5. Fusion `CLAUDE.md` (UNE fois) + consolidation `_shared/docs/`** | Allègement unique → index des skills **et** slash commands + réalignement doc. **Consolider `_shared/docs/`** (voir *Volet doc*) : fusion E-E-A-T sur `EEAT_GUIDE.md` + repointage `doc_cache.py:108` ; suppression `ADD_COLUMNS_GUIDE.md` ; archivage `YEAR_UPDATE_IMPLEMENTATION.md` ; décision `SITEMAP_DISCOVERY.md` ; vérif fraîcheur `OUTPUT_ARCHITECTURE`/`PARENT_H2_WHITELIST`. | Brief **C** + Volet 2 (4) + *Volet doc* | Ligne « Memory files » de `/context` chute nettement (~150-200 l. vs 668) ; un **seul** doc E-E-A-T, chargé par le même nom via CLAUDE.md **et** `doc_cache.py`. |
-| **6. Multi-tenant runtime + Notion** | Alias `--market`, `--publish`, accès GSC via MCP `gsc-remote` ; **config pays Notion → sync `sites.json`** (unidirectionnel, pas de lecture Notion au runtime) ; recensement blogs Superprof pays ; mémoire `project_architecture_map`. | Volet 1 (5-8) + Volet 2 (5) + Brief **E** | `markets.json`/`sites.json` cohérent avec la page publique ; le moteur ne lit pas Notion au run. |
+| **6. Multi-tenant runtime + Notion** | Alias `--market`, `--publish`, accès GSC via MCP `gsc-remote` ; **page Notion « config pays » → sync `sites.json`** (unidirectionnel, pas de lecture Notion au runtime) ; recensement blogs Superprof pays ; mémoire `project_architecture_map`. | Volet 1 (5-8) + Volet 2 (5) + Brief **E** | `sites.json` (index UNIQUE, pas de `markets.json` séparé) cohérent avec la page Notion ; le moteur ne lit pas Notion au run. |
 
 > **Ordre des dépendances clés** : phase 0 (base propre) → phases 1-2 (skills + stratégies, sans
 > toucher `CLAUDE.md`) → phase 3 (commandes qui s'appuient sur les skills) → phase 4 (déplacement

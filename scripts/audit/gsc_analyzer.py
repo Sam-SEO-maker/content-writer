@@ -43,27 +43,33 @@ class GSCAnalyzer:
     Utilise l'API directe GSC via service account.
     """
 
-    def __init__(self, gsc_property: str):
+    def __init__(self, gsc_property: str, auth_mode: str = "service_account"):
         """
         Initialise l'analyseur GSC.
 
         Args:
             gsc_property: Propriete GSC (ex: 'https://enseigna.fr/')
+            auth_mode: 'service_account' (défaut) ou 'oauth_user' (Phase 4bis-B).
         """
         self.gsc_property = gsc_property
+        self.auth_mode = auth_mode
         self._gsc_service = None
 
         # Initialiser l'API directe si disponible
-        if GOOGLE_API_AVAILABLE and SERVICE_ACCOUNT_PATH.exists():
+        if GOOGLE_API_AVAILABLE:
             self._init_direct_api()
 
     def _init_direct_api(self):
-        """Initialise la connexion directe a l'API GSC."""
+        """Initialise la connexion directe a l'API GSC (auth selon auth_mode)."""
         try:
-            credentials = service_account.Credentials.from_service_account_file(
-                str(SERVICE_ACCOUNT_PATH),
-                scopes=['https://www.googleapis.com/auth/webmasters.readonly']
+            from _shared.core.google_auth import get_credentials
+            credentials = get_credentials(
+                scopes=['https://www.googleapis.com/auth/webmasters.readonly'],
+                auth_mode=self.auth_mode,
             )
+            if credentials is None:
+                self._gsc_service = None
+                return
             self._gsc_service = build('searchconsole', 'v1', credentials=credentials)
         except Exception as e:
             print(f"Erreur init API GSC directe: {e}")

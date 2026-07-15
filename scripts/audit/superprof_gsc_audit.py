@@ -49,7 +49,8 @@ SA_PATH = Path(
     )
 ).expanduser()
 
-OUTPUT_DIR = Path(__file__).resolve().parents[2] / "_shared" / "outputs" / "superprof-ressources" / "audit"
+from _shared.core.tenant_paths import TenantPaths
+OUTPUT_DIR = TenantPaths(base_path=Path(__file__).resolve().parents[2]).output_dir("superprof-ressources") / "audit"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",

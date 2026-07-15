@@ -57,6 +57,34 @@ _SHEET_LAYOUT = {
 }
 
 
+def _resolve_sheet_layout(blog_id: str) -> dict | None:
+    """Layout des onglets Sheet d'un tenant.
+
+    Source de vérité : le bloc `sheets` de tenants/{id}/config/tenant.json
+    (externalisé en Phase 4bis-A). Repli sur la constante _SHEET_LAYOUT si la
+    config est absente/incomplète, pour ne pas casser un tenant non encore migré.
+    """
+    try:
+        from _shared.core.tenant_paths import TenantPaths
+        import json
+        cfg_path = TenantPaths().blog_config(blog_id)
+        if cfg_path.exists():
+            sheets = json.loads(cfg_path.read_text(encoding="utf-8")).get("sheets", {})
+            tabs = sheets.get("tabs")
+            env = sheets.get("spreadsheet_env")
+            if tabs and env:
+                return {
+                    "spreadsheet_env": env,
+                    "tabs": [
+                        (t["name"], t.get("col_url", 0), t.get("col_keyword", 1))
+                        for t in tabs
+                    ],
+                }
+    except Exception as e:
+        logger.warning(f"[KeywordResolver] lecture sheets config '{blog_id}' échouée: {e}")
+    return _SHEET_LAYOUT.get(blog_id)
+
+
 def _norm_url(url: str) -> str:
     """Normalise une URL pour comparaison (minuscules, sans slash final)."""
     return (url or "").strip().rstrip("/").lower()
@@ -175,7 +203,7 @@ class KeywordResolver:
 
     def _from_sheet(self, blog_id: str, url: str) -> str:
         """Cherche le mot-clé dans l'onglet réel du blog (service account)."""
-        layout = _SHEET_LAYOUT.get(blog_id)
+        layout = _resolve_sheet_layout(blog_id)
         if not layout:
             return ""
 
@@ -318,7 +346,8 @@ class KeywordResolver:
 
         try:
             base = Path(__file__).resolve().parent.parent.parent
-            cfg_path = base / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+            from _shared.core.tenant_paths import TenantPaths
+            cfg_path = TenantPaths(base_path=base).blog_config(blog_id)
             if not cfg_path.exists():
                 return ""
             with open(cfg_path) as f:

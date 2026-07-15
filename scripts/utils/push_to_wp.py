@@ -19,8 +19,12 @@ from dotenv import load_dotenv
 
 from scripts.scraping.wordpress_api_client import WordPressAPIClient
 
-BLOG_CFG = Path("_shared/config/blogs/superprof-ressources.json")
-OUT = Path("_shared/outputs/superprof-ressources")
+from _shared.core.tenant_paths import TenantPaths
+
+_TENANT = "superprof-ressources"
+_TP = TenantPaths()
+BLOG_CFG = _TP.blog_config(_TENANT)
+OUT = _TP.output_dir(_TENANT)
 BACKUPS = OUT / "wp_backups"
 
 

@@ -149,7 +149,8 @@ def process_site(site_dir: Path, dry_run: bool = False, delete_source: bool = Tr
 
 def process_tests_andra(dry_run: bool = False, delete_source: bool = True) -> list:
     """Traite les fichiers tests/seraphine_andra/html/*_seraphine.html."""
-    tests_dir = OUTPUTS_ROOT / "superprof-ressources" / "tests" / "seraphine_andra" / "html"
+    from _shared.core.tenant_paths import TenantPaths
+    tests_dir = TenantPaths(base_path=REPO_ROOT).output_dir("superprof-ressources") / "tests" / "seraphine_andra" / "html"
     if not tests_dir.exists():
         return []
 
@@ -174,8 +175,9 @@ def main() -> int:
     print("=" * 70)
 
     all_results = []
+    from _shared.core.tenant_paths import TenantPaths
     for site in ("superprof-ressources", "enseigna"):
-        site_dir = OUTPUTS_ROOT / site
+        site_dir = TenantPaths(base_path=REPO_ROOT).output_dir(site)
         results = process_site(site_dir, dry_run=args.dry_run, delete_source=delete_source)
         if results:
             print(f"\n[{site}] {len(results)} fichiers traités")

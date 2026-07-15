@@ -1,0 +1,23 @@
+# .claudeignore — cible et accélère les recherches Glob/Grep de Claude Code.
+# NB : ceci n'économise pas de tokens (un fichier non lu n'en consomme pas) ;
+# le but est d'exclure les données générées / machine du champ des recherches
+# pour que grep/glob ne remontent que du code et de la config pertinents.
+# Signal bypassable, pas une barrière de sécurité (pour ça → permissions.deny).
+
+# Données générées (scrapes, audits, articles produits)
+_shared/context/
+_shared/outputs/
+_shared/temp/
+_shared/cache/
+
+# Données machine / exports bruts (hors git)
+_local/
+Images/
+
+# Archives (contenu retiré du flux actif)
+_shared/prompts/_archive/
+
+# Environnements et caches Python
+__pycache__/
+.venv/
+venv/

@@ -188,7 +188,8 @@ class YTGAutoCorrector:
                 tasks.append(task)
 
         if tasks:
-            manifest = PROJECT_ROOT / "_shared" / "outputs" / self.blog_id / "ytg_fix_manifest.json"
+            from _shared.core.tenant_paths import TenantPaths
+            manifest = TenantPaths(base_path=PROJECT_ROOT).output_dir(self.blog_id) / "ytg_fix_manifest.json"
             manifest.parent.mkdir(parents=True, exist_ok=True)
             manifest.write_text(
                 json.dumps([t.to_dict() for t in tasks], ensure_ascii=False, indent=2),

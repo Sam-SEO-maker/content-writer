@@ -81,6 +81,10 @@ class RefreshOrchestrator:
         """
         self.base_path = base_path or Path(__file__).parent.parent.parent
 
+        # Résolveur de chemins par tenant (point unique — Phase 4)
+        from _shared.core.tenant_paths import TenantPaths
+        self._tenant_paths = TenantPaths(base_path=self.base_path)
+
         # Initialiser le cache
         self.doc_cache = DocumentCache(self.base_path)
 
@@ -94,7 +98,7 @@ class RefreshOrchestrator:
         self.output_mgr = OutputManager(self.base_path)
 
         # Content extractor for HTML parsing (asset baseline extraction)
-        self.content_extractor = ContentExtractor(self.base_path / "_shared" / "config" / "blogs")
+        self.content_extractor = ContentExtractor(base_path=self.base_path)
 
         # Editorial auditor pour quality gate (étape 1.5)
         editorial_rules_path = self.base_path / "_shared" / "config" / "editorial_rules.json"
@@ -220,7 +224,7 @@ class RefreshOrchestrator:
         if blog_id in self._wp_api_clients:
             return self._wp_api_clients[blog_id]
 
-        config_path = self.base_path / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+        config_path = self._tenant_paths.blog_config(blog_id)
         client = None
         try:
             with open(config_path, "r", encoding="utf-8") as f:
@@ -497,7 +501,7 @@ class RefreshOrchestrator:
 
                 # Générer l'URL du rapport (path relatif pour Sheets)
                 url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
-                report_relative_url = f"_shared/outputs/{blog_id}/editorial_audits/{url_slug}_editorial_audit.md"
+                report_relative_url = f"tenants/{blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
 
                 # Log dans Sheets si disponible
                 if self.sheets_client:
@@ -532,7 +536,7 @@ class RefreshOrchestrator:
             if editorial_result and self.sheets_client:
                 verdict = "PASSED" if editorial_result.overall_score >= 7.0 else "REVIEW_REQUIRED"
                 url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
-                report_relative_url = f"_shared/outputs/{blog_id}/editorial_audits/{url_slug}_editorial_audit.md"
+                report_relative_url = f"tenants/{blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
 
                 with timed(timer, "sheets_write"):
                     self.sheets_client.log_editorial_audit(
@@ -920,7 +924,7 @@ class RefreshOrchestrator:
     def _ytg_gate_enabled(self, blog_id: str) -> bool:
         """Lit ytg.gate depuis _shared/config/blogs/{blog_id}.json (défaut: False)."""
         try:
-            cfg_path = self.base_path / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+            cfg_path = self._tenant_paths.blog_config(blog_id)
             if not cfg_path.exists():
                 return False
             with open(cfg_path, encoding="utf-8") as f:
@@ -1027,7 +1031,7 @@ class RefreshOrchestrator:
                     results["review_required"] += 1
 
                 # STEP 6: Log to spreadsheet (columns X-AB)
-                report_relative_url = f"_shared/outputs/{row.blog_id}/editorial_audits/{url_slug}_editorial_audit.md"
+                report_relative_url = f"tenants/{row.blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
 
                 self.sheets_client.log_editorial_audit(
                     url=row.blogpost_url,
@@ -1760,7 +1764,7 @@ class RefreshOrchestrator:
             "people_also_ask": row.people_also_ask[:500] if row.people_also_ask else "",
             "secondary_keywords": row.secondary_keywords[:500] if row.secondary_keywords else "",
             "url_slug": url_slug,
-            "output_dir": f"_shared/outputs/{row.blog_id}",
+            "output_dir": f"tenants/{row.blog_id}/outputs",
             # Semantic field: category for SemanticChecker._load_semantic_field()
             "category": self.BLOG_CATEGORY_MAP.get(row.blog_id, ""),
         }
@@ -1798,11 +1802,11 @@ class RefreshOrchestrator:
             "Lis les données d'audit dans audit_data.json",
             "Lis les guidelines dans guidelines.txt",
             "Génère le HTML optimisé en respectant la RÈGLE D'OR",
-            f"Sauvegarde le résultat dans _shared/outputs/{row.blog_id}/{html_subdir}/{output_slug}_refreshed.html",
-            f"Sauvegarde les métadonnées dans _shared/outputs/{row.blog_id}/metadata/{output_slug}_metadata.json",
+            f"Sauvegarde le résultat dans tenants/{row.blog_id}/outputs/{html_subdir}/{output_slug}_refreshed.html",
+            f"Sauvegarde les métadonnées dans tenants/{row.blog_id}/outputs/metadata/{output_slug}_metadata.json",
         ]
         if row.blog_id == "superprof-ressources":
-            refreshed_html_path = f"_shared/outputs/{row.blog_id}/{html_subdir}/{output_slug}_refreshed.html"
+            refreshed_html_path = f"tenants/{row.blog_id}/outputs/{html_subdir}/{output_slug}_refreshed.html"
             instructions.append(
                 f"Exécute en Bash depuis la racine du projet (extraction CSV des tableaux, "
                 f"OBLIGATOIRE avant l'étape suivante, même si le rapport de génération dit "
@@ -1829,8 +1833,8 @@ class RefreshOrchestrator:
                     "guidelines": str(guidelines_file.absolute())
                 },
                 "output": {
-                    "refreshed_html": f"_shared/outputs/{row.blog_id}/{html_subdir}/{output_slug}_refreshed.html",
-                    "metadata": f"_shared/outputs/{row.blog_id}/metadata/{output_slug}_metadata.json"
+                    "refreshed_html": f"tenants/{row.blog_id}/outputs/{html_subdir}/{output_slug}_refreshed.html",
+                    "metadata": f"tenants/{row.blog_id}/outputs/metadata/{output_slug}_metadata.json"
                 }
             },
             "instructions": instructions,

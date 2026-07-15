@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUTS_DIR = PROJECT_ROOT / "_shared" / "outputs"
 
-SITES = ["enseigna.fr", "superprof.fr"]
+SITES = ["enseigna", "superprof-ressources"]
 
 
 # ---------------------------------------------------------------------------
@@ -52,7 +52,8 @@ class RateLimiter:
 
 def discover_html_files(site_id: str) -> list[Path]:
     """Find all _refreshed.html files, deduplicate (prefer slug-named)."""
-    base = OUTPUTS_DIR / site_id
+    from _shared.core.tenant_paths import TenantPaths
+    base = TenantPaths(base_path=PROJECT_ROOT).output_dir(site_id)
     all_files: list[Path] = []
 
     for folder in ["html_child_posts", "html_parent_posts"]:
@@ -95,7 +96,8 @@ def discover_html_files(site_id: str) -> list[Path]:
 
 def resolve_keyword(html_path: Path, site_id: str) -> str:
     """Resolve main keyword from metadata JSON or slug."""
-    metadata_dir = OUTPUTS_DIR / site_id / "metadata"
+    from _shared.core.tenant_paths import TenantPaths
+    metadata_dir = TenantPaths(base_path=PROJECT_ROOT).output_dir(site_id) / "metadata"
 
     # Try multiple matching strategies
     stem = html_path.stem.replace("_refreshed", "")
@@ -287,7 +289,8 @@ def main():
             )
 
         # Save results
-        out_path = OUTPUTS_DIR / site_id / "ytg_batch_results.json"
+        from _shared.core.tenant_paths import TenantPaths
+        out_path = TenantPaths(base_path=PROJECT_ROOT).output_dir(site_id) / "ytg_batch_results.json"
         out_path.write_text(
             json.dumps(results, ensure_ascii=False, indent=2),
             encoding="utf-8",

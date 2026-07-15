@@ -95,7 +95,8 @@ def run_benchmark(
 
     # Resolve spreadsheet_id from blog config if not provided
     if not spreadsheet_id:
-        config_path = base_path / "_shared" / "config" / "blogs" / f"{blog_id}.json"
+        from _shared.core.tenant_paths import TenantPaths
+        config_path = TenantPaths(base_path=base_path).blog_config(blog_id)
         if not config_path.exists():
             raise FileNotFoundError(f"Blog config not found: {config_path}")
         blog_config = json.loads(config_path.read_text())

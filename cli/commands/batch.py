@@ -430,8 +430,8 @@ def extract_tables(site_id, input_dir, output_dir, single_file):
 
     from scripts.utils.table_csv_extractor import extract_tables_to_csv
 
-    # Use site_id verbatim for path (avoids OutputManager normalization aliases)
-    base_dir = Path(__file__).parents[2] / "_shared" / "outputs" / site_id
+    from _shared.core.tenant_paths import TenantPaths
+    base_dir = TenantPaths(base_path=Path(__file__).parents[2]).output_dir(site_id)
     html_dir = input_dir or base_dir / "html"
     csv_dir = output_dir or base_dir / "csv"
 

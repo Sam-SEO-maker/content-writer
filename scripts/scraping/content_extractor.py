@@ -56,35 +56,31 @@ class ContentExtractor:
     Critical: Always extract assets from FULL HTML before cleaning.
     """
 
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, base_path: Optional[Path] = None):
         """
         Initialize content extractor.
 
         Args:
-            config_dir: Path to blog config directory (default: _shared/config/blogs/)
+            base_path: Racine projet (défaut: auto). Les configs tenant sont
+                résolues via TenantPaths (tenants/{id}/config/tenant.json).
         """
-        self.config_dir = config_dir or Path(__file__).parent.parent.parent / "_shared" / "config" / "blogs"
+        from _shared.core.tenant_paths import TenantPaths
+        self._tenant_paths = TenantPaths(base_path=base_path) if base_path else TenantPaths()
         self.blog_configs = self._load_blog_configs()
 
     def _load_blog_configs(self) -> Dict[str, dict]:
-        """Load all blog configurations with scraping_config."""
+        """Load all tenant configs (avec scraping_config) via TenantPaths."""
         configs = {}
-
-        if not self.config_dir.exists():
-            logger.warning(f"Config directory not found: {self.config_dir}")
-            return configs
-
-        for config_file in self.config_dir.glob("*.json"):
+        for tenant_id, config_file in self._tenant_paths.blog_config_files():
             try:
                 with config_file.open("r", encoding="utf-8") as f:
                     config = json.load(f)
-                    site_id = config.get("id") or config.get("blog_id")
-                    if site_id:
-                        configs[site_id] = config
+                    site_id = config.get("id") or config.get("blog_id") or tenant_id
+                    configs[site_id] = config
             except Exception as e:
                 logger.error(f"Failed to load config {config_file}: {e}")
 
-        logger.info(f"Loaded {len(configs)} blog configurations")
+        logger.info(f"Loaded {len(configs)} tenant configurations")
         return configs
 
     def extract_article_body(

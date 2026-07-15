@@ -141,8 +141,10 @@ class ArticleResult:
 class EnseignaAvisLinker:
     def __init__(self, base_path: Optional[Path] = None, seed_salt: str = ""):
         self.base_path = base_path or Path(__file__).parent.parent.parent
-        self.outputs_html = self.base_path / "_shared" / "outputs" / "enseigna" / "html"
-        self.reports_dir = self.base_path / "_shared" / "outputs" / "enseigna" / "json"
+        from _shared.core.tenant_paths import TenantPaths
+        _out = TenantPaths(base_path=self.base_path).output_dir("enseigna")
+        self.outputs_html = _out / "html"
+        self.reports_dir = _out / "json"
         self.rotator = SuperprofRotator()
         self.validator = InjectionValidator(DOMAIN)
         self._sitemap = self._load_sitemap_posts()
@@ -165,9 +167,10 @@ class EnseignaAvisLinker:
 
     def _load_file_bindings(self) -> dict[str, Path]:
         """Charge le binding URL -> Path depuis enseigna_file_urls.json."""
+        from _shared.core.tenant_paths import TenantPaths
         cfg = (
-            self.base_path / "_shared" / "config" / "linking_maps"
-            / "enseigna_file_urls.json"
+            TenantPaths(base_path=self.base_path).linking_maps_dir("enseigna")
+            / "file_urls.json"
         )
         mapping: dict[str, Path] = {}
         if not cfg.exists():

@@ -180,7 +180,8 @@ def run(months: int = 6, dry_run: bool = False) -> dict:
     _print_summary(buckets)
 
     if dry_run:
-        out_dir = REPO_ROOT / "_shared" / "outputs" / "enseigna" / "audit"
+        from _shared.core.tenant_paths import TenantPaths
+        out_dir = TenantPaths(base_path=REPO_ROOT).output_dir("enseigna") / "audit"
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"refresh_list_{snapshot}.json"
         with open(out_path, "w", encoding="utf-8") as f:

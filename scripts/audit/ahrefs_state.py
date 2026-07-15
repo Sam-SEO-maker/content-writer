@@ -325,7 +325,8 @@ def run_ahrefs_state(
     ]
 
     # 5. Dump local backup
-    out_dir = REPO_ROOT / "_shared" / "outputs" / site_id / "audit"
+    from _shared.core.tenant_paths import TenantPaths
+    out_dir = TenantPaths(base_path=REPO_ROOT).output_dir(site_id) / "audit"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"ahrefs_state_{snapshot}.json"
     with open(out_path, "w", encoding="utf-8") as f:

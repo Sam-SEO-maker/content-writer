@@ -201,7 +201,10 @@ class PromptComposer:
         Returns:
             Contenu du prompt ou None
         """
-        return self._load_prompt(self.sites_path / f"{site_id}.md")
+        # Résolution via le point unique TenantPaths (base = parent de _shared/prompts).
+        from _shared.core.tenant_paths import TenantPaths
+        base_path = self.prompts_path.parent.parent
+        return self._load_prompt(TenantPaths(base_path=base_path).site_prompt(site_id))
 
     def _load_template(self, content_type: str) -> Optional[str]:
         """

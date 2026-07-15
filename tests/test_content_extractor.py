@@ -9,11 +9,14 @@ from scripts.scraping.content_extractor import ContentExtractor
 
 @pytest.fixture
 def temp_config_dir(tmp_path):
-    """Create temporary blog config directory with test configs"""
-    config_dir = tmp_path / "blogs"
-    config_dir.mkdir()
+    """Crée un base_path temporaire avec un tenant au layout monorepo.
 
-    # Create test blog config with scraping_config
+    ContentExtractor charge les configs via TenantPaths (tenants/{id}/config/
+    tenant.json), plus depuis un dossier plat blogs/.
+    """
+    tenant_cfg_dir = tmp_path / "tenants" / "test-blog.fr" / "config"
+    tenant_cfg_dir.mkdir(parents=True)
+
     test_config = {
         "id": "test-blog.fr",
         "domain": "test-blog.fr",
@@ -25,11 +28,10 @@ def temp_config_dir(tmp_path):
         }
     }
 
-    config_file = config_dir / "test-blog.json"
-    with config_file.open("w", encoding="utf-8") as f:
+    with (tenant_cfg_dir / "tenant.json").open("w", encoding="utf-8") as f:
         json.dump(test_config, f)
 
-    return config_dir
+    return tmp_path
 
 
 class TestContentExtractor:
@@ -37,21 +39,21 @@ class TestContentExtractor:
 
     def test_init(self, temp_config_dir):
         """Test ContentExtractor initialization"""
-        extractor = ContentExtractor(temp_config_dir)
+        extractor = ContentExtractor(base_path=temp_config_dir)
 
         assert "test-blog.fr" in extractor.blog_configs
         assert extractor.blog_configs["test-blog.fr"]["id"] == "test-blog.fr"
 
     def test_init_missing_config_dir(self):
-        """Test initialization with missing config directory"""
-        extractor = ContentExtractor(Path("/nonexistent/path"))
+        """Test initialization avec un base_path sans tenants/"""
+        extractor = ContentExtractor(base_path=Path("/nonexistent/path"))
 
         # Should handle missing directory gracefully
         assert len(extractor.blog_configs) == 0
 
     def test_extract_article_body_site_specific_selector(self, temp_config_dir):
         """Test extraction using site-specific CSS selector"""
-        extractor = ContentExtractor(temp_config_dir)
+        extractor = ContentExtractor(base_path=temp_config_dir)
 
         html = """
         <html>

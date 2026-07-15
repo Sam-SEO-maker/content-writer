@@ -10,9 +10,9 @@ Architecture:
   - _shared/outputs/{site_id}/metadata/ (metadata and audit JSON files)
   - _shared/outputs/{site_id}/editorial_audits/ (editorial audit markdown files)
 
-Multi-tenant support:
-- enseigna.fr
-- superprof.fr (ressources)
+Multi-tenant support : dossiers indexés par `tenant_id` (clé de sites.json),
+p.ex. `enseigna`, `superprof-ressources`. Registre ouvert (tout tenant présent
+dans sites.json est valide) — plus de whitelist de domaines codée en dur.
 """
 
 from pathlib import Path
@@ -71,18 +71,6 @@ class OutputManager:
     - Multi-tenant isolation
     """
 
-    # Valid site IDs from CLAUDE.md multi-tenant architecture
-    VALID_SITE_IDS = [
-        "enseigna.fr",
-        "superprof.fr",
-    ]
-
-    # Mapping blog_id (sans extension) → domain (avec extension)
-    _BLOG_ID_TO_DOMAIN = {
-        "enseigna": "enseigna.fr",
-        "superprof-ressources": "superprof.fr",
-    }
-
     def __init__(self, base_path: Optional[Path] = None):
         """
         Initialize output manager.
@@ -91,11 +79,14 @@ class OutputManager:
             base_path: Project root (defaults to auto-detect)
         """
         self.base_path = base_path or Path(__file__).parent.parent.parent
-        self.outputs_root = self.base_path / "_shared" / "outputs"
+        # Racines résolues via le point unique TenantPaths (Phase 4.0) : un futur
+        # déplacement vers tenants/{id}/ ne changera que TenantPaths, pas ici.
+        from _shared.core.tenant_paths import TenantPaths
+        self._tenant_paths = TenantPaths(base_path=self.base_path)
         self.temp_root = self.base_path / "_shared" / "temp"
 
-        # Ensure base directories exist
-        self.outputs_root.mkdir(parents=True, exist_ok=True)
+        # Ensure base directories exist (outputs sont désormais par tenant)
+        self._tenant_paths.tenants_root.mkdir(parents=True, exist_ok=True)
         self.temp_root.mkdir(parents=True, exist_ok=True)
 
     def init_workspace(self, purge_temp: bool = True) -> Dict[str, int]:
@@ -135,9 +126,9 @@ class OutputManager:
             logger.info(f"Purged temp cache: {stats['temp_files_removed']} files removed")
 
         # Ensure outputs structure for all sites
-        for site_id in self.VALID_SITE_IDS:
-            # Create site output directory
-            site_dir = self.outputs_root / site_id
+        for site_id in self._known_tenant_ids():
+            # Create site output directory (tenants/{id}/outputs/)
+            site_dir = self._tenant_paths.output_dir(site_id)
             if not site_dir.exists():
                 site_dir.mkdir(parents=True, exist_ok=True)
                 stats["output_dirs_created"] += 1
@@ -157,19 +148,42 @@ class OutputManager:
 
         return stats
 
+    # Domaines historiques tolérés en ENTRÉE (rétrocompat appelants), remappés
+    # vers le tenant_id canonique. Les sorties sont toujours écrites par id.
+    _DOMAIN_TO_TENANT_ID = {
+        "enseigna.fr": "enseigna",
+        "superprof.fr": "superprof-ressources",
+    }
+
+    def _known_tenant_ids(self) -> set:
+        """IDs de tenants connus, lus directement depuis sites.json (registre plat).
+
+        Lecture JSON brute plutôt que via SiteConfig(**data) : les entrées de
+        sites.json portent des champs métier (subject_category, ymyl_level…) que
+        le dataclass strict SiteConfig ne déclare pas et qui le font planter.
+        """
+        try:
+            sites_path = self.base_path / "_shared" / "config" / "sites.json"
+            data = json.loads(sites_path.read_text(encoding="utf-8"))
+            return {s["id"] for s in data.get("sites", []) if "id" in s}
+        except Exception:
+            return set()
+
     def _normalize_site_id(self, site_id: str) -> str:
-        """Normalise blog_id vers le domaine complet si nécessaire."""
-        if site_id in self.VALID_SITE_IDS:
-            return site_id
-        return self._BLOG_ID_TO_DOMAIN.get(site_id, site_id)
+        """Normalise vers le tenant_id canonique (remappe un domaine hérité)."""
+        return self._DOMAIN_TO_TENANT_ID.get(site_id, site_id)
 
     def _validate_site_id(self, site_id: str) -> str:
-        """Valide et normalise le site_id. Retourne le domaine complet."""
+        """Valide et retourne le tenant_id canonique (id-based, ouvert au registre)."""
         normalized = self._normalize_site_id(site_id)
-        if normalized not in self.VALID_SITE_IDS:
+        known = self._known_tenant_ids()
+        # Si le registre est lisible, on valide contre lui ; sinon on laisse passer
+        # (un tenant factice sans entrée registre ne doit pas être bloqué par un
+        # whitelist codé en dur — cf. objectif « tenant sans modif code »).
+        if known and normalized not in known:
             raise ValueError(
                 f"Invalid site_id '{site_id}'. "
-                f"Must be one of: {', '.join(self.VALID_SITE_IDS)}"
+                f"Must be a tenant registered in sites.json: {', '.join(sorted(known))}"
             )
         return normalized
 
@@ -277,10 +291,16 @@ class OutputManager:
                 return file_count
             return 0
         else:
-            # Clear all sites
+            # Clear all sites : itère les dossiers temp RÉELLEMENT présents sur
+            # disque (pas le registre) — robuste à un tenant retiré du registre.
             total = 0
-            for site in self.VALID_SITE_IDS:
-                total += self.clear_temp_cache(site)
+            if self.temp_root.exists():
+                for temp_dir in self.temp_root.iterdir():
+                    if temp_dir.is_dir():
+                        file_count = sum(1 for _ in temp_dir.rglob("*.html"))
+                        shutil.rmtree(temp_dir)
+                        temp_dir.mkdir(parents=True, exist_ok=True)
+                        total += file_count
             return total
 
     # =========================================================================
@@ -299,7 +319,7 @@ class OutputManager:
         """
         site_id = self._validate_site_id(site_id)
 
-        site_dir = self.outputs_root / site_id
+        site_dir = self._tenant_paths.output_dir(site_id)
         site_dir.mkdir(parents=True, exist_ok=True)
 
         # Ensure html/, metadata/, editorial_audits/ subdirectories exist
@@ -358,7 +378,10 @@ class OutputManager:
             logger.info(f"[ZIP] {zip_path.name}")
 
         from scripts.utils.acf_extractor import save_acf_if_literary
-        acf_path = save_acf_if_literary(site_id, file_slug, html_content, self.outputs_root)
+        acf_path = save_acf_if_literary(
+            site_id, file_slug, html_content,
+            tenant_output_dir=self._tenant_paths.output_dir(site_id),
+        )
         if acf_path:
             logger.info(f"[ACF] fiche de lecture détectée → {acf_path}")
 
@@ -546,21 +569,18 @@ class OutputManager:
             "total_output_size_mb": 0.0
         }
 
-        # Temp cache stats
-        for site_id in self.VALID_SITE_IDS:
-            temp_dir = self.temp_root / site_id
-            if temp_dir.exists():
-                files = list(temp_dir.rglob("*.html"))
-                stats["temp_cache"][site_id] = len(files)
-                stats["total_temp_size_mb"] += sum(f.stat().st_size for f in files) / (1024 * 1024)
+        # Temp cache stats — itère les dossiers présents sur disque
+        if self.temp_root.exists():
+            for temp_dir in self.temp_root.iterdir():
+                if temp_dir.is_dir():
+                    files = list(temp_dir.rglob("*.html"))
+                    stats["temp_cache"][temp_dir.name] = len(files)
+                    stats["total_temp_size_mb"] += sum(f.stat().st_size for f in files) / (1024 * 1024)
 
-        # Output stats
-        for site_id in self.VALID_SITE_IDS:
-            output_dir = self.outputs_root / site_id
-            if output_dir.exists():
-                files = list(output_dir.rglob("*"))
-                files = [f for f in files if f.is_file()]
-                stats["outputs"][site_id] = len(files)
-                stats["total_output_size_mb"] += sum(f.stat().st_size for f in files) / (1024 * 1024)
+        # Output stats — un dossier outputs/ par tenant (tenants/{id}/outputs/)
+        for tenant_id, output_dir in self._tenant_paths.output_dirs():
+            files = [f for f in output_dir.rglob("*") if f.is_file()]
+            stats["outputs"][tenant_id] = len(files)
+            stats["total_output_size_mb"] += sum(f.stat().st_size for f in files) / (1024 * 1024)
 
         return stats

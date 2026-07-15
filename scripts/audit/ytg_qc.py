@@ -305,7 +305,8 @@ def discover_generated_html(
         blog_id: identifiant du blog (dossier sous _shared/outputs/).
         slug_filter: si fourni, ne retient que les fichiers dont le nom contient ce slug.
     """
-    html_root = PROJECT_ROOT / "_shared" / "outputs" / blog_id / "html"
+    from _shared.core.tenant_paths import TenantPaths
+    html_root = TenantPaths(base_path=PROJECT_ROOT).output_dir(blog_id) / "html"
     if not html_root.exists():
         return []
 

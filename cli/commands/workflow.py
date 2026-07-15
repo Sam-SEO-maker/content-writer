@@ -126,7 +126,7 @@ def run(url, blog, spreadsheet_id, row):
         if result.action_taken == "BLOCKED_QUALITY_ISSUES":
             click.echo("❌ Quality Gate a bloqué le refresh")
             click.echo("Consultez le rapport éditorial pour détails:")
-            click.echo(f"  _shared/outputs/{blog}/editorial_audits/")
+            click.echo(f"  tenants/{blog}/outputs/editorial_audits/")
         else:
             click.echo("✅ Workflow complété avec succès")
 
