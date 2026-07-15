@@ -100,5 +100,5 @@ Cette commande (déterministe) :
 ## Étape 5 — Rapport
 
 Rapporter : stratégie appliquée, sources retenues, chemins de sortie
-(`_shared/outputs/{tenant}/`), verdict YTG, verdict assets (avant/après), et
+(`tenants/{tenant}/outputs/`), verdict YTG, verdict assets (avant/après), et
 liens ajoutés. Objectif : URL → contenu + verdict + liens, sans reprise manuelle.
