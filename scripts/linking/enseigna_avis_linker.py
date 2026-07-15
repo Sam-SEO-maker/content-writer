@@ -165,8 +165,9 @@ class EnseignaAvisLinker:
 
     def _load_file_bindings(self) -> dict[str, Path]:
         """Charge le binding URL -> Path depuis enseigna_file_urls.json."""
+        from _shared.core.tenant_paths import TenantPaths
         cfg = (
-            self.base_path / "_shared" / "config" / "linking_maps"
+            TenantPaths(base_path=self.base_path).linking_maps_dir()
             / "enseigna_file_urls.json"
         )
         mapping: dict[str, Path] = {}

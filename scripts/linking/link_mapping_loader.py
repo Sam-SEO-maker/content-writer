@@ -28,7 +28,8 @@ class LinkMappingLoader:
 
     def __init__(self, base_path: Optional[Path] = None):
         self.base_path = base_path or Path(__file__).parent.parent.parent
-        self.config_dir = self.base_path / "_shared" / "config" / "linking_maps"
+        from _shared.core.tenant_paths import TenantPaths
+        self.config_dir = TenantPaths(base_path=self.base_path).linking_maps_dir()
 
     def load_csv(self, site_id: str) -> list[LinkMapping]:
         """
