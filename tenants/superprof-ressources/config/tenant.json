@@ -117,5 +117,6 @@
     "timeout": 30
   },
   "generation_skill": "sp-ressources-gutenberg",
-  "qc_skill": "qc-sp-ressources"
+  "qc_skill": "qc-sp-ressources",
+  "eeat_level": "high"
 }
