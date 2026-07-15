@@ -9,7 +9,7 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 | Guide | Description | Fichier |
 |-------|-------------|---------|
 | GEO 2026 | Optimisation pour moteurs génératifs (IA) | [docs/GEO_2026_GUIDELINES.md](docs/GEO_2026_GUIDELINES.md) |
-| E-E-A-T 2026 | Experience, Expertise, Authority, Trust | [docs/EEAT_2026_GUIDELINES.md](docs/EEAT_2026_GUIDELINES.md) |
+| E-E-A-T 2026 | Experience, Expertise, Authority, Trust | [docs/EEAT_GUIDE.md](docs/EEAT_GUIDE.md) |
 | Content Refresh | Guide de rafraîchissement de contenu | [docs/CONTENT_REFRESH_GUIDE.md](docs/CONTENT_REFRESH_GUIDE.md) |
 
 ---
@@ -228,7 +228,7 @@ Article Parent
 
 **Principe**: La Confiance (Trust) est l'élément le plus important. Sans confiance, les autres signaux sont insuffisants.
 
-> **Voir le guide complet**: [docs/EEAT_2026_GUIDELINES.md](docs/EEAT_2026_GUIDELINES.md)
+> **Voir le guide complet**: [docs/EEAT_GUIDE.md](docs/EEAT_GUIDE.md)
 
 ### Les 4 Piliers
 

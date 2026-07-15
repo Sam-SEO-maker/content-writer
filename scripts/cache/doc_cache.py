@@ -104,8 +104,8 @@ class DocumentCache:
         self._cache["geo_guidelines"] = self._load_file("_shared/docs/GEO_2026_GUIDELINES.md")
 
     def _load_eeat_guidelines(self):
-        """Charge EEAT_2026_GUIDELINES.md."""
-        self._cache["eeat_guidelines"] = self._load_file("_shared/docs/EEAT_2026_GUIDELINES.md")
+        """Charge EEAT_GUIDE.md (canonique v3.0, fusion des 2 anciens docs E-E-A-T)."""
+        self._cache["eeat_guidelines"] = self._load_file("_shared/docs/EEAT_GUIDE.md")
 
     def _load_refresh_guide(self):
         """Charge CONTENT_REFRESH_GUIDE.md."""
@@ -164,10 +164,10 @@ class DocumentCache:
 
     def get_eeat_guidelines(self) -> str:
         """
-        Retourne les guidelines E-E-A-T 2026.
+        Retourne les guidelines E-E-A-T.
 
         Returns:
-            Contenu de EEAT_2026_GUIDELINES.md
+            Contenu de EEAT_GUIDE.md (canonique)
         """
         return self._cache.get("eeat_guidelines", "")
 
