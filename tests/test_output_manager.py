@@ -11,7 +11,21 @@ from scripts.utils.output_manager import OutputManager
 
 @pytest.fixture
 def temp_base_path(tmp_path):
-    """Create temporary base path for testing"""
+    """Create temporary base path for testing, avec un sites.json minimal.
+
+    OutputManager valide les site_id contre sites.json (registre ouvert). Le
+    fixture fournit les 2 tenants canoniques pour que la validation soit active.
+    """
+    import json
+    config_dir = tmp_path / "_shared" / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "sites.json").write_text(
+        json.dumps({"sites": [
+            {"id": "enseigna", "name": "Enseigna", "domain": "enseigna.fr"},
+            {"id": "superprof-ressources", "name": "Superprof Ressources", "domain": "superprof.fr"},
+        ]}),
+        encoding="utf-8",
+    )
     return tmp_path
 
 
@@ -36,39 +50,41 @@ class TestOutputManagerInit:
         assert output_mgr.temp_root == expected
         assert output_mgr.temp_root.exists()
 
-    def test_valid_site_ids(self, output_mgr):
-        """Test that valid site IDs are defined"""
-        expected_sites = [
-            "enseigna.fr",
-            "superprof.fr",
-        ]
-        assert output_mgr.VALID_SITE_IDS == expected_sites
+    def test_site_id_is_tenant_id_based(self, output_mgr):
+        """Les site_id sont désormais des tenant_id (sites.json), plus des domaines.
+
+        Un domaine hérité en entrée est remappé vers son tenant_id canonique ; les
+        sorties sont indexées par id. Plus de whitelist VALID_SITE_IDS codée en dur.
+        """
+        assert not hasattr(output_mgr, "VALID_SITE_IDS")
+        # Domaine hérité → tenant_id canonique
+        assert output_mgr._normalize_site_id("enseigna.fr") == "enseigna"
+        assert output_mgr._normalize_site_id("superprof.fr") == "superprof-ressources"
+        # Un id déjà canonique reste inchangé
+        assert output_mgr._normalize_site_id("enseigna") == "enseigna"
 
 
 class TestInitWorkspace:
     """Test init_workspace() method"""
 
     def test_init_workspace_creates_site_directories(self, output_mgr):
-        """Test that init_workspace creates all site output directories"""
-        stats = output_mgr.init_workspace(purge_temp=False)
+        """init_workspace crée un dossier de sortie par tenant enregistré (sites.json)."""
+        output_mgr.init_workspace(purge_temp=False)
 
-        # Check all sites have output directories
-        for site_id in output_mgr.VALID_SITE_IDS:
+        known = output_mgr._known_tenant_ids()
+        assert known  # le fixture fournit enseigna + superprof-ressources
+        for site_id in known:
             site_dir = output_mgr.outputs_root / site_id
             assert site_dir.exists(), f"Missing output dir for {site_id}"
 
-        assert stats["output_dirs_created"] == 6
-
     def test_init_workspace_creates_subdirectories(self, output_mgr):
-        """Test that html/, json/, editorial_audits/ subdirectories are created"""
-        stats = output_mgr.init_workspace(purge_temp=False)
+        """html/, metadata/, editorial_audits/ créés pour chaque tenant enregistré."""
+        output_mgr.init_workspace(purge_temp=False)
 
-        for site_id in output_mgr.VALID_SITE_IDS:
-            for subdir in ["html", "json", "editorial_audits"]:
+        for site_id in output_mgr._known_tenant_ids():
+            for subdir in ["html", "metadata", "editorial_audits"]:
                 sub_path = output_mgr.outputs_root / site_id / subdir
                 assert sub_path.exists(), f"Missing {subdir} for {site_id}"
-
-        assert stats["subdirs_created"] == 18  # 6 sites * 3 subdirs
 
     def test_init_workspace_purges_temp_cache(self, output_mgr):
         """Test that init_workspace purges temp cache"""
@@ -107,17 +123,19 @@ class TestSiteValidation:
 
     def test_validate_valid_site_id(self, output_mgr):
         """Test that valid site IDs pass validation"""
-        # Should not raise
-        output_mgr._validate_site_id("enseigna.fr")
+        # Should not raise : tenant_id canonique OU domaine hérité (remappé)
+        output_mgr._validate_site_id("enseigna")
+        output_mgr._validate_site_id("superprof-ressources")
+        output_mgr._validate_site_id("enseigna.fr")  # domaine hérité → enseigna
         output_mgr._validate_site_id("superprof.fr")
 
     def test_validate_invalid_site_id(self, output_mgr):
-        """Test that invalid site IDs raise ValueError"""
+        """Test qu'un tenant absent de sites.json lève ValueError"""
         with pytest.raises(ValueError, match="Invalid site_id"):
             output_mgr._validate_site_id("invalid-site.com")
 
         with pytest.raises(ValueError, match="Invalid site_id"):
-            output_mgr._validate_site_id("enseigna")  # Missing .fr
+            output_mgr._validate_site_id("es-es-ressources")  # pas encore enregistré
 
 
 class TestTempCacheMethods:
@@ -128,7 +146,7 @@ class TestTempCacheMethods:
         html = "<html><body>Test content</body></html>"
 
         saved_path = output_mgr.save_temp_html(
-            site_id="enseigna.fr",
+            site_id="enseigna",
             url_slug="test-article",
             html_content=html
         )
@@ -136,7 +154,7 @@ class TestTempCacheMethods:
         assert saved_path.exists()
         assert saved_path.read_text(encoding="utf-8") == html
         assert saved_path.name == "test-article.html"
-        assert "enseigna.fr" in str(saved_path)
+        assert "enseigna" in str(saved_path)
 
     def test_get_temp_html_exists(self, output_mgr):
         """Test retrieving existing temp HTML"""
@@ -186,11 +204,11 @@ class TestOutputMethods:
 
     def test_get_site_output_dir(self, output_mgr):
         """Test getting site output directory"""
-        output_dir = output_mgr.get_site_output_dir("enseigna.fr")
+        output_dir = output_mgr.get_site_output_dir("enseigna")
 
         assert output_dir.exists()
-        assert output_dir.name == "enseigna.fr"
-        assert "enseigna.fr" in str(output_dir)
+        assert output_dir.name == "enseigna"
+        assert "enseigna" in str(output_dir)
 
         # html/, json/, editorial_audits/ subdirectories should exist
         for subdir in ["html", "json", "editorial_audits"]:
@@ -331,10 +349,10 @@ class TestValidationMethods:
 
     def test_get_workspace_stats(self, output_mgr):
         """Test getting workspace statistics"""
-        # Create some files
-        output_mgr.save_temp_html("enseigna.fr", "test1", "html content")
-        output_mgr.save_refreshed_html("enseigna.fr", "test2", "<html/>")
-        output_mgr.save_metadata("superprof.fr", "test3", {"title": "Test"})
+        # Create some files (site_id canonique — les stats sont keyées par id)
+        output_mgr.save_temp_html("enseigna", "test1", "html content")
+        output_mgr.save_refreshed_html("enseigna", "test2", "<html/>")
+        output_mgr.save_metadata("superprof-ressources", "test3", {"title": "Test"})
 
         stats = output_mgr.get_workspace_stats()
 
@@ -343,9 +361,9 @@ class TestValidationMethods:
         assert "total_temp_size_mb" in stats
         assert "total_output_size_mb" in stats
 
-        assert stats["temp_cache"]["enseigna.fr"] == 1
-        assert stats["outputs"]["enseigna.fr"] >= 1
-        assert stats["outputs"]["superprof.fr"] >= 1
+        assert stats["temp_cache"]["enseigna"] == 1
+        assert stats["outputs"]["enseigna"] >= 1
+        assert stats["outputs"]["superprof-ressources"] >= 1
 
 
 class TestURLToSlug:

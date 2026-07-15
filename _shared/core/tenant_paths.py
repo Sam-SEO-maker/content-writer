@@ -13,10 +13,10 @@ historiques `_shared/…` — aucun changement de comportement. La bascule vers
 
 Clés :
 - `tenant_id` = identifiant logique (`enseigna`, `superprof-ressources`) — la clé
-  des configs (`sites.json`, `blogs/{id}.json`, `sites/{id}.md`).
-- Le dossier de sortie historique est indexé par DOMAINE (`enseigna.fr`,
-  `superprof.fr`), pas par id — on préserve ce mapping pour ne pas casser les
-  sorties existantes.
+  UNIQUE des configs (`sites.json`, `blogs/{id}.json`, `sites/{id}.md`) ET du
+  dossier de sortie. Depuis la Phase 4.0b, les sorties sont indexées par
+  `tenant_id`, plus par domaine (le mapping domaine historique a été retiré : il
+  divergeait du contenu de prod, de push_to_wp et de ytg_qc).
 """
 
 from pathlib import Path
@@ -25,14 +25,6 @@ from typing import Optional
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent
-
-
-# Mapping tenant_id → domaine, pour le dossier de sortie historique
-# (répliqué depuis OutputManager._BLOG_ID_TO_DOMAIN — source unique à terme).
-_TENANT_ID_TO_OUTPUT_KEY = {
-    "enseigna": "enseigna.fr",
-    "superprof-ressources": "superprof.fr",
-}
 
 
 class TenantPaths:
@@ -78,6 +70,5 @@ class TenantPaths:
         return self._outputs_root
 
     def output_dir(self, tenant_id: str) -> Path:
-        """Dossier de sortie du tenant (indexé par domaine, mapping historique)."""
-        key = _TENANT_ID_TO_OUTPUT_KEY.get(tenant_id, tenant_id)
-        return self._outputs_root / key
+        """Dossier de sortie du tenant, indexé par `tenant_id` (Phase 4.0b)."""
+        return self._outputs_root / tenant_id

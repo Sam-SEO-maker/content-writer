@@ -65,7 +65,7 @@ SLUGS = [
 ]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-BASE = PROJECT_ROOT / "_shared" / "outputs" / "enseigna.fr"
+BASE = PROJECT_ROOT / "_shared" / "outputs" / "enseigna"
 
 
 def main():
