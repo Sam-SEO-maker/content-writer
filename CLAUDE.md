@@ -69,14 +69,18 @@ CLI réel (les commandes wrappent) : `python3 content_writer.py <groupe> <cmd>` 
 
 ## Index — Skills (`.claude/skills/`)
 
-| Skill | Quand l'invoquer |
-|---|---|
-| `refresh` (orchestrateur) | séquence audit → génération → QC → maillage (via `/refresh`) |
-| `recherche-sources <sujet\|url>` | documenter un sujet avec des sources vérifiées (brief E-E-A-T) |
-| `generate-enseigna-avis` | rédiger un article avis Enseigna (ACF JSON, verdict en fin) |
-| `sp-ressources-gutenberg` | rédiger un article Superprof Ressources (Gutenberg maison, 5 blocs) |
-| `format-wordpress` | règles HTML/WP transverses (accents, tiret, ancres, listes) |
-| `qc-sp-ressources` | checklist QC post-génération Superprof Ressources |
+| Skill | Portée | Quand l'invoquer |
+|---|---|---|
+| `refresh` (orchestrateur) | racine | séquence audit → génération → QC → maillage (via `/refresh`) |
+| `recherche-sources <sujet\|url>` | racine (transverse) | documenter un sujet avec des sources vérifiées (brief E-E-A-T) |
+| `format-wordpress` | racine (transverse) | règles HTML/WP transverses (accents, tiret, ancres, listes) |
+| `generate-enseigna-avis` | `tenants/enseigna/` | rédiger un article avis Enseigna (ACF JSON, verdict en fin) |
+| `sp-ressources-gutenberg` | `tenants/superprof-ressources/` | rédiger un article Superprof Ressources (Gutenberg maison, 5 blocs) |
+| `qc-sp-ressources` | `tenants/superprof-ressources/` | checklist QC post-génération Superprof Ressources |
+
+> Les skills métier sont **scopées par tenant** (`tenants/{id}/.claude/skills/`) et
+> résolues via `generation_skill`/`qc_skill` de la config (§4bis-C levé). Seules
+> `refresh`, `recherche-sources`, `format-wordpress` restent à la racine.
 
 **Subagent** : `content-generator` (`.claude/agents/`) exécute la génération sous abonnement Max,
 lit `generation_prompt.txt`, écrit les fichiers, ne renvoie pas de HTML dans le chat.

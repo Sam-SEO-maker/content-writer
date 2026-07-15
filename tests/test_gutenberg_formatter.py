@@ -62,4 +62,5 @@ def test_blockquote():
 
 def test_nbsp_preserved():
     out = to_gutenberg("<p>a&nbsp;: b</p>")
-    assert "&nbsp;" in out
+    # L'espace insécable est préservé (entité &nbsp; OU caractère U+00A0 équivalent).
+    assert "&nbsp;" in out or "\xa0" in out

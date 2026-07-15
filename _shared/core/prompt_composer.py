@@ -99,6 +99,13 @@ class PromptComposer:
             if site_override:
                 parts.append(f"# Site Override: {site_id}\n\n{site_override}")
 
+            # Niveau 4bis: prompt de sous-type versus (comparatif A vs B).
+            # Complète site.md, ne le remplace pas. Déclenché par content_type.
+            if content_type == "versus":
+                vs_prompt = self._load_vs_concurrent(site_id)
+                if vs_prompt:
+                    parts.append(f"# Type versus: {site_id}\n\n{vs_prompt}")
+
         # Niveau 5: Template (NOUVEAU, optionnel)
         if content_type:
             template = self._load_template(content_type)
@@ -205,6 +212,16 @@ class PromptComposer:
         from _shared.core.tenant_paths import TenantPaths
         base_path = self.prompts_path.parent.parent
         return self._load_prompt(TenantPaths(base_path=base_path).site_prompt(site_id))
+
+    def _load_vs_concurrent(self, site_id: str) -> Optional[str]:
+        """Charge le prompt du sous-type versus depuis tenants/{id}/prompts/vs_concurrent.md.
+
+        Returns None si le tenant n'a pas de prompt versus (cas normal pour la
+        plupart des tenants).
+        """
+        from _shared.core.tenant_paths import TenantPaths
+        base_path = self.prompts_path.parent.parent
+        return self._load_prompt(TenantPaths(base_path=base_path).vs_concurrent_prompt(site_id))
 
     def _load_template(self, content_type: str) -> Optional[str]:
         """

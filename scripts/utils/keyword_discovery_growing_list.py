@@ -35,8 +35,11 @@ except ImportError:
 # Configuration
 # ---------------------------------------------------------------------------
 
-SPREADSHEET_ID = "1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ"
-SHEET_NAME = "New growing List"
+# spreadsheet_id / onglet lus depuis la config du tenant (§4bis-A), repli littéral.
+from _shared.core.sheets_config import get_spreadsheet_id, get_primary_tab_name
+_BLOG_ID = "superprof-ressources"
+SPREADSHEET_ID = get_spreadsheet_id(_BLOG_ID, default="1Vutb06Fcm3awnANPbtLkI1EvhbE9d-TXrZRLTrmmLlQ")
+SHEET_NAME = get_primary_tab_name(_BLOG_ID, default="New growing List")
 GSC_PROPERTY = "https://www.superprof.fr/ressources/"
 
 SA_PATH = Path(

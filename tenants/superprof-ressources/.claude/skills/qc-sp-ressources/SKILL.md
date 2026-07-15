@@ -25,7 +25,7 @@ applicable sur le fichier `{slug}_refreshed.gutenberg.html`.
 
 ## Cible
 
-- Fichier : `_shared/outputs/superprof-ressources/{slug}_refreshed.gutenberg.html`
+- Fichier : `tenants/superprof-ressources/outputs/html/{batch}/{slug}_refreshed.gutenberg.html`
   (le `.gutenberg.html`, pas le HTML nu de debug qui est supprimé après génération).
 - Blog : `superprof-ressources` uniquement.
 

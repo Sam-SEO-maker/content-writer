@@ -28,8 +28,8 @@ class YearUpdater:
         'historical': r'\d{4}\s*(→|vs|par rapport à)\s*\d{4}',  # Comparaisons: 2024 vs 2025
     }
 
-    # Années à remplacer
-    YEARS_TO_REPLACE = [2024, 2025]
+    # Fenêtre d'années passées considérées obsolètes (à remplacer).
+    _OBSOLETE_WINDOW = 3
 
     def __init__(self, target_year: Optional[int] = None):
         """
@@ -39,6 +39,12 @@ class YearUpdater:
             target_year: Année cible pour remplacement (None = année courante)
         """
         self.target_year = target_year or datetime.now().year
+        # Années obsolètes = les N années précédant la cible (dynamique, ne se
+        # périme pas). Avant : liste statique [2024, 2025] qui aurait manqué les
+        # années > 2025 à mesure que le temps passe.
+        self.YEARS_TO_REPLACE = [
+            self.target_year - i for i in range(1, self._OBSOLETE_WINDOW + 1)
+        ]
         self.changes: List[Dict] = []
 
     def detect_obsolete_years(self, text: str) -> List[Dict]:

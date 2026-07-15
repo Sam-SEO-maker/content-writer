@@ -26,6 +26,9 @@ from cli.options import blog_option
 @click.option("--html-file", "html_file", required=True,
               help="Chemin du HTML brut écrit par le subagent de génération.")
 @click.option("--title", default="", help="Titre article (col E) — sinon slug de l'URL.")
+@click.option("--type", "article_type", default=None,
+              help="Sous-type d'article routant la sortie HTML dans html/{type}/ "
+                   "(enseigna : 'avis' | 'versus'). Défaut : pas de sous-dossier.")
 @click.option("--apply-linking", is_flag=True, default=False,
               help="Applique le maillage (écrit les fichiers). Sinon dry-run.")
 @click.option("--publish", is_flag=True, default=False,
@@ -33,7 +36,7 @@ from cli.options import blog_option
                    "confirmation humaine obligatoire. Refusé si verdict A_CORRIGER/BLOQUE.")
 @click.option("--yes", "assume_yes", is_flag=True, default=False,
               help="Saute la confirmation interactive de publication (usage batch averti).")
-def finalize(url, blog_id, html_file, title, apply_linking, publish, assume_yes):
+def finalize(url, blog_id, html_file, title, article_type, apply_linking, publish, assume_yes):
     """
     Chaîne post-génération : save → assets → QC YTG → maillage.
 
@@ -55,6 +58,8 @@ def finalize(url, blog_id, html_file, title, apply_linking, publish, assume_yes)
     click.echo(f"{'='*70}")
     click.echo(f"URL:  {url}")
     click.echo(f"Blog: {blog_id}")
+    if article_type:
+        click.echo(f"Type: {article_type}  (→ html/{article_type}/)")
 
     # -------------------------------------------------------------------
     # 1. Sauvegarde (nu + gutenberg + CSV)
@@ -68,6 +73,7 @@ def finalize(url, blog_id, html_file, title, apply_linking, publish, assume_yes)
         url_slug=url_slug,
         html_content=html,
         title=title or None,
+        article_type=article_type or None,
     )
     click.echo(f"  ✓ {saved}")
 

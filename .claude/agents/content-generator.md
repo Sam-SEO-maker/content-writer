@@ -28,27 +28,29 @@ les règles éditoriales du tenant, et **écrire directement les fichiers de sor
 
 ## Skill de rédaction à charger selon le tenant
 
-Charge (via l'outil Skill) la skill correspondante avant de rédiger :
+Le mapping tenant→skill n'est **plus codé en dur ici** : il est résolu depuis la
+config du tenant (§4bis-C levé). Déroulé :
 
-- `enseigna` → **generate-enseigna-avis** (+ **format-wordpress**).
-- `superprof-ressources` → **sp-ressources-gutenberg** (+ **format-wordpress**),
-  puis passe **qc-sp-ressources** avant de finaliser.
+1. Lis `tenants/{blog_id}/config/tenant.json`.
+2. Charge (via l'outil Skill) la skill nommée dans **`generation_skill`**, puis
+   **`format-wordpress`** (transverse).
+3. Si le tenant a un champ **`qc_skill`**, passe cette skill avant de finaliser.
+
+Exemples (valeurs lues dans la config, pas câblées) :
+
+- `enseigna` : `generation_skill = generate-enseigna-avis`.
+- `superprof-ressources` : `generation_skill = sp-ressources-gutenberg`,
+  `qc_skill = qc-sp-ressources`.
+
+Les skills métier vivent sous **`tenants/{blog_id}/.claude/skills/`** (discovery
+scopée native) ; seules `format-wordpress` et `recherche-sources` restent
+transverses à la racine `.claude/skills/`. Onboarder un nouveau marché =
+déposer sa skill dans `tenants/{id}/.claude/skills/` + renseigner
+`generation_skill` dans sa config, **sans éditer ce fichier**.
 
 Ces skills portent la structure, les blocs obligatoires, les interdits et le ton.
 Suis-les à la lettre ; elles référencent elles-mêmes les prompts canoniques et les
 mémoires de feedback.
-
-> ⚠️ **Dette assumée (verrou §4bis-C du plan multi-market).** Ce mapping
-> tenant→skill est ici **codé en dur dans un fichier noyau partagé** — un
-> collaborateur d'un autre marché devrait éditer ce fichier pour brancher son
-> skill, ce qui reproduit « en soft » l'erreur du métier FR câblé. C'est
-> **temporaire et volontaire** (ne pas élargir le scope de la Phase 3). La
-> correction est planifiée en phase monorepo/config : externaliser le mapping en
-> champs `generation_skill` / `qc_skill` par tenant (`sites.json` /
-> `tenants/{tenant}/config`), et faire résoudre ce subagent le skill depuis la
-> config du tenant. Les skills métier migreront alors sous
-> `tenants/{tenant}/.claude/skills/` (discovery scopée native) ; seuls
-> `format-wordpress` + `recherche-sources` restent transverses à la racine.
 
 ## Règles non négociables
 

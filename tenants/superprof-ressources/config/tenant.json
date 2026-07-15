@@ -115,5 +115,8 @@
     "user_env_var": "WP_SUPERPROF_RESSOURCES_USER",
     "password_env_var": "WP_SUPERPROF_RESSOURCES_APP_PASSWORD",
     "timeout": 30
-  }
+  },
+  "generation_skill": "sp-ressources-gutenberg",
+  "qc_skill": "qc-sp-ressources",
+  "eeat_level": "high"
 }

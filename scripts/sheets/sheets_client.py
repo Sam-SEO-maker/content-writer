@@ -1376,7 +1376,18 @@ class SheetsClient:
     # (snapshot GSC). Les colonnes K-N (suggested_action, publish_date, refresh_date) sont
     # pilotées séparément — on ne les touche donc qu'en cellule ciblée, jamais en clear+rewrite.
 
-    ENSEIGNA_TABS = ["Avis", "Versus"]
+    # Onglets de refresh Enseigna. Source de vérité : bloc `sheets` de
+    # tenants/enseigna/config/tenant.json (§4bis-A). On exclut l'onglet de
+    # découverte "A ajouter" (col_keyword=3) qui n'est pas un onglet de refresh.
+    # Repli sur le littéral historique si la config est absente.
+    _ENSEIGNA_DISCOVERY_TABS = {"A ajouter"}
+
+    @property
+    def ENSEIGNA_TABS(self) -> list[str]:
+        from _shared.core.sheets_config import get_tab_names
+        names = [t for t in get_tab_names("enseigna")
+                 if t not in self._ENSEIGNA_DISCOVERY_TABS]
+        return names or ["Avis", "Versus"]
 
     def read_pending_for_refresh_enseigna(
         self, action: str, tabs: Optional[list[str]] = None

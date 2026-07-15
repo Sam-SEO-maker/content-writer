@@ -44,6 +44,14 @@ class TenantPaths:
         """`tenants/{id}/prompts/site.md` — prompt override du tenant."""
         return self.tenant_dir(tenant_id) / "prompts" / "site.md"
 
+    def vs_concurrent_prompt(self, tenant_id: str) -> Path:
+        """`tenants/{id}/prompts/vs_concurrent.md` — prompt du type versus.
+
+        Prompt principal des articles comparatifs (A vs B) ; complète site.md
+        pour ce sous-type. Absent chez les tenants sans articles versus.
+        """
+        return self.tenant_dir(tenant_id) / "prompts" / "vs_concurrent.md"
+
     def prompts_dir(self, tenant_id: str) -> Path:
         """`tenants/{id}/prompts/` — dossier des assets prompt (blocks/, guides/…)."""
         return self.tenant_dir(tenant_id) / "prompts"

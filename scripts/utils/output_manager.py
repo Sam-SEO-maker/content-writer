@@ -187,6 +187,21 @@ class OutputManager:
             )
         return normalized
 
+    @staticmethod
+    def _validate_article_type(article_type: str) -> str:
+        """Valide un sous-type d'article servant de nom de sous-dossier `html/`.
+
+        Restreint à [a-z0-9_-] (après strip/lowercase) pour interdire toute
+        traversée de chemin (`..`, `/`) : le sous-type provient d'une option CLI.
+        """
+        norm = article_type.strip().lower()
+        if not norm or not re.fullmatch(r"[a-z0-9_-]+", norm):
+            raise ValueError(
+                f"Invalid article_type '{article_type}'. "
+                "Attendu : identifiant simple [a-z0-9_-] (ex. 'avis', 'versus')."
+            )
+        return norm
+
     def _url_to_slug(self, url: str) -> str:
         """
         Convert URL to safe filename slug.
@@ -334,7 +349,8 @@ class OutputManager:
         url_slug: str,
         html_content: str,
         title: Optional[str] = None,
-        post_type: Optional[str] = None  # kept for backwards compat, ignored
+        post_type: Optional[str] = None,  # kept for backwards compat, ignored
+        article_type: Optional[str] = None,
     ) -> Path:
         """
         Save refreshed HTML content (WordPress-ready).
@@ -344,12 +360,18 @@ class OutputManager:
             url_slug: URL slug for filename (fallback if no title)
             html_content: Refreshed HTML content
             title: Article title (column E) — used for filename if provided
+            article_type: sous-type d'article routant la sortie HTML dans un
+                sous-dossier `html/{article_type}/` (ex. enseigna : "avis" |
+                "versus"). None → écriture à la racine `html/` (comportement
+                historique, tenants sans sous-typage).
 
         Returns:
             Path to saved file
         """
         site_id = self._validate_site_id(site_id)
         html_dir = self.get_site_output_dir(site_id) / "html"
+        if article_type:
+            html_dir = html_dir / self._validate_article_type(article_type)
         html_dir.mkdir(parents=True, exist_ok=True)
 
         file_slug = self._title_to_slug(title) if title else url_slug

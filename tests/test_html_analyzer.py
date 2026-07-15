@@ -16,27 +16,27 @@ class TestHTMLAnalyzer:
 
     def setup_method(self):
         """Setup avant chaque test."""
-        self.analyzer = HTMLAnalyzer()
+        self.analyzer = HTMLAnalyzer(domain="superprof.fr")
 
     def test_extract_title(self, sample_html):
         """Test extraction du titre H1."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert result["h1"] == "Comment apprendre les maths efficacement"
 
     def test_extract_meta_description(self, sample_html):
         """Test extraction meta description."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert "conseils pour apprendre les maths" in result["meta_description"]
 
     def test_count_images(self, sample_html):
         """Test comptage des images."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert result["images_count"] == 2
         assert len(result["images"]) == 2
 
     def test_extract_image_details(self, sample_html):
         """Test extraction détails images."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         images = result["images"]
 
         # Vérifier la première image
@@ -45,13 +45,13 @@ class TestHTMLAnalyzer:
 
     def test_count_headings(self, sample_html):
         """Test comptage des headings."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert result["h1_count"] == 1
         assert result["h2_count"] == 4  # bases, méthodes, ressources, FAQ
 
     def test_extract_internal_links(self, sample_html):
         """Test extraction liens internes."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         internal_links = result["internal_links"]
 
         # Liens commençant par /
@@ -60,7 +60,7 @@ class TestHTMLAnalyzer:
 
     def test_extract_external_links(self, sample_html):
         """Test extraction liens externes."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         external_links = result["external_links"]
 
         assert any("superprof.fr" in link["href"] for link in external_links)
@@ -68,19 +68,19 @@ class TestHTMLAnalyzer:
 
     def test_detect_superprof_link(self, sample_html):
         """Test détection lien Superprof."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert result["has_superprof_link"] is True
         assert result["superprof_link_count"] == 1
 
     def test_no_superprof_link(self, sample_html_no_superprof):
         """Test absence lien Superprof."""
-        result = self.analyzer.analyze(sample_html_no_superprof)
+        result = self.analyzer.analyze(sample_html_no_superprof, "https://superprof.fr/ressources/test.html")
         assert result["has_superprof_link"] is False
         assert result["superprof_link_count"] == 0
 
     def test_detect_blacklisted_links(self, sample_html_blacklisted):
         """Test détection liens blacklistés."""
-        result = self.analyzer.analyze(sample_html_blacklisted)
+        result = self.analyzer.analyze(sample_html_blacklisted, "https://superprof.fr/ressources/test.html")
         blacklisted = result.get("blacklisted_links", [])
 
         assert len(blacklisted) == 2
@@ -89,19 +89,19 @@ class TestHTMLAnalyzer:
 
     def test_word_count(self, sample_html):
         """Test comptage des mots."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         # Le HTML d'exemple contient environ 100-150 mots
         assert result["word_count"] > 50
         assert result["word_count"] < 500
 
     def test_has_faq_section(self, sample_html):
         """Test détection section FAQ."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         assert result["has_faq"] is True
 
     def test_extract_headings_structure(self, sample_html):
         """Test extraction structure des headings."""
-        result = self.analyzer.analyze(sample_html)
+        result = self.analyzer.analyze(sample_html, "https://superprof.fr/ressources/test.html")
         h2_titles = result["h2_titles"]
 
         assert "Les bases fondamentales" in h2_titles
@@ -118,7 +118,7 @@ class TestHTMLAnalyzer:
     def test_malformed_html(self):
         """Test avec HTML malformé."""
         malformed = "<h1>Titre<p>Pas fermé<img src='test.jpg'>"
-        result = self.analyzer.analyze(malformed)
+        result = self.analyzer.analyze(malformed, "https://superprof.fr/ressources/test.html")
         # Doit parser sans erreur
         assert result["h1"] == "Titre"
         assert result["images_count"] == 1
@@ -128,7 +128,7 @@ class TestHTMLAnalyzerAssets:
     """Tests spécifiques pour l'extraction d'assets."""
 
     def setup_method(self):
-        self.analyzer = HTMLAnalyzer()
+        self.analyzer = HTMLAnalyzer(domain="superprof.fr")
 
     def test_extract_all_assets(self, sample_html):
         """Test extraction complète des assets."""

@@ -229,6 +229,44 @@ class TestOutputMethods:
         assert saved_path.name == "test-article_refreshed.html"
         assert saved_path.parent.name == "html"
 
+    def test_save_refreshed_html_article_type_routes_subdir(self, output_mgr):
+        """article_type route la sortie HTML dans html/{type}/ (ex. avis|versus)."""
+        html = "<p>versus content</p>"
+
+        saved_path = output_mgr.save_refreshed_html(
+            site_id="enseigna.fr",
+            url_slug="a-vs-b",
+            html_content=html,
+            article_type="versus",
+        )
+
+        assert saved_path.exists()
+        assert saved_path.parent.name == "versus"
+        assert saved_path.parent.parent.name == "html"
+        # Le .gutenberg.html est écrit dans le même sous-dossier.
+        assert (saved_path.parent / "a-vs-b_refreshed.gutenberg.html").exists()
+
+    def test_save_refreshed_html_rejects_unsafe_article_type(self, output_mgr):
+        """Un article_type non [a-z0-9_-] (traversée de chemin) est rejeté."""
+        for bad in ["../etc", "a/b", "a b", "  "]:
+            with pytest.raises(ValueError):
+                output_mgr.save_refreshed_html(
+                    site_id="enseigna.fr",
+                    url_slug="x",
+                    html_content="<p>x</p>",
+                    article_type=bad,
+                )
+
+    def test_save_refreshed_html_empty_article_type_is_root(self, output_mgr):
+        """article_type falsy ("" / None) → écriture à la racine html/ (rétro-compat)."""
+        saved_path = output_mgr.save_refreshed_html(
+            site_id="enseigna.fr",
+            url_slug="no-type",
+            html_content="<p>x</p>",
+            article_type="",
+        )
+        assert saved_path.parent.name == "html"
+
     def test_save_metadata(self, output_mgr):
         """Test saving metadata JSON"""
         metadata = {
