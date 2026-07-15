@@ -8,7 +8,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.assets.asset_manager import AssetManager, AssetValidation
+from scripts.assets.asset_manager import AssetManager
+# AssetValidation a été renommé AssetValidationResult (modèles) ; alias rétro-compat.
+from _shared.core.models import AssetValidationResult as AssetValidation
 
 
 class TestAssetManager:

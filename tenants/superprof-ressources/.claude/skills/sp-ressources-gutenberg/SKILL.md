@@ -23,11 +23,11 @@ dans les H2/H3. YMYL low.
 > **Source de vérité canonique** :
 > `_shared/prompts/sites/superprof-ressources-reference.md` (fait foi) +
 > `_shared/prompts/sites/superprof-ressources.md` (prompt principal) +
-> `_shared/outputs/superprof-ressources/batches/REGEN_BRIEF.md` (brief réutilisable).
+> `tenants/superprof-ressources/outputs/batches/REGEN_BRIEF.md` (brief réutilisable).
 
 ## Livrable
 
-`_shared/outputs/superprof-ressources/html/{slug}_refreshed.gutenberg.html` —
+`tenants/superprof-ressources/outputs/html/{batch}/{slug}_refreshed.gutenberg.html` —
 liste **plate** de blocs Gutenberg (pas de wrapper `<article>`/`<section>`).
 Le fichier nu `{slug}_refreshed.html` de debug est supprimé après génération
 ([[feedback-delete-nu-html-keep-gutenberg]]).
