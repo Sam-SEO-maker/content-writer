@@ -70,9 +70,13 @@ class YearUpdater:
 
             for match in re.finditer(pattern, text):
                 pos = match.start()
-                # Extraire le contexte (50 chars avant/après)
-                context_start = max(0, pos - 50)
-                context_end = min(len(text), pos + len(str(year_to_find)) + 50)
+                # Contexte d'exclusion ÉTROIT (±15 chars) autour de l'année : une
+                # citation/référence encadre l'année de près (parenthèses, crochets).
+                # Une fenêtre large (±50) faisait déborder l'exclusion sur des années
+                # voisines hors citation (ex. « Smith (2025)… Guide 2025 » excluait
+                # aussi « Guide 2025 »). Fenêtre serrée = exclusion locale correcte.
+                context_start = max(0, pos - 15)
+                context_end = min(len(text), pos + len(str(year_to_find)) + 15)
                 context = text[context_start:context_end]
 
                 matches.append({
@@ -107,16 +111,25 @@ class YearUpdater:
         # Détecter toutes les années
         matches = self.detect_obsolete_years(text)
 
+        # Pré-calculer les spans (start, end) des zones exclues DANS LE TEXTE
+        # COMPLET, pour chaque pattern demandé. Une année n'est exclue que si SA
+        # position tombe à l'intérieur d'un de ces spans (exclusion locale exacte,
+        # sans déborder sur des années voisines hors citation/référence).
+        excluded_spans = []
+        if exclude_patterns:
+            for pattern_name in exclude_patterns:
+                pat = self.EXCLUSION_PATTERNS.get(pattern_name)
+                if not pat:
+                    continue
+                for m in re.finditer(pat, text):
+                    excluded_spans.append((m.start(), m.end()))
+
         # Trier par position (ascendante) pour éviter les chevauchements
         matches_to_replace = []
         for match in sorted(matches, key=lambda m: m['position']):
-            # Vérifier les exclusions demandées
-            should_exclude = False
+            pos = match['position']
             if exclude_patterns:
-                for pattern_name in exclude_patterns:
-                    if self._matches_exclusion_pattern(match['context'], pattern_name):
-                        should_exclude = True
-                        break
+                should_exclude = any(s <= pos < e for (s, e) in excluded_spans)
             else:
                 should_exclude = match['should_exclude']
 
