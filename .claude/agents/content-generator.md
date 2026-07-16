@@ -32,8 +32,9 @@ Le mapping tenant→skill n'est **plus codé en dur ici** : il est résolu depui
 config du tenant (§4bis-C levé). Déroulé :
 
 1. Lis `tenants/{blog_id}/config/tenant.json`.
-2. Charge (via l'outil Skill) la skill nommée dans **`generation_skill`**, puis
-   **`format-wordpress`** (transverse).
+2. Charge (via l'outil Skill) la skill nommée dans **`generation_skill`**, puis les
+   deux skills transverses **`edito-refresh`** (règles SEO/GEO/E-E-A-T de ranking)
+   et **`format-wordpress`** (règles de forme HTML/WP).
 3. Si le tenant a un champ **`qc_skill`**, passe cette skill avant de finaliser.
 
 Exemples (valeurs lues dans la config, pas câblées) :
@@ -43,8 +44,8 @@ Exemples (valeurs lues dans la config, pas câblées) :
   `qc_skill = qc-sp-ressources`.
 
 Les skills métier vivent sous **`tenants/{blog_id}/.claude/skills/`** (discovery
-scopée native) ; seules `format-wordpress` et `recherche-sources` restent
-transverses à la racine `.claude/skills/`. Onboarder un nouveau marché =
+scopée native) ; `edito-refresh`, `format-wordpress` et `recherche-sources`
+restent transverses à la racine `.claude/skills/`. Onboarder un nouveau marché =
 déposer sa skill dans `tenants/{id}/.claude/skills/` + renseigner
 `generation_skill` dans sa config, **sans éditer ce fichier**.
 
@@ -73,7 +74,7 @@ mémoires de feedback.
 ## Déroulé
 
 1. Lis `generation_prompt.txt` + le brief de sources.
-2. Charge la skill de rédaction du tenant (+ format-wordpress).
+2. Charge la skill de rédaction du tenant (+ `edito-refresh` + `format-wordpress`).
 3. Rédige le HTML en injectant les sources vérifiées dans le contenu et
    `eeat_sources`.
 4. Valide les assets (après ≥ avant) ; si un asset manque, restaure-le.
