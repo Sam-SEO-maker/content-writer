@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Optional
 from pathlib import Path
 import json
+import logging
 
 from _shared.core.models import ContentDiff, RewriteResult
 from _shared.core.prompt_composer import PromptComposer
@@ -15,6 +16,8 @@ from scripts.audit.semantic_checker import SemanticChecker
 from scripts.cta.superprof_rotator import SuperprofRotator
 from scripts.utils.output_manager import title_to_slug, dated_batch_folder_name
 from .diff_engine import DiffEngine
+
+logger = logging.getLogger(__name__)
 
 
 # Codes langue (ISO 639-1) → nom lisible, pour l'instruction de rédaction
@@ -625,8 +628,19 @@ Retourne l'article complet réécrit en HTML:
         with open(task_path, 'r', encoding='utf-8') as f:
             task_info = json.load(f)
 
-        # 2. Extraire les informations pour composer le prompt
-        strategy = audit_data.get("decision", {}).get("strategy", "FULL_REFRESH")
+        # 2. Extraire les informations pour composer le prompt.
+        # La décision porte la clé "primary_action" (écrite par l'orchestrateur
+        # depuis DecisionResult.primary_action), PAS "strategy". Lire la mauvaise
+        # clé faisait retomber TOUTE décision sur FULL_REFRESH (bug historique).
+        decision = audit_data.get("decision", {})
+        strategy = decision.get("primary_action") or decision.get("strategy")
+        if not strategy:
+            logger.warning(
+                "Aucune stratégie dans la décision (ni primary_action ni strategy) ; "
+                "fallback FULL_REFRESH. audit_data.decision=%r",
+                decision,
+            )
+            strategy = "FULL_REFRESH"
         subject_category = audit_data.get("blog_config", {}).get("subject_category", "education_general")
 
         # Sous-type d'article (avis/versus) déduit de l'URL — point unique.
