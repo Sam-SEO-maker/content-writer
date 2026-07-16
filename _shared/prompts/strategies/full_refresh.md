@@ -14,11 +14,7 @@ Réécrire l'article complet avec une amélioration substantielle du contenu, de
 
 ✅ **À conserver** :
 - **Tous les liens internes** (exact URLs **ET** exact anchor text de l'original — ne JAMAIS modifier un texte d'ancre existant, ne JAMAIS injecter un lien interne qui n'existait pas dans l'article original)
-- **Placement cocon des liens** (priorité sur l'espacement) :
-  - Lien **CHILD→PARENT** : OBLIGATOIREMENT dans l'introduction (1er ou 2e paragraphe) — non-négociable
-  - Liens **PARENT→CHILD** : après le H2 correspondant à l'article enfant
-  - Liens **siblings** : distribués dans le corps du texte avec 150-200 mots d'espacement
-  - La règle des 150 mots d'espacement NE PEUT PAS déplacer un lien hors de sa position cocon obligatoire
+- **Placement des liens** : conserver chaque lien existant à une position naturelle dans le corps du texte, distribués avec 150-200 mots d'espacement
 - **Toutes les images** avec `<figure>` + `<figcaption>` si l'original contient une légende. Reproduire la légende exacte de l'original dans `<figcaption>`.
 - **Tous les tableaux** (structure + données actualisées)
 - **Toutes les vidéos** (embeds YouTube/Vimeo)
@@ -30,7 +26,7 @@ Réécrire l'article complet avec une amélioration substantielle du contenu, de
 - Retirer un tableau "pour simplifier"
 - Enlever un lien interne "car pas pertinent"
 - Réduire le nombre d'assets
-- **Injecter des liens internes hors cocon** (seuls les liens présents dans l'article original sont autorisés)
+- **Injecter des liens internes nouveaux** (seuls les liens présents dans l'article original sont autorisés)
 - **Omettre les légendes d'images** (si l'original a une légende, le refresh DOIT la reproduire dans `<figcaption>`)
 
 ### Format Rédactionnel (CRITIQUE)
@@ -270,11 +266,11 @@ Un article :
 
 ---
 
-## Correction Duplication (cocons sémantiques)
+## Correction Duplication (contenu dupliqué)
 
-Si un paragraphe est identique à un passage d'un article sibling, trois options :
+Si un paragraphe est identique à un passage d'un autre article du site, trois options :
 
-1. **Différenciation par angle** : réécrire en changeant l'angle selon le contexte (parent = généraliste, enfant = spécifique)
+1. **Différenciation par angle** : réécrire en changeant l'angle selon le contexte propre à l'article
 2. **Résumé contextuel** : résumer en 1-2 phrases + lien vers l'article source
 3. **Suppression avec lien** : si le paragraphe n'apporte rien de supplémentaire au contexte actuel
 

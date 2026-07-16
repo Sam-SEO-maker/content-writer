@@ -119,35 +119,15 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 - ❌ voscours.fr
 - ❌ completchude.com
 
-### Liens internes (cocons sémantiques)
+### Liens internes
 
-**Article parent**:
-- 1 lien vers chaque enfant dans le H2 correspondant
-
-**Article enfant**:
-- 1 lien vers le parent dans l'introduction
-- 1 lien vers chaque article frère dans le corps
+- Conserver tous les liens internes existants de l'article
+- Ne jamais injecter un lien interne qui n'existait pas dans l'original
+- Positionner les liens naturellement dans le corps, espacés de 150+ mots
 
 ---
 
-## 4. Cocons sémantiques
-
-### Structure
-```
-Article Parent
-├── H2 = H1 Enfant 1
-├── H2 = H1 Enfant 2
-└── H2 = H1 Enfant 3-5
-```
-
-### Règles
-- Parent: 3-5 enfants maximum
-- Les H2 du parent = les H1 des enfants
-- Maillage bidirectionnel complet
-
----
-
-## 5. Spécificités par site
+## 4. Spécificités par site
 
 ### Enseigna.fr (Review/Comparatif)
 - Ton: Testeur expert, analytique, objectif
@@ -162,7 +142,7 @@ Article Parent
 
 ---
 
-## 6. Optimisation on-page
+## 5. Optimisation on-page
 
 ### Mots-clés
 - Densité: 1-2% (naturelle)
@@ -184,7 +164,7 @@ Article Parent
 
 ---
 
-## 7. Fraîcheur du contenu
+## 6. Fraîcheur du contenu
 
 **Statistique clé**: ChatGPT cite préférentiellement les pages mises à jour dans les 30 derniers jours (76.4% des citations).
 
@@ -224,7 +204,7 @@ Article Parent
 
 ---
 
-## 8. Standards E-E-A-T 2026
+## 7. Standards E-E-A-T 2026
 
 **Principe**: La Confiance (Trust) est l'élément le plus important. Sans confiance, les autres signaux sont insuffisants.
 
@@ -255,7 +235,7 @@ Article Parent
 
 ---
 
-## 9. Checklist pré-publication
+## 8. Checklist pré-publication
 
 ### SEO de Base
 - [ ] H1 avec mot-clé principal (max 60 caractères)
@@ -340,7 +320,7 @@ Article Parent
 
 1. **Recherche**: DataforSEO → mots-clés + PAA
 2. **Analyse**: SERP → intent + opportunités
-3. **Planification**: Cocon sémantique si applicable
+3. **Planification**: structure des sections + liens internes existants
 4. **Rédaction**: Template approprié
 5. **Validation**: SEOValidator
 6. **Publication**: WordPress/CMS

@@ -135,7 +135,7 @@ Un refresh Enseigna (FULL_REFRESH le plus souvent, parfois PARTIAL_REFRESH ou TI
 
 ✅ **Attendu** :
 - **Introduction repensée à partir de zéro** : nouvelle accroche (chiffre-clé actualisé, question du lecteur, constat terrain du test), différente de celle de l'original. Si l'original ouvre sur une scène ou une anecdote, changer d'angle plutôt que de la paraphraser.
-- Structure des H2 réordonnée/optimisée si cela sert le lecteur (les H2 ne sont jamais recopiés tels quels, sauf H2 = H1 d'un article enfant en cocon).
+- Structure des H2 réordonnée/optimisée si cela sert le lecteur (les H2 ne sont jamais recopiés tels quels).
 - Le fil narratif, les transitions et les exemples sont réécrits, pas décalqués.
 
 **Règle de contrôle** : si l'introduction générée pourrait être obtenue en passant l'intro originale dans un simple reformulateur, elle est à refaire.

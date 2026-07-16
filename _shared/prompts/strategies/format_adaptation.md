@@ -17,13 +17,13 @@ Tu dois **restructurer** l'article vers le format SERP dominant :
 - Préserver tous les assets
 - **Toutes les images** avec `<figure>` + `<figcaption>` si l'original contient une légende. Reproduire la légende exacte de l'original dans `<figcaption>`.
 - **Tous les liens internes** (exact URLs **ET** exact anchor text — ne JAMAIS modifier un texte d'ancre existant, ne JAMAIS injecter un lien interne qui n'existait pas dans l'article original)
-- **Placement cocon des liens** : lien CHILD→PARENT OBLIGATOIREMENT en introduction (1er ou 2e paragraphe). Liens PARENT→CHILD après le H2 correspondant. Liens siblings espacés de 150+ mots. La règle d'espacement NE PEUT PAS déplacer un lien hors de sa position cocon obligatoire.
+- **Placement des liens** : conserver chaque lien existant à une position naturelle dans le corps du texte, espacés de 150+ mots.
 
 **NE PAS** :
 - Supprimer d'informations
 - Réduire la longueur
 - Retirer des assets
-- Injecter des liens internes hors cocon (seuls les liens présents dans l'article original sont autorisés)
+- Injecter des liens internes nouveaux (seuls les liens présents dans l'article original sont autorisés)
 - Omettre les légendes d'images (si l'original a une légende, le refresh DOIT la reproduire dans `<figcaption>`)
 
 ---

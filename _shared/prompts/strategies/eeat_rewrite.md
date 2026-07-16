@@ -206,8 +206,7 @@ HTML propre WordPress-ready (pas de wrappers, pas de H1, pas de footer) :
 ### Assets
 - [ ] Toutes images préservées avec `<figure>` + `<figcaption>` (reproduire la légende exacte de l'original)
 - [ ] Tous liens internes préservés (exact URLs **ET** exact anchor text — ne JAMAIS injecter un lien interne qui n'existait pas dans l'article original)
-- [ ] Lien CHILD→PARENT présent dans l'introduction (1er ou 2e paragraphe) — placement cocon non-négociable
-- [ ] Liens espacés de 150+ mots, SAUF contrainte cocon (CHILD→PARENT en intro, PARENT→CHILD après H2 correspondant)
+- [ ] Liens existants conservés à une position naturelle, espacés de 150+ mots
 - [ ] 0 ou 1 lien Superprof selon pertinence
 - [ ] Aucun lien blacklisté
 
