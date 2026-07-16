@@ -1,27 +1,26 @@
-"""Sync unidirectionnel : page Notion « config pays » → `_shared/config/sites.json`.
+"""Sync unidirectionnel : base Notion « Config blogs » → catalogue Superprof.
 
-Phase 6d. La page Notion (base de données) est la source éditée par les humains ;
-`sites.json` en est la **projection machine**. Le moteur ne lit JAMAIS Notion au
-runtime — il lit `sites.json`. Ce script est le seul pont, et il est
-**unidirectionnel** (Notion → sites.json), jamais l'inverse.
+Phase 6d (révisé 2026-07-16). La base Notion « Config blogs Superprof dans le
+monde » est un annuaire HUMAIN : `Pays` (libellé), `URL du blog`, `Région`,
+`Drapeau` (emoji). Elle NE porte PAS les champs machine (tenant_id, gsc_property,
+langue) — ceux-ci vivent déjà, plus complets, dans le catalogue généré
+`_shared/config/superprof_blogs_catalog.json` (source machine).
 
-Principes de sûreté :
-- **Merge additif** : on ne réécrit pas `sites.json` via une dataclass (ce qui
-  perdrait les champs riches d'enseigna/superprof et la clé top-level
-  `notion_refresh_tracker_db_id`). On charge le JSON brut, on met à jour/ajoute
-  entrée par entrée en préservant tout champ existant non géré par Notion.
-- **Dry-run par défaut** : `--apply` requis pour écrire.
-- **Token invalide / absent → no-op** explicite (pas d'écrasement).
+Rôle du sync (décision 2026-07-16) : **enrichir le catalogue** avec les libellés
+humains de Notion, en joignant par `URL du blog` ↔ `gsc_property`. Notion devient
+la source des libellés (country_label / region / flag) ; le catalogue reste la
+source machine et le pilote de l'onboarding (`cw tenant init`). Le registre
+runtime `sites.json` n'est PAS touché ici (Notion ne porte pas ses champs).
 
-Le schéma exact de la base Notion n'étant pas figé, le mapping propriété Notion →
-champ sites.json est déclaré dans `PROPERTY_MAP` et facilement ajustable. Au
-premier run réel, `--dump-schema` affiche les propriétés réelles de la base pour
-caler le mapping.
+API Notion 2025-09-03 : une "database" (conteneur, ID de l'URL) référence un ou
+plusieurs `data_source`. On résout d'abord le data_source_id via le conteneur,
+puis on requête `/v1/data_sources/{id}/query` (l'ancien `/databases/{id}/query`
+ne fonctionne plus).
 
 Usage :
     python -m scripts.notion.sync_sites_from_notion --dump-schema
-    python -m scripts.notion.sync_sites_from_notion           # dry-run (diff)
-    python -m scripts.notion.sync_sites_from_notion --apply    # écrit sites.json
+    python -m scripts.notion.sync_sites_from_notion            # dry-run (diff)
+    python -m scripts.notion.sync_sites_from_notion --apply     # écrit le catalogue
 """
 from __future__ import annotations
 
@@ -37,32 +36,18 @@ from dotenv import load_dotenv
 NOTION_API = "https://api.notion.com/v1"
 NOTION_VERSION = "2025-09-03"
 
-# Base « config pays » (extrait de l'URL de la page Notion, cf. plan §Étape 6).
+# Conteneur database « Config blogs Superprof dans le monde » (ID de l'URL Notion).
 CONFIG_PAYS_DB_ID = "b4f6b521eeb14e29a56a527febd9d278"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SITES_JSON = _PROJECT_ROOT / "_shared" / "config" / "sites.json"
+CATALOG_PATH = _PROJECT_ROOT / "_shared" / "config" / "superprof_blogs_catalog.json"
 
-# Mapping propriété Notion → champ sites.json. Clés = noms de colonnes Notion
-# (à confirmer via --dump-schema au 1er run). Valeurs = champ cible sites.json.
-# `id` est OBLIGATOIRE (clé de merge) ; on tente plusieurs noms usuels.
+# Mapping propriété Notion → champ d'enrichissement du catalogue.
 PROPERTY_MAP = {
-    "id": "id",
-    "ID": "id",
-    "tenant_id": "id",
-    "Name": "name",
-    "name": "name",
-    "domain": "domain",
-    "Domain": "domain",
-    "gsc_property": "gsc_property",
-    "GSC Property": "gsc_property",
-    "url_base": "url_base",
-    "language": "language",
-    "active": "active",
-    "subject_category": "subject_category",
-    "content_type": "content_type",
-    "ymyl_level": "ymyl_level",
-    "registre": "registre",
+    "Pays": "country_label",
+    "Région": "region",
+    "Drapeau": "flag",
+    "URL du blog": "_url",  # clé de jointure (non stockée telle quelle)
 }
 
 
@@ -78,9 +63,22 @@ def get_token() -> str:
     return os.environ.get("NOTION_TOKEN", "").strip()
 
 
-def fetch_database_schema(token: str, db_id: str = CONFIG_PAYS_DB_ID) -> dict:
-    """Retourne le dict `properties` de la base (ou {} + message d'erreur)."""
+def resolve_data_source_id(token: str, db_id: str = CONFIG_PAYS_DB_ID) -> str:
+    """Résout le data_source_id depuis le conteneur database (API 2025-09-03)."""
     resp = requests.get(f"{NOTION_API}/databases/{db_id}",
+                        headers=notion_headers(token), timeout=30)
+    data = resp.json()
+    if data.get("object") == "error":
+        raise RuntimeError(f"Notion: {data.get('message', 'erreur inconnue')}")
+    sources = data.get("data_sources") or []
+    if not sources:
+        raise RuntimeError("Aucun data_source dans ce conteneur database.")
+    return sources[0]["id"]
+
+
+def fetch_schema(token: str) -> dict:
+    ds_id = resolve_data_source_id(token)
+    resp = requests.get(f"{NOTION_API}/data_sources/{ds_id}",
                         headers=notion_headers(token), timeout=30)
     data = resp.json()
     if data.get("object") == "error":
@@ -88,12 +86,12 @@ def fetch_database_schema(token: str, db_id: str = CONFIG_PAYS_DB_ID) -> dict:
     return data.get("properties", {})
 
 
-def fetch_all_rows(token: str, db_id: str = CONFIG_PAYS_DB_ID) -> list[dict]:
-    """Récupère toutes les pages (lignes) de la base, avec pagination."""
-    rows = []
-    payload: dict = {"page_size": 100}
+def fetch_all_rows(token: str) -> list[dict]:
+    """Toutes les lignes de la base config pays (pagination)."""
+    ds_id = resolve_data_source_id(token)
+    rows, payload = [], {"page_size": 100}
     while True:
-        resp = requests.post(f"{NOTION_API}/databases/{db_id}/query",
+        resp = requests.post(f"{NOTION_API}/data_sources/{ds_id}/query",
                              headers=notion_headers(token), json=payload, timeout=30)
         data = resp.json()
         if data.get("object") == "error":
@@ -106,125 +104,119 @@ def fetch_all_rows(token: str, db_id: str = CONFIG_PAYS_DB_ID) -> list[dict]:
 
 
 def _plain_value(prop: dict):
-    """Extrait la valeur scalaire d'une propriété Notion, quel que soit son type."""
     t = prop.get("type")
-    if t == "title" or t == "rich_text":
+    if t in ("title", "rich_text"):
         return "".join(x.get("plain_text", "") for x in prop.get(t, []))
     if t == "select":
         sel = prop.get("select")
         return sel.get("name") if sel else None
-    if t == "multi_select":
-        return [x.get("name") for x in prop.get("multi_select", [])]
-    if t == "checkbox":
-        return prop.get("checkbox")
     if t == "url":
         return prop.get("url")
-    if t == "number":
-        return prop.get("number")
-    if t == "email":
-        return prop.get("email")
-    if t == "phone_number":
-        return prop.get("phone_number")
     return None
 
 
-def row_to_site(row: dict) -> Optional[dict]:
-    """Convertit une ligne Notion en dict partiel sites.json via PROPERTY_MAP.
+def _norm_url(url: Optional[str]) -> str:
+    """Normalise une URL pour la jointure (minuscules, un seul slash final)."""
+    if not url:
+        return ""
+    return url.strip().lower().rstrip("/") + "/"
 
-    Retourne None si aucun `id` exploitable (ligne ignorée, loggée par l'appelant).
-    """
+
+def row_to_labels(row: dict) -> Optional[dict]:
+    """Extrait {country_label, region, flag, _url} d'une ligne Notion."""
     props = row.get("properties", {})
-    site: dict = {}
-    for notion_name, value in props.items():
-        target = PROPERTY_MAP.get(notion_name)
-        if not target:
-            continue
-        val = _plain_value(value)
-        if val is None or val == "":
-            continue
-        site[target] = val
-    return site if site.get("id") else None
+    out = {}
+    for notion_name, target in PROPERTY_MAP.items():
+        if notion_name in props:
+            val = _plain_value(props[notion_name])
+            if val:
+                out[target] = val
+    return out if out.get("_url") else None
 
 
-def merge_into_sites(existing: dict, notion_sites: list[dict]) -> tuple[dict, list[str]]:
-    """Merge additif des sites Notion dans le JSON existant. Préserve tout champ
-    existant non fourni par Notion et les clés top-level.
+def enrich_catalog(catalog: dict, notion_rows: list[dict]) -> tuple[dict, list[str], list[str]]:
+    """Enrichit les entrées du catalogue avec les libellés Notion (join par URL).
 
-    Retourne (nouveau_dict, journal_des_changements).
+    Retourne (catalogue, changements, non_appariés_notion).
     """
-    by_id = {s["id"]: s for s in existing.get("sites", [])}
-    changes: list[str] = []
+    # Index catalogue par gsc_property normalisée.
+    entries = catalog.get("ressources_sites", []) + catalog.get("blogs", [])
+    by_url = {_norm_url(e.get("gsc_property")): e for e in entries}
 
-    for ns in notion_sites:
-        sid = ns["id"]
-        if sid in by_id:
-            before = dict(by_id[sid])
-            for k, v in ns.items():
-                if by_id[sid].get(k) != v:
-                    changes.append(f"~ {sid}.{k}: {before.get(k)!r} → {v!r}")
-                    by_id[sid][k] = v
-        else:
-            by_id[sid] = ns
-            changes.append(f"+ nouveau tenant '{sid}' ({', '.join(ns.keys())})")
-
-    result = dict(existing)  # préserve notion_refresh_tracker_db_id etc.
-    result["sites"] = list(by_id.values())
-    return result, changes
+    changes, unmatched = [], []
+    for row in notion_rows:
+        labels = row_to_labels(row)
+        if not labels:
+            continue
+        url = _norm_url(labels.pop("_url"))
+        entry = by_url.get(url)
+        if not entry:
+            unmatched.append(f"{labels.get('country_label', '?')} ({url})")
+            continue
+        for k, v in labels.items():
+            if entry.get(k) != v:
+                changes.append(f"~ {entry['tenant_id']}.{k} = {v!r}")
+                entry[k] = v
+    return catalog, changes, unmatched
 
 
 def main() -> int:
     load_dotenv()
-    ap = argparse.ArgumentParser(description="Sync Notion config pays → sites.json")
-    ap.add_argument("--apply", action="store_true", help="Écrit sites.json (sinon dry-run).")
-    ap.add_argument("--dump-schema", action="store_true",
-                    help="Affiche les propriétés réelles de la base Notion et sort.")
+    ap = argparse.ArgumentParser(description="Sync Notion config pays → catalogue")
+    ap.add_argument("--apply", action="store_true", help="Écrit le catalogue (sinon dry-run).")
+    ap.add_argument("--dump-schema", action="store_true", help="Affiche les propriétés Notion et sort.")
     args = ap.parse_args()
 
     token = get_token()
     if not token:
-        print("[SYNC] NOTION_TOKEN absent — abandon (aucune écriture).")
+        print("[SYNC] NOTION_TOKEN absent — abandon.")
         return 2
 
     try:
         if args.dump_schema:
-            schema = fetch_database_schema(token)
-            print(f"[SYNC] Propriétés de la base {CONFIG_PAYS_DB_ID} :")
+            schema = fetch_schema(token)
+            print("[SYNC] Propriétés de la base « Config blogs » :")
             for name, meta in schema.items():
                 mapped = PROPERTY_MAP.get(name, "— (non mappé)")
                 print(f"  • {name!r} ({meta.get('type')}) → {mapped}")
             return 0
-
         rows = fetch_all_rows(token)
     except RuntimeError as e:
-        print(f"[SYNC] {e} — abandon (aucune écriture).")
+        print(f"[SYNC] {e} — abandon.")
         return 2
 
-    notion_sites, ignored = [], 0
-    for r in rows:
-        site = row_to_site(r)
-        if site:
-            notion_sites.append(site)
-        else:
-            ignored += 1
-    print(f"[SYNC] {len(notion_sites)} tenant(s) lus depuis Notion, {ignored} ligne(s) ignorée(s) (pas d'id).")
+    if not CATALOG_PATH.exists():
+        print(f"[SYNC] Catalogue absent ({CATALOG_PATH}) — générer d'abord "
+              "via build_superprof_catalog. Abandon.")
+        return 2
 
-    existing = json.loads(SITES_JSON.read_text(encoding="utf-8")) if SITES_JSON.exists() else {"sites": []}
-    merged, changes = merge_into_sites(existing, notion_sites)
+    catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+    catalog, changes, unmatched = enrich_catalog(catalog, rows)
+
+    print(f"[SYNC] {len(rows)} ligne(s) Notion lues.")
+    if unmatched:
+        print(f"[SYNC] {len(unmatched)} ligne(s) Notion sans correspondance catalogue "
+              "(non enrichies) :")
+        for u in unmatched:
+            print(f"   ⚠ {u}")
 
     if not changes:
-        print("[SYNC] Aucun changement — sites.json déjà à jour.")
+        print("[SYNC] Aucun enrichissement — catalogue déjà à jour.")
         return 0
 
-    print(f"[SYNC] {len(changes)} changement(s) :")
-    for c in changes:
+    print(f"[SYNC] {len(changes)} enrichissement(s) :")
+    for c in changes[:40]:
         print(f"   {c}")
+    if len(changes) > 40:
+        print(f"   … (+{len(changes) - 40})")
 
     if not args.apply:
-        print("\n[SYNC] Dry-run — relancer avec --apply pour écrire sites.json.")
+        print("\n[SYNC] Dry-run — relancer avec --apply pour écrire le catalogue.")
         return 0
 
-    SITES_JSON.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"\n[SYNC] ✓ sites.json mis à jour ({SITES_JSON}).")
+    CATALOG_PATH.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+                            encoding="utf-8")
+    print(f"\n[SYNC] ✓ catalogue enrichi ({CATALOG_PATH}).")
     return 0
 
 

@@ -53,7 +53,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.fr/ressources/",
       "url_base": "/ressources/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "SP Ressources FR",
+      "region": "Europe",
+      "flag": "🇫🇷"
     }
   ],
   "blogs": [
@@ -64,7 +67,10 @@
       "language": "ar",
       "gsc_property": "https://www.superprof.com.om/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Oman",
+      "region": "Asie & Océanie",
+      "flag": "🇴🇲"
     },
     {
       "tenant_id": "ar-qa-blog",
@@ -73,7 +79,10 @@
       "language": "ar",
       "gsc_property": "https://www.superprof.qa/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Qatar",
+      "region": "Asie & Océanie",
+      "flag": "🇶🇦"
     },
     {
       "tenant_id": "ar-tn-blog",
@@ -82,7 +91,10 @@
       "language": "ar",
       "gsc_property": "https://www.superprof.com.tn/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Tunisie",
+      "region": "Afrique",
+      "flag": "🇹🇳"
     },
     {
       "tenant_id": "bg-bg-blog",
@@ -91,7 +103,10 @@
       "language": "bg",
       "gsc_property": "https://www.superprof.bg/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Bulgarie",
+      "region": "Europe",
+      "flag": "🇧🇬"
     },
     {
       "tenant_id": "bs-ba-blog",
@@ -100,7 +115,10 @@
       "language": "bs",
       "gsc_property": "https://www.superprof.ba/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Bosnie-Herzégovine",
+      "region": "Europe",
+      "flag": "🇧🇦"
     },
     {
       "tenant_id": "da-dk-blog",
@@ -109,7 +127,10 @@
       "language": "da",
       "gsc_property": "https://www.superprof.dk/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Danemark",
+      "region": "Europe",
+      "flag": "🇩🇰"
     },
     {
       "tenant_id": "de-at-blog",
@@ -118,7 +139,10 @@
       "language": "de",
       "gsc_property": "https://www.superprof.at/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Autriche",
+      "region": "Europe",
+      "flag": "🇦🇹"
     },
     {
       "tenant_id": "de-ch-blog",
@@ -127,7 +151,10 @@
       "language": "de",
       "gsc_property": "https://de.superprof.ch/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Schweiz",
+      "region": "Europe",
+      "flag": "🇨🇭"
     },
     {
       "tenant_id": "de-de-blog",
@@ -136,7 +163,10 @@
       "language": "de",
       "gsc_property": "https://www.superprof.de/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Allemagne",
+      "region": "Europe",
+      "flag": "🇩🇪"
     },
     {
       "tenant_id": "el-cy-blog",
@@ -145,7 +175,10 @@
       "language": "el",
       "gsc_property": "https://www.superprof.com.cy/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Chypre",
+      "region": "Europe",
+      "flag": "🇨🇾"
     },
     {
       "tenant_id": "el-gr-blog",
@@ -154,7 +187,10 @@
       "language": "el",
       "gsc_property": "https://www.superprof.gr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Grèce",
+      "region": "Europe",
+      "flag": "🇬🇷"
     },
     {
       "tenant_id": "en-ae-blog",
@@ -163,7 +199,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.ae/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Émirats Arabes Unis",
+      "region": "Asie & Océanie",
+      "flag": "🇦🇪"
     },
     {
       "tenant_id": "en-au-blog",
@@ -172,7 +211,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.au/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Australie",
+      "region": "Asie & Océanie",
+      "flag": "🇦🇺"
     },
     {
       "tenant_id": "en-bw-blog",
@@ -181,7 +223,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.bw/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Botswana",
+      "region": "Afrique",
+      "flag": "🇧🇼"
     },
     {
       "tenant_id": "en-bz-blog",
@@ -190,7 +235,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.bz/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Belize",
+      "region": "Amérique",
+      "flag": "🇧🇿"
     },
     {
       "tenant_id": "en-ca-blog",
@@ -199,7 +247,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.ca/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Canada",
+      "region": "Amérique",
+      "flag": "🇨🇦"
     },
     {
       "tenant_id": "en-gb-blog",
@@ -208,7 +259,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.uk/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Royaume-Uni",
+      "region": "Europe",
+      "flag": "🇬🇧"
     },
     {
       "tenant_id": "en-gh-blog",
@@ -217,7 +271,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.gh/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Ghana",
+      "region": "Afrique",
+      "flag": "🇬🇭"
     },
     {
       "tenant_id": "en-ie-blog",
@@ -226,7 +283,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.ie/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Irlande",
+      "region": "Europe",
+      "flag": "🇮🇪"
     },
     {
       "tenant_id": "en-in-blog",
@@ -235,7 +295,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.in/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Inde",
+      "region": "Asie & Océanie",
+      "flag": "🇮🇳"
     },
     {
       "tenant_id": "en-is-blog",
@@ -244,7 +307,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.is/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Islande",
+      "region": "Europe",
+      "flag": "🇮🇸"
     },
     {
       "tenant_id": "en-ke-blog",
@@ -253,7 +319,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.ke/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Kenya",
+      "region": "Afrique",
+      "flag": "🇰🇪"
     },
     {
       "tenant_id": "en-ls-blog",
@@ -262,7 +331,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.ls/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Lesotho",
+      "region": "Afrique",
+      "flag": "🇱🇸"
     },
     {
       "tenant_id": "en-mt-blog",
@@ -271,7 +343,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.mt/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Malte",
+      "region": "Europe",
+      "flag": "🇲🇹"
     },
     {
       "tenant_id": "en-mu-blog",
@@ -280,7 +355,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.mu/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Mauritius",
+      "region": "Afrique",
+      "flag": "🇲🇺"
     },
     {
       "tenant_id": "en-my-blog",
@@ -289,7 +367,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.my/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Malaisie",
+      "region": "Asie & Océanie",
+      "flag": "🇲🇾"
     },
     {
       "tenant_id": "en-na-blog",
@@ -298,7 +379,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.na/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Namibie",
+      "region": "Afrique",
+      "flag": "🇳🇦"
     },
     {
       "tenant_id": "en-ng-blog",
@@ -307,7 +391,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.ng/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Nigéria",
+      "region": "Afrique",
+      "flag": "🇳🇬"
     },
     {
       "tenant_id": "en-nz-blog",
@@ -316,7 +403,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.nz/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Nouvelle-Zélande",
+      "region": "Asie & Océanie",
+      "flag": "🇳🇿"
     },
     {
       "tenant_id": "en-ph-blog",
@@ -325,7 +415,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.com.ph/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Philippines",
+      "region": "Asie & Océanie",
+      "flag": "🇵🇭"
     },
     {
       "tenant_id": "en-pk-blog",
@@ -334,7 +427,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.pk/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Pakistan",
+      "region": "Asie & Océanie",
+      "flag": "🇵🇰"
     },
     {
       "tenant_id": "en-rw-blog",
@@ -343,7 +439,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.rw/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Rwanda",
+      "region": "Afrique",
+      "flag": "🇷🇼"
     },
     {
       "tenant_id": "en-sg-blog",
@@ -352,7 +451,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.sg/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Singapour",
+      "region": "Asie & Océanie",
+      "flag": "🇸🇬"
     },
     {
       "tenant_id": "en-tz-blog",
@@ -361,7 +463,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.tz/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Tanzanie",
+      "region": "Afrique",
+      "flag": "🇹🇿"
     },
     {
       "tenant_id": "en-za-blog",
@@ -370,7 +475,10 @@
       "language": "en",
       "gsc_property": "https://www.superprof.co.za/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Afrique du Sud",
+      "region": "Afrique",
+      "flag": "🇿🇦"
     },
     {
       "tenant_id": "es-ar-blog",
@@ -379,7 +487,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.ar/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Argentine",
+      "region": "Amérique",
+      "flag": "🇦🇷"
     },
     {
       "tenant_id": "es-bo-blog",
@@ -388,7 +499,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.bo/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Bolivie",
+      "region": "Amérique",
+      "flag": "🇧🇴"
     },
     {
       "tenant_id": "es-cl-blog",
@@ -397,7 +511,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.cl/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Chili",
+      "region": "Amérique",
+      "flag": "🇨🇱"
     },
     {
       "tenant_id": "es-co-blog",
@@ -406,7 +523,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.co/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Colombie",
+      "region": "Amérique",
+      "flag": "🇨🇴"
     },
     {
       "tenant_id": "es-cr-blog",
@@ -415,7 +535,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.cr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Costa Rica",
+      "region": "Amérique",
+      "flag": "🇨🇷"
     },
     {
       "tenant_id": "es-do-blog",
@@ -424,7 +547,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.do/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "République Dominicaine",
+      "region": "Amérique",
+      "flag": "🇩🇴"
     },
     {
       "tenant_id": "es-ec-blog",
@@ -433,7 +559,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.ec/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Équateur",
+      "region": "Amérique",
+      "flag": "🇪🇨"
     },
     {
       "tenant_id": "es-es-blog",
@@ -442,7 +571,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.es/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Espagne",
+      "region": "Europe",
+      "flag": "🇪🇸"
     },
     {
       "tenant_id": "es-gt-blog",
@@ -451,7 +583,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.gt/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Guatemala",
+      "region": "Amérique",
+      "flag": "🇬🇹"
     },
     {
       "tenant_id": "es-hn-blog",
@@ -460,7 +595,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.hn/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Honduras",
+      "region": "Amérique",
+      "flag": "🇭🇳"
     },
     {
       "tenant_id": "es-mx-blog",
@@ -469,7 +607,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.mx/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Mexique",
+      "region": "Amérique",
+      "flag": "🇲🇽"
     },
     {
       "tenant_id": "es-ni-blog",
@@ -478,7 +619,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.ni/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Nicaragua",
+      "region": "Amérique",
+      "flag": "🇳🇮"
     },
     {
       "tenant_id": "es-pa-blog",
@@ -487,7 +631,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.pa/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Panama",
+      "region": "Amérique",
+      "flag": "🇵🇦"
     },
     {
       "tenant_id": "es-pe-blog",
@@ -496,7 +643,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.pe/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Pérou",
+      "region": "Amérique",
+      "flag": "🇵🇪"
     },
     {
       "tenant_id": "es-pr-blog",
@@ -505,7 +655,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.pr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Puerto Rico",
+      "region": "Amérique",
+      "flag": "🇵🇷"
     },
     {
       "tenant_id": "es-py-blog",
@@ -514,7 +667,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.py/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Paraguay",
+      "region": "Amérique",
+      "flag": "🇵🇾"
     },
     {
       "tenant_id": "es-sv-blog",
@@ -523,7 +679,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.com.sv/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "El Salvador",
+      "region": "Amérique",
+      "flag": "🇸🇻"
     },
     {
       "tenant_id": "es-uy-blog",
@@ -532,7 +691,10 @@
       "language": "es",
       "gsc_property": "https://www.superprof.uy/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Uruguay",
+      "region": "Amérique",
+      "flag": "🇺🇾"
     },
     {
       "tenant_id": "et-ee-blog",
@@ -541,7 +703,10 @@
       "language": "et",
       "gsc_property": "https://www.superprof.ee/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Estonie",
+      "region": "Europe",
+      "flag": "🇪🇪"
     },
     {
       "tenant_id": "fi-fi-blog",
@@ -550,7 +715,10 @@
       "language": "fi",
       "gsc_property": "https://www.superprof.fi/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Finlande",
+      "region": "Europe",
+      "flag": "🇫🇮"
     },
     {
       "tenant_id": "fr-be-blog",
@@ -559,7 +727,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.be/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Wallonie",
+      "region": "Europe",
+      "flag": "🇧🇪"
     },
     {
       "tenant_id": "fr-cm-blog",
@@ -568,7 +739,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.cm/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Cameroun",
+      "region": "Afrique",
+      "flag": "🇨🇲"
     },
     {
       "tenant_id": "fr-fr-blog",
@@ -577,7 +751,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.fr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "France",
+      "region": "Europe",
+      "flag": "🇫🇷"
     },
     {
       "tenant_id": "fr-lu-blog",
@@ -586,7 +763,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.lu/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Luxembourg",
+      "region": "Europe",
+      "flag": "🇱🇺"
     },
     {
       "tenant_id": "fr-ma-blog",
@@ -595,7 +775,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.ma/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Maroc",
+      "region": "Afrique",
+      "flag": "🇲🇦"
     },
     {
       "tenant_id": "fr-sn-blog",
@@ -604,7 +787,10 @@
       "language": "fr",
       "gsc_property": "https://www.superprof.com.sn/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Sénégal",
+      "region": "Afrique",
+      "flag": "🇸🇳"
     },
     {
       "tenant_id": "he-il-blog",
@@ -613,7 +799,10 @@
       "language": "he",
       "gsc_property": "https://www.superprof.co.il/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Israël",
+      "region": "Asie & Océanie",
+      "flag": "🇮🇱"
     },
     {
       "tenant_id": "hr-hr-blog",
@@ -622,7 +811,10 @@
       "language": "hr",
       "gsc_property": "https://www.superprof.hr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Croatie",
+      "region": "Europe",
+      "flag": "🇭🇷"
     },
     {
       "tenant_id": "hu-hu-blog",
@@ -631,7 +823,10 @@
       "language": "hu",
       "gsc_property": "https://www.superprof.hu/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Hongrie",
+      "region": "Europe",
+      "flag": "🇭🇺"
     },
     {
       "tenant_id": "id-id-blog",
@@ -640,7 +835,10 @@
       "language": "id",
       "gsc_property": "https://www.superprof.co.id/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Indonésie",
+      "region": "Asie & Océanie",
+      "flag": "🇮🇩"
     },
     {
       "tenant_id": "it-it-blog",
@@ -649,7 +847,10 @@
       "language": "it",
       "gsc_property": "https://www.superprof.it/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Italie",
+      "region": "Europe",
+      "flag": "🇮🇹"
     },
     {
       "tenant_id": "ja-jp-blog",
@@ -658,7 +859,10 @@
       "language": "ja",
       "gsc_property": "https://www.superprof.jp/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Japon",
+      "region": "Asie & Océanie",
+      "flag": "🇯🇵"
     },
     {
       "tenant_id": "ko-kr-blog",
@@ -676,7 +880,10 @@
       "language": "lt",
       "gsc_property": "https://www.superprof.lt/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Lituanie",
+      "region": "Europe",
+      "flag": "🇱🇹"
     },
     {
       "tenant_id": "lv-lv-blog",
@@ -685,7 +892,10 @@
       "language": "lv",
       "gsc_property": "https://www.superprof.lv/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Lettonie",
+      "region": "Europe",
+      "flag": "🇱🇻"
     },
     {
       "tenant_id": "nl-be-blog",
@@ -694,7 +904,10 @@
       "language": "nl",
       "gsc_property": "https://nl.superprof.be/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Flandre",
+      "region": "Europe",
+      "flag": "🇧🇪"
     },
     {
       "tenant_id": "nl-nl-blog",
@@ -703,7 +916,10 @@
       "language": "nl",
       "gsc_property": "https://www.super-prof.nl/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Pays-Bas",
+      "region": "Europe",
+      "flag": "🇳🇱"
     },
     {
       "tenant_id": "no-no-blog",
@@ -712,7 +928,10 @@
       "language": "no",
       "gsc_property": "https://www.superprof.no/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Norvège",
+      "region": "Europe",
+      "flag": "🇳🇴"
     },
     {
       "tenant_id": "pl-pl-blog",
@@ -721,7 +940,10 @@
       "language": "pl",
       "gsc_property": "https://www.superprof.pl/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Pologne",
+      "region": "Europe",
+      "flag": "🇵🇱"
     },
     {
       "tenant_id": "pt-br-blog",
@@ -730,7 +952,10 @@
       "language": "pt",
       "gsc_property": "https://www.superprof.com.br/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Brésil",
+      "region": "Amérique",
+      "flag": "🇧🇷"
     },
     {
       "tenant_id": "pt-mz-blog",
@@ -739,7 +964,10 @@
       "language": "pt",
       "gsc_property": "https://www.superprof.co.mz/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Mozambique",
+      "region": "Afrique",
+      "flag": "🇲🇿"
     },
     {
       "tenant_id": "pt-pt-blog",
@@ -748,7 +976,10 @@
       "language": "pt",
       "gsc_property": "https://www.superprof.pt/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Portugal",
+      "region": "Europe",
+      "flag": "🇵🇹"
     },
     {
       "tenant_id": "ro-md-blog",
@@ -757,7 +988,10 @@
       "language": "ro",
       "gsc_property": "https://www.superprof.md/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Moldavie",
+      "region": "Europe",
+      "flag": "🇲🇩"
     },
     {
       "tenant_id": "ro-ro-blog",
@@ -766,7 +1000,10 @@
       "language": "ro",
       "gsc_property": "https://www.superprof.com.ro/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Roumanie",
+      "region": "Europe",
+      "flag": "🇷🇴"
     },
     {
       "tenant_id": "sk-sk-blog",
@@ -775,7 +1012,10 @@
       "language": "sk",
       "gsc_property": "https://www.superprof.sk/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Slovaquie",
+      "region": "Europe",
+      "flag": "🇸🇰"
     },
     {
       "tenant_id": "sl-si-blog",
@@ -784,7 +1024,10 @@
       "language": "sl",
       "gsc_property": "https://www.superprof.si/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Slovénie",
+      "region": "Europe",
+      "flag": "🇸🇮"
     },
     {
       "tenant_id": "sq-al-blog",
@@ -793,7 +1036,10 @@
       "language": "sq",
       "gsc_property": "https://www.superprof.al/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Albanie",
+      "region": "Europe",
+      "flag": "🇦🇱"
     },
     {
       "tenant_id": "sr-me-blog",
@@ -802,7 +1048,10 @@
       "language": "sr",
       "gsc_property": "https://www.super-prof.me/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Monténégro",
+      "region": "Europe",
+      "flag": "🇲🇪"
     },
     {
       "tenant_id": "sr-rs-blog",
@@ -811,7 +1060,10 @@
       "language": "sr",
       "gsc_property": "https://www.superprof.rs/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Serbie",
+      "region": "Europe",
+      "flag": "🇷🇸"
     },
     {
       "tenant_id": "sv-se-blog",
@@ -820,7 +1072,10 @@
       "language": "sv",
       "gsc_property": "https://www.superprof.se/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Suède",
+      "region": "Europe",
+      "flag": "🇸🇪"
     },
     {
       "tenant_id": "tr-tr-blog",
@@ -829,7 +1084,10 @@
       "language": "tr",
       "gsc_property": "https://www.superprof.com.tr/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Turquie",
+      "region": "Europe",
+      "flag": "🇹🇷"
     },
     {
       "tenant_id": "uk-ua-blog",
@@ -838,7 +1096,10 @@
       "language": "uk",
       "gsc_property": "https://www.superprof.com.ua/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Ukraine",
+      "region": "Europe",
+      "flag": "🇺🇦"
     },
     {
       "tenant_id": "vi-vn-blog",
@@ -847,7 +1108,10 @@
       "language": "vi",
       "gsc_property": "https://www.superprof.vn/blog/",
       "url_base": "/blog/",
-      "onboardable": true
+      "onboardable": true,
+      "country_label": "Vietnam",
+      "region": "Asie & Océanie",
+      "flag": "🇻🇳"
     },
     {
       "tenant_id": "zh-hk-blog",
