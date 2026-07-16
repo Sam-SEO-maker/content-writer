@@ -141,5 +141,19 @@
       "Bash(wget * | sh:*)",
       "Bash(npm publish:*)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/hooks/check_docs_sync.py",
+            "timeout": 15,
+            "statusMessage": "Vérification sync doc (CLAUDE.md/README.md)…"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -2,8 +2,8 @@
 
 **Refresh SEO multi-tenant.** Ce fichier est un **index d'orientation**, pas un manuel :
 il dit *qui tu es*, *quels tenants existent*, *quelle est la chaîne*, et *quelle skill /
-commande invoquer*. Le « comment rédiger » vit dans les skills (`.claude/skills/`) et les
-docs (`_shared/docs/`), chargés à la demande.
+commande invoquer*. Le « comment rédiger » vit dans les skills (`.claude/skills/` transverses +
+`tenants/{id}/.claude/skills/` par tenant), chargées à la demande.
 
 **Version** : 4.0 (refonte monorepo) · **Projet** : Content Writer
 
@@ -29,23 +29,42 @@ est regroupé sous **`tenants/{id}/`** :
 
 ```
 tenants/{id}/
-├── prompts/site.md        ton, blacklist, format WP
-├── config/tenant.json     wp_api, ytg, sheets, auth_mode…
+├── .claude/skills/        skills de rédaction scopées au tenant (discovery native)
+├── prompts/
+│   ├── site.md            ton, blacklist, format WP (source maîtresse chargée)
+│   ├── vs_concurrent.md   override articles « versus » (enseigna)
+│   ├── reference.md       exemple HTML à imiter (superprof-ressources)
+│   └── blocks/ | guides/  annexes chargées à la demande
+├── config/tenant.json     generation_skill/qc_skill, language, auth_mode, ytg…
 ├── linking_maps/          cartes de maillage
-└── outputs/               HTML généré, csv, acf…
+└── outputs/               html/ csv/ acf/ metadata/ audit/ …
 ```
 
-- **Registre** : `_shared/config/sites.json` (index plat, 1 entrée/tenant, aucune hiérarchie).
-- **Résolution des chemins** : `_shared/core/tenant_paths.py` (point unique). Onboarder un
-  tenant = 1 dossier `tenants/{id}/` + 1 entrée `sites.json`, **zéro code**.
+> Les fichiers `prompts/` varient selon le tenant : seul `site.md` est garanti.
+
+- **Catalogue ≠ registre** (distinction clé) :
+  - **Catalogue** `_shared/config/superprof_blogs_catalog.json` (6 ressources + 90 blogs) =
+    le *menu* des marchés onboardables, généré depuis GSC via `build_superprof_catalog.py`.
+  - **Registre** `_shared/config/sites.json` = seuls les tenants **réellement matérialisés**
+    (2 aujourd'hui), seul lu au runtime. **Gitignoré** (local/généré) ; versionné =
+    `sites.example.json` + catalogue + sync Notion. Alimenté par `notion sync-sites`
+    (Notion « config pays » → sites.json, unidirectionnel ; le moteur ne lit jamais Notion au runtime).
+- **Résolution des chemins** : `_shared/core/tenant_paths.py` (point unique). `tenants/` ne
+  contient QUE les tenants travaillés, il grossit à la demande — jamais 90 dossiers.
+- **Onboarder un tenant** : `cw tenant init <id>` (l'id doit exister au catalogue) crée le
+  squelette `tenants/{id}/` pré-rempli + l'entrée `sites.json` (merge additif). L'éditorial
+  (`site.md`, skill de génération) reste à écrire. `cw tenant list [--type]` liste le catalogue.
 - **Nommage** : Superprof pays = `lang-country-type` (`es-es-ressources`, `en-uk-ressources`) ;
   client autonome = slug de marque (`enseigna`). `superprof-ressources` = dérogation historique.
-- **Skills par tenant** : les skills de rédaction propres à un tenant vivent (à terme) sous
-  `tenants/{id}/.claude/skills/` (discovery scopée) ; seuls `format-wordpress` +
-  `recherche-sources` sont transverses à la racine.
+- **Skills par tenant** : les skills de rédaction propres à un tenant vivent sous
+  `tenants/{id}/.claude/skills/` (discovery scopée native, **déjà en place**) ;
+  `edito-refresh`, `format-wordpress`, `recherche-sources` sont transverses à la racine.
+  Le mapping tenant→skill n'est **pas hardcodé** : le subagent lit `generation_skill` /
+  `qc_skill` dans `tenant.json`.
 
-**Règle d'override** : `Site > Strategy`. La composition du prompt = `strategy + site`
-(2 niveaux réels ; cf. `PromptComposer`).
+**Règle d'override** : `Site > Strategy`. Composition du prompt (`PromptComposer`) =
+**stratégie (`_shared/strategies/`) + site.md** (+ `vs_concurrent.md` pour les articles versus) ;
+les autres niveaux (base, catégorie, template) sont inactifs.
 
 ## Carte du workflow (orientation — 1 ligne/étape)
 
@@ -76,15 +95,16 @@ Liste des groupes/commandes à jour : `python3 content_writer.py --help` (et
 | Skill | Portée | Quand l'invoquer |
 |---|---|---|
 | `refresh` (orchestrateur) | racine | séquence audit → génération → QC → maillage (via `/refresh`) |
-| `recherche-sources <sujet\|url>` | racine (transverse) | documenter un sujet avec des sources vérifiées (brief E-E-A-T) |
+| `edito-refresh` | racine (transverse) | règles SEO/GEO/E-E-A-T de ranking, appliquées à chaque article |
 | `format-wordpress` | racine (transverse) | règles HTML/WP transverses (accents, tiret, ancres, listes) |
+| `recherche-sources <sujet\|url>` | racine (transverse) | documenter un sujet avec des sources vérifiées (brief E-E-A-T) |
 | `generate-enseigna-avis` | `tenants/enseigna/` | rédiger un article avis Enseigna (ACF JSON, verdict en fin) |
 | `sp-ressources-gutenberg` | `tenants/superprof-ressources/` | rédiger un article Superprof Ressources (Gutenberg maison, 5 blocs) |
 | `qc-sp-ressources` | `tenants/superprof-ressources/` | checklist QC post-génération Superprof Ressources |
 
 > Les skills métier sont **scopées par tenant** (`tenants/{id}/.claude/skills/`) et
-> résolues via `generation_skill`/`qc_skill` de la config (§4bis-C levé). Seules
-> `refresh`, `recherche-sources`, `format-wordpress` restent à la racine.
+> résolues via `generation_skill`/`qc_skill` de la config. Transverses à la racine :
+> `edito-refresh`, `format-wordpress`, `recherche-sources` (+ l'orchestrateur `refresh`).
 
 **Subagent** : `content-generator` (`.claude/agents/`) exécute la génération sous abonnement Max,
 lit `generation_prompt.txt`, écrit les fichiers, ne renvoie pas de HTML dans le chat.
@@ -97,10 +117,10 @@ lit `generation_prompt.txt`, écrit les fichiers, ne renvoie pas de HTML dans le
 - **Formats & métadonnées, template refresh** → skill `format-wordpress`,
   `_shared/prompts/refresh_article.md`.
 - **Règles site-spécifiques** → `tenants/{id}/prompts/site.md`.
-- **Stratégies de rédaction** → `_shared/prompts/strategies/` (câblées via
-  `prompts_dispatch.json` : full_refresh, semantic_reorientation, format_adaptation,
-  title_optimization). Ne portent que le *delta* de la stratégie ; les règles
-  éditoriales transverses vivent dans la skill `edito-refresh`.
+- **Stratégies de rédaction** → `_shared/strategies/` (full_refresh, semantic_reorientation,
+  format_adaptation, title_optimization ; dispatch via `_shared/config/prompts_dispatch.json`).
+  Ne portent que le *delta* de la stratégie ; les règles éditoriales transverses vivent
+  dans la skill `edito-refresh`.
 
 ## 3 Piliers
 
