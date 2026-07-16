@@ -127,7 +127,10 @@ class YTGAnalyzer:
     def _init_credentials(self):
         """Charge la clé API depuis l'env ou le fichier de credentials."""
         # 1) Variable d'environnement directe
-        self._api_key = os.environ.get("YTG_API_KEY", "")
+        # YTG_NEW_API_KEY prioritaire (rotation de clé) ; YTG_API_KEY = legacy.
+        self._api_key = os.environ.get("YTG_NEW_API_KEY", "") or os.environ.get(
+            "YTG_API_KEY", ""
+        )
 
         # 2) Fichier JSON (fallback)
         if not self._api_key and YTG_CREDENTIALS_PATH.exists():

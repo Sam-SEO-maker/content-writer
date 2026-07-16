@@ -29,6 +29,12 @@ from cli.options import blog_option
 @click.option("--type", "article_type", default=None,
               help="Sous-type d'article routant la sortie HTML dans html/{type}/ "
                    "(enseigna : 'avis' | 'versus'). Défaut : pas de sous-dossier.")
+@click.option("--keyword", "keyword", default="",
+              help="Mot-clé principal (guide QC YTG sur le bon terme, pas le slug). "
+                   "À reporter depuis la sortie de `cw refresh`.")
+@click.option("--guide-id", "guide_id", default="",
+              help="ID du guide YTG déjà créé au STEP 2.5 (réutilisation, pas de "
+                   "recréation). À reporter depuis la sortie de `cw refresh`.")
 @click.option("--apply-linking", is_flag=True, default=False,
               help="Applique le maillage (écrit les fichiers). Sinon dry-run.")
 @click.option("--publish", is_flag=True, default=False,
@@ -36,7 +42,7 @@ from cli.options import blog_option
                    "confirmation humaine obligatoire. Refusé si verdict A_CORRIGER/BLOQUE.")
 @click.option("--yes", "assume_yes", is_flag=True, default=False,
               help="Saute la confirmation interactive de publication (usage batch averti).")
-def finalize(url, blog_id, html_file, title, article_type, apply_linking, publish, assume_yes):
+def finalize(url, blog_id, html_file, title, article_type, keyword, guide_id, apply_linking, publish, assume_yes):
     """
     Chaîne post-génération : save → assets → QC YTG → maillage.
 
@@ -88,7 +94,7 @@ def finalize(url, blog_id, html_file, title, article_type, apply_linking, publis
     # 3. QC sémantique YTG
     # -------------------------------------------------------------------
     click.echo("\n[3/4] QC sémantique YTG…")
-    verdict = _run_ytg_qc(base, blog_id, url, saved)
+    verdict = _run_ytg_qc(base, blog_id, url, saved, main_keyword=keyword, guide_id=guide_id)
 
     # BLOQUE = problème de fond → arrêt + alerte humaine (pas de maillage)
     if verdict == "BLOQUE":
@@ -223,8 +229,13 @@ def _validate_assets(base: Path, blog_id: str, url: str, html: str, saved: Path)
     return "⚠ assets manquants NON restaurables — à vérifier manuellement."
 
 
-def _run_ytg_qc(base: Path, blog_id: str, url: str, saved: Path) -> str:
-    """Lance YTGQualityCheck.check_html sur le HTML sauvegardé. Retourne le verdict."""
+def _run_ytg_qc(base: Path, blog_id: str, url: str, saved: Path,
+                main_keyword: str = "", guide_id: str = "") -> str:
+    """Lance YTGQualityCheck.check_html sur le HTML sauvegardé. Retourne le verdict.
+
+    main_keyword/guide_id (issus du STEP 2.5 de `cw refresh`) évitent de re-résoudre
+    le mot-clé sur le slug et de recréer un guide.
+    """
     from scripts.audit.ytg_qc import (
         YTGQualityCheck, VERDICT_A_CORRIGER, VERDICT_BLOQUE, VERDICT_SKIP,
     )
@@ -244,7 +255,10 @@ def _run_ytg_qc(base: Path, blog_id: str, url: str, saved: Path) -> str:
     try:
         engine = YTGQualityCheck()
         html = saved.read_text(encoding="utf-8")
-        res = engine.check_html(blog_id, url=url, html=html, ytg_config=ytg_cfg)
+        res = engine.check_html(
+            blog_id, url=url, html=html, ytg_config=ytg_cfg,
+            main_keyword=main_keyword or "", guide_id=guide_id or "",
+        )
         res.html_path = str(saved)
         engine.persist(res)
         click.echo(f"  Verdict: {res.verdict} — {res.message}")

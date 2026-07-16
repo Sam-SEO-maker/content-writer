@@ -310,7 +310,18 @@ def discover_generated_html(
     if not html_root.exists():
         return []
 
-    files = sorted(html_root.rglob("*_refreshed.html"))
+    # Le HTML nu `{slug}_refreshed.html` est supprimé après génération (on ne
+    # garde que le `.gutenberg.html` pour publication WP). On cible donc les
+    # gutenberg, et on ne retombe sur le nu que s'il subsiste (pas de doublon).
+    gutenberg = sorted(html_root.rglob("*_refreshed.gutenberg.html"))
+    gutenberg_stems = {f.name[: -len(".gutenberg.html")] for f in gutenberg}
+    nu = [
+        f
+        for f in sorted(html_root.rglob("*_refreshed.html"))
+        if not f.name.endswith(".gutenberg.html")
+        and f.name[: -len(".html")] not in gutenberg_stems
+    ]
+    files = gutenberg + nu
     if slug_filter:
         needle = slug_filter.strip().lower().replace("_", "-")
         files = [f for f in files if needle in f.stem.lower().replace("_", "-")]

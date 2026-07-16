@@ -72,8 +72,14 @@ sortie ; il **ne renvoie pas** de HTML dans le chat. Note le chemin du HTML brut
 Une fois le HTML brut écrit, chaîner save → assets → QC YTG → maillage :
 
 ```bash
-python3 content_writer.py finalize <url> --blog <id> --html-file <Output HTML> [--type <avis|versus>]
+python3 content_writer.py finalize <url> --blog <id> --html-file <Output HTML> [--type <avis|versus>] [--keyword "<Mot-clé>"] [--guide-id <YTG guide>]
 ```
+
+> **Mot-clé + guide YTG.** L'étape 1 (`cw refresh`) affiche `Mot-clé:` et
+> `YTG guide:` quand le STEP 2.5 a créé un guide. **Reporter les deux** dans
+> `--keyword`/`--guide-id` : le QC post-génération score alors sur le bon guide
+> (le vrai mot-clé, pas le slug) et **réutilise** le guide sans le recréer
+> (économie de crédits). Absents → le QC re-résout le mot-clé (fallback slug).
 
 > **Type d'article (enseigna).** L'étape 6 du CLI `refresh` affiche une ligne
 > `Type: avis|versus` quand l'URL est classée (règle : slug `superprof-vs-*` →

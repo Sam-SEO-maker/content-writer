@@ -29,6 +29,13 @@ class RefreshWorkflowResult:
     # refresh unitaire de peupler le contexte de génération sans passer par le Sheet.
     people_also_ask: str = field(default="")
     secondary_keywords: str = field(default="")
+    # Guide sémantique YTG calculé au STEP 2.5 de process_url — propagé au CLI
+    # refresh pour (a) injecter les termes dans le prompt de génération et
+    # (b) réutiliser le guide au QC post-génération sans le recréer.
+    ytg_guide_id: str = field(default="")
+    ytg_semantic_field: list[str] = field(default_factory=list)
+    ytg_competitor_targets: dict = field(default_factory=dict)
+    ytg_term_colors: dict = field(default_factory=dict)
 
 
 @dataclass

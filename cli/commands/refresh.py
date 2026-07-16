@@ -142,11 +142,26 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             secondary_keywords=result.secondary_keywords or "",
         )
 
+        # Propager le guide YTG calculé au STEP 2.5 de process_url : sans ça, les
+        # termes sémantiques n'atteignent jamais generation_prompt.txt (le guide
+        # serait créé puis jeté). Clés attendues par _prepare_context_for_claude_code.
+        ytg_data = None
+        if result.ytg_guide_id or result.ytg_semantic_field:
+            ytg_data = {
+                "ytg_guide_id": result.ytg_guide_id,
+                "semantic_field_override": result.ytg_semantic_field,
+                "ytg_competitor_targets": result.ytg_competitor_targets,
+                "ytg_term_colors": result.ytg_term_colors,
+            }
+            click.echo(f"  YTG: guide {result.ytg_guide_id}, "
+                       f"{len(result.ytg_semantic_field)} termes → prompt")
+
         context_dir = orchestrator._prepare_context_for_claude_code(
             original_html=clean_body,
             action=result.action_taken,
             row=row,
-            extraction_result=fetch_result
+            extraction_result=fetch_result,
+            ytg_data=ytg_data,
         )
 
         # Compose generation prompt via ghostwriter
@@ -181,13 +196,24 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             if _art:
                 click.echo(f"  Type:         {_art}  (finalize --type {_art} → html/{_art}/)")
             click.echo(f"  Assets avant: {generation_info['metadata'].get('assets_before', {})}")
+            # Mot-clé + guide YTG : à reporter dans `finalize --keyword/--guide-id`
+            # pour que le QC post-génération score sur le bon guide (pas le slug).
+            _kw = keyword or result.main_keyword or ""
+            if _kw:
+                click.echo(f"  Mot-clé:      {_kw}")
+            if result.ytg_guide_id:
+                click.echo(f"  YTG guide:    {result.ytg_guide_id}")
             click.echo(f"  Temps total:  {result.execution_time_seconds:.1f}s")
 
             # QC sémantique YTG : le HTML n'est pas encore généré à ce stade
             # (génération LLM déléguée hors process). On lance le QC seulement si
             # un HTML généré existe déjà (cas d'un re-run après génération),
             # sinon on rappelle la commande à lancer après génération.
-            _maybe_run_ytg_qc(blog, url)
+            _maybe_run_ytg_qc(
+                blog, url,
+                main_keyword=keyword or result.main_keyword or "",
+                guide_id=result.ytg_guide_id,
+            )
         else:
             click.echo(f"\n⚠ Erreur composition prompt: {generation_info.get('error', 'unknown')}")
 
@@ -201,7 +227,8 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
         raise click.Abort()
 
 
-def _maybe_run_ytg_qc(blog_id: str, url: str) -> None:
+def _maybe_run_ytg_qc(blog_id: str, url: str,
+                      main_keyword: str = "", guide_id: str = "") -> None:
     """
     Lance le QC sémantique YTG sur l'article si un HTML généré existe déjà.
 
@@ -243,7 +270,10 @@ def _maybe_run_ytg_qc(blog_id: str, url: str) -> None:
     try:
         engine = YTGQualityCheck()
         html = files[0].read_text(encoding="utf-8")
-        res = engine.check_html(blog_id, url=url, html=html, ytg_config=ytg_cfg)
+        res = engine.check_html(
+            blog_id, url=url, html=html, ytg_config=ytg_cfg,
+            main_keyword=main_keyword or "", guide_id=guide_id or "",
+        )
         res.html_path = str(files[0])
         engine.persist(res)
         click.echo(f"[YTG QC] Verdict: {res.verdict} — {res.message}")

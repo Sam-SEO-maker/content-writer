@@ -793,6 +793,11 @@ class RefreshOrchestrator:
                 main_keyword=audit_dict.get("main_keyword", ""),
                 people_also_ask=audit_dict.get("people_also_ask", ""),
                 secondary_keywords=audit_dict.get("secondary_keywords", ""),
+                # STEP 2.5 : guide YTG calculé ci-dessus, propagé au CLI refresh.
+                ytg_guide_id=audit_dict.get("ytg_guide_id", ""),
+                ytg_semantic_field=audit_dict.get("semantic_field_override", []),
+                ytg_competitor_targets=audit_dict.get("ytg_competitor_targets", {}),
+                ytg_term_colors=audit_dict.get("ytg_term_colors", {}),
             )
 
         except Exception as e:

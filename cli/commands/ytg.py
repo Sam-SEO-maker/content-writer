@@ -498,7 +498,14 @@ def _infer_url_from_html_path(blog_id: str, path) -> str:
     """Reconstitue une URL plausible depuis le nom de fichier (pour résoudre le KW)."""
     from pathlib import Path
 
-    slug = Path(path).stem.replace("_refreshed", "").replace("_", "-")
+    # Nom de fichier : `{slug}_refreshed.gutenberg.html` ou `{slug}_refreshed.html`.
+    # .stem n'enlève qu'une extension → il faut retirer .gutenberg puis _refreshed.
+    name = Path(path).name
+    for suffix in (".gutenberg.html", ".html"):
+        if name.endswith(suffix):
+            name = name[: -len(suffix)]
+            break
+    slug = name.replace("_refreshed", "").replace("_", "-")
     domain_map = {
         "enseigna": "https://enseigna.fr/{slug}/",
         "superprof-ressources": "https://www.superprof.fr/ressources/{slug}/",
@@ -510,11 +517,14 @@ def _infer_url_from_html_path(blog_id: str, path) -> str:
 @ytg.command(name='qc')
 @blog_option(required=True, dest='blog_id')
 @click.option('--slug', default='', help='Filtrer sur un slug d\'article précis')
+@click.option('--keyword', 'keyword', default='',
+              help='Mot-clé principal forcé (override le résolveur). Nécessite --slug '
+                   '(un seul article) : le guide YTG est créé/résolu sur ce mot-clé.')
 @click.option('--fix', is_flag=True, default=False,
               help='Signaler les articles A_CORRIGER pour correction ciblée (corrector)')
 @click.option('--json-out', 'json_out', is_flag=True, default=False,
               help='Écrire le rapport récap dans _shared/outputs/{blog}/ytg_qc_report.json')
-def qc(blog_id, slug, fix, json_out):
+def qc(blog_id, slug, keyword, fix, json_out):
     """
     QC sémantique YTG sur les HTML générés d'un blog, AVANT intégration WP.
 
@@ -550,6 +560,17 @@ def qc(blog_id, slug, fix, json_out):
                    + (f" (slug '{slug}')" if slug else "") + ".")
         return
 
+    # Un mot-clé forcé ne s'applique qu'à UN article (sinon le même KW serait
+    # appliqué à tous → guide faux). On exige que le batch soit réduit à 1 fichier.
+    keyword = (keyword or "").strip()
+    if keyword and len(files) != 1:
+        click.echo(
+            f"[ERREUR] --keyword nécessite de cibler un seul article "
+            f"(utilise --slug). {len(files)} fichiers correspondent actuellement.",
+            err=True,
+        )
+        sys.exit(1)
+
     click.echo(f"\n[YTG QC] {blog_id} — {len(files)} article(s) à analyser\n")
 
     qc_engine = YTGQualityCheck(analyzer=analyzer, rate_limiter=RateLimiter())
@@ -560,7 +581,10 @@ def qc(blog_id, slug, fix, json_out):
     for path in files:
         html = path.read_text(encoding="utf-8")
         url = _infer_url_from_html_path(blog_id, path)
-        res = qc_engine.check_html(blog_id, url=url, html=html, ytg_config=ytg_cfg)
+        res = qc_engine.check_html(
+            blog_id, url=url, html=html, ytg_config=ytg_cfg,
+            main_keyword=keyword or None,
+        )
         res.html_path = str(path)
         qc_engine.persist(res)
 
