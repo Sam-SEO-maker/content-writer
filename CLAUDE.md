@@ -61,7 +61,7 @@ Maillage → Sync.
 |---|---|
 | `/refresh <url> --blog <id>` | Refresh complet : audit → décision → recherche sources → génération → `cw finalize` |
 | `/batch --action X --blog <id>` | Refresh batch depuis Google Sheets |
-| `/audit serp\|editorial <url>` | Audit ciblé (SERP/PAA ou éditorial/quality gate) |
+| `/audit serp <url>` | Audit SERP ciblé (PAA, secondary keywords) |
 | `/decide --blog <id>` | Moteur de décision data-driven (Sheet) |
 | `/market-status --site <id>` | État des lieux SEO GSC d'un tenant |
 
