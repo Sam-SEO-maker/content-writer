@@ -163,3 +163,5 @@ _local/
 _shared/config/ahrefs_state.json
 _shared/config/sheets_config.json
 _shared/config/sites.json
+# Généré depuis _local/landings-superprof-fr.csv via scripts/utils/build_superprof_landings.py
+_shared/config/superprof_landings.json
