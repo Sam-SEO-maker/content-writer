@@ -43,7 +43,7 @@ def cli(ctx):
 
 # Import des groupes de commandes
 from cli.commands import refresh, workflow, audit, batch, indexing, debug, linking
-from cli.commands import ytg, notion_cmd, report
+from cli.commands import ytg, notion_cmd
 from cli.commands import finalize as finalize_cmd
 from cli.commands import statuts as statuts_cmd
 from cli.commands import ngl_status as ngl_status_cmd
@@ -60,7 +60,6 @@ cli.add_command(debug.debug)
 cli.add_command(linking.linking)
 cli.add_command(ytg.ytg)
 cli.add_command(notion_cmd.notion)
-cli.add_command(report.report)
 cli.add_command(statuts_cmd.statuts)
 cli.add_command(ngl_status_cmd.ngl_status)
 cli.add_command(tenant_cmd.tenant)
