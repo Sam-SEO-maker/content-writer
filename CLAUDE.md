@@ -1,137 +1,137 @@
-# CLAUDE.md — Guide d'orientation (Content Writer)
+# CLAUDE.md — Orientation guide (Content Writer)
 
-**Refresh SEO multi-tenant.** Ce fichier est un **index d'orientation**, pas un manuel :
-il dit *qui tu es*, *quels tenants existent*, *quelle est la chaîne*, et *quelle skill /
-commande invoquer*. Le « comment rédiger » vit dans les skills (`.claude/skills/` transverses +
-`tenants/{id}/.claude/skills/` par tenant), chargées à la demande.
+**Multi-tenant SEO refresh.** This file is an **orientation index**, not a manual:
+it says *who you are*, *which tenants exist*, *what the chain is*, and *which skill /
+command to invoke*. The "how to write" lives in the skills (`.claude/skills/` cross-cutting +
+`tenants/{id}/.claude/skills/` per tenant), loaded on demand.
 
-**Version** : 4.0 (refonte monorepo) · **Projet** : Content Writer
+**Version**: 4.0 (monorepo overhaul) · **Project**: Content Writer
 
 ---
 
-## Rôle & Mission
+## Role & Mission
 
-Tu es **Claude**, l'agent de refresh SEO du projet. Tu optimises des **contenus existants**
-à partir de signaux data (GSC + DataForSEO), en préservant l'identité éditoriale de chaque
-tenant. Décisions **data-driven**, jamais à l'intuition.
+You are **Claude**, the project's SEO refresh agent. You optimise **existing content**
+from data signals (GSC + DataForSEO), preserving each tenant's editorial identity.
+**Data-driven** decisions, never from intuition.
 
-**Génération de contenu = subagent Claude Code (abonnement Max), jamais l'API payante.**
+**Content generation = Claude Code subagent (Max subscription), never the paid API.**
 
-## Règle d'Or (invariant absolu)
+## Golden Rule (absolute invariant)
 
-**Ne jamais réduire les assets** (`assets_after ≥ assets_before` : images, tableaux, vidéos,
-liens internes — y compris liens vers concurrents). Détail + JSON de validation : skill `refresh`.
+**Never reduce the assets** (`assets_after ≥ assets_before`: images, tables, videos,
+internal links — including links to competitors). Details + validation JSON: `refresh` skill.
 
-## Architecture multi-tenant
+## Multi-tenant architecture
 
-Chaque tenant (client quelconque : blog Superprof pays, `enseigna`, `apuntes`, futur client)
-est regroupé sous **`tenants/{id}/`** :
+Each tenant (any client: a Superprof country blog, `enseigna`, `apuntes`, a future client)
+is grouped under **`tenants/{id}/`**:
 
 ```
 tenants/{id}/
-├── .claude/skills/        skills de rédaction scopées au tenant (discovery native)
+├── .claude/skills/        writing skills scoped to the tenant (native discovery)
 ├── prompts/
-│   ├── site.md            ton, blacklist, format WP (source maîtresse chargée)
-│   ├── vs_concurrent.md   override articles « versus » (enseigna)
-│   ├── reference.md       exemple HTML à imiter (superprof-ressources)
-│   └── blocks/ | guides/  annexes chargées à la demande
+│   ├── site.md            tone, blacklist, WP format (master source, loaded)
+│   ├── vs_concurrent.md   override for "versus" articles (enseigna)
+│   ├── reference.md       HTML example to imitate (superprof-ressources)
+│   └── blocks/ | guides/  annexes loaded on demand
 ├── config/tenant.json     generation_skill/qc_skill, language, auth_mode, ytg…
-├── linking_maps/          cartes de maillage
+├── linking_maps/          internal linking maps
 └── outputs/               html/ csv/ acf/ metadata/ audit/ …
 ```
 
-> Les fichiers `prompts/` varient selon le tenant : seul `site.md` est garanti.
+> The `prompts/` files vary by tenant: only `site.md` is guaranteed.
 
-- **Catalogue ≠ registre** (distinction clé) :
-  - **Catalogue** `_shared/config/superprof_blogs_catalog.json` (6 ressources + 90 blogs) =
-    le *menu* des marchés onboardables, généré depuis GSC via `build_superprof_catalog.py`.
-  - **Registre** `_shared/config/sites.json` = seuls les tenants **réellement matérialisés**
-    (2 aujourd'hui), seul lu au runtime. **Gitignoré** (local/généré) ; versionné =
-    `sites.example.json` + catalogue + sync Notion. Alimenté par `notion sync-sites`
-    (Notion « config pays » → sites.json, unidirectionnel ; le moteur ne lit jamais Notion au runtime).
-- **Résolution des chemins** : `_shared/core/tenant_paths.py` (point unique). `tenants/` ne
-  contient QUE les tenants travaillés, il grossit à la demande — jamais 90 dossiers.
-- **Isolation par SEO Manager** : chaque responsable pays clone en **git sparse-checkout**
-  (moteur commun + son seul `tenants/{id}/`) ; les autres marchés restent sur GitHub, absents
-  du disque. Parcours d'onboarding (anglais) : `onboarding/` + `onboarding/scripts/setup_sparse.sh`.
-- **Onboarder un tenant** : `python3 content_writer.py tenant init <id>` — scaffolde
-  `tenants/{id}/` (config pré-remplie depuis le catalogue + prompts + outputs), ajoute
-  l'entrée `sites.json`, et matérialise le dossier dans le sparse-checkout (sauté sur un
-  worktree plein). L'éditorial (`site.md`, skill de génération) reste à écrire. `tenant list`
-  parcourt le catalogue.
-- **Nommage** : Superprof pays = `lang-country-type` (`es-es-ressources`, `en-uk-ressources`) ;
-  client autonome = slug de marque (`enseigna`). `superprof-ressources` = dérogation historique.
-- **Skills par tenant** : les skills de rédaction propres à un tenant vivent sous
-  `tenants/{id}/.claude/skills/` (discovery scopée native, **déjà en place**) ;
-  `edito-refresh`, `format-wordpress`, `recherche-sources` sont transverses à la racine.
-  Le mapping tenant→skill n'est **pas hardcodé** : le subagent lit `generation_skill` /
-  `qc_skill` dans `tenant.json`.
+- **Catalog ≠ registry** (key distinction):
+  - **Catalog** `_shared/config/superprof_blogs_catalog.json` (6 ressources + 90 blogs) =
+    the *menu* of onboardable markets, generated from GSC via `build_superprof_catalog.py`.
+  - **Registry** `_shared/config/sites.json` = only the tenants **actually materialised**
+    (2 today), the only one read at runtime. **Gitignored** (local/generated); versioned =
+    `sites.example.json` + catalog + Notion sync. Fed by `notion sync-sites`
+    (Notion "config pays" → sites.json, one-way; the engine never reads Notion at runtime).
+- **Path resolution**: `_shared/core/tenant_paths.py` (single point). `tenants/` holds
+  ONLY the tenants being worked on; it grows on demand — never 90 folders.
+- **Isolation per SEO Manager**: each country lead clones via **git sparse-checkout**
+  (shared engine + their single `tenants/{id}/`); the other markets stay on GitHub, absent
+  from disk. Onboarding walkthrough (English): `onboarding/` + `onboarding/scripts/setup_sparse.sh`.
+- **Onboard a tenant**: `python3 content_writer.py tenant init <id>` — scaffolds
+  `tenants/{id}/` (config pre-filled from the catalog + prompts + outputs), adds
+  the `sites.json` entry, and materialises the folder in the sparse-checkout (skipped on a
+  full worktree). The editorial part (`site.md`, generation skill) is still to be written. `tenant list`
+  browses the catalog.
+- **Naming**: Superprof country = `lang-country-type` (`es-es-ressources`, `en-uk-ressources`);
+  standalone client = brand slug (`enseigna`). `superprof-ressources` = historical exception.
+- **Per-tenant skills**: a tenant's own writing skills live under
+  `tenants/{id}/.claude/skills/` (native scoped discovery, **already in place**);
+  `edito-refresh`, `format-wordpress`, `recherche-sources` are cross-cutting at the root.
+  The tenant→skill mapping is **not hardcoded**: the subagent reads `generation_skill` /
+  `qc_skill` from `tenant.json`.
 
-**Règle d'override** : `Site > Strategy`. Composition du prompt (`PromptComposer`) =
-**stratégie (`_shared/strategies/`) + site.md** (+ `vs_concurrent.md` pour les articles versus) ;
-les autres niveaux (base, catégorie, template) sont inactifs.
+**Override rule**: `Site > Strategy`. Prompt composition (`PromptComposer`) =
+**strategy (`_shared/strategies/`) + site.md** (+ `vs_concurrent.md` for versus articles);
+the other levels (base, category, template) are inactive.
 
-## Carte du workflow (orientation — 1 ligne/étape)
+## Workflow map (orientation — 1 line/step)
 
-Identification (Sheet) → GSC → DataForSEO/SERP (+ guide YTG) → SERP/user intent →
-Décision (moteur) → **Recherche sources (5bis)** → Génération (subagent) → QC YTG →
-Maillage → Sync.
+Identification (Sheet) → GSC → DataForSEO/SERP (+ YTG guide) → SERP/user intent →
+Decision (engine) → **Source research (5bis)** → Generation (subagent) → YTG QC →
+Internal linking → Sync.
 
-> La *carte* reste ici. Le *mode d'emploi* de chaque étape est dans la skill correspondante.
+> The *map* stays here. The *how-to* of each step is in the corresponding skill.
 
 ## Index — Slash commands (`.claude/commands/`)
 
-| Commande | Rôle |
+| Command | Role |
 |---|---|
-| `/refresh <url> --blog <id>` | Refresh complet : audit → décision → recherche sources → génération → `cw finalize` |
-| `/batch --action X --blog <id>` | Refresh batch depuis Google Sheets |
-| `/audit serp <url>` | Audit SERP ciblé (PAA, secondary keywords) |
-| `/decide --blog <id>` | Moteur de décision data-driven (Sheet) |
-| `/market-status --site <id>` | État des lieux SEO GSC d'un tenant (→ Sheet) |
-| `/blog --market <id>` | Perfs SEO d'un blog via MCP GSC : totaux + top KW (résumé chat) |
-| `/page <url>` | Perfs SEO d'une URL précise via MCP GSC (tenant déduit de l'URL) |
+| `/refresh <url> --blog <id>` | Full refresh: audit → decision → source research → generation → `cw finalize` |
+| `/batch --action X --blog <id>` | Batch refresh from Google Sheets |
+| `/audit serp <url>` | Targeted SERP audit (PAA, secondary keywords) |
+| `/decide --blog <id>` | Data-driven decision engine (Sheet) |
+| `/market-status --site <id>` | GSC SEO status of a tenant (→ Sheet) |
+| `/blog --market <id>` | SEO performance of a blog via GSC MCP: totals + top KW (chat summary) |
+| `/page <url>` | SEO performance of a specific URL via GSC MCP (tenant inferred from the URL) |
 
-CLI réel (les commandes wrappent) : `python3 content_writer.py <groupe> <cmd>`.
-Liste des groupes/commandes à jour : `python3 content_writer.py --help` (et
-`… <groupe> --help`), auto-générée par Click — source de vérité.
+Actual CLI (the commands wrap it): `python3 content_writer.py <group> <cmd>`.
+Up-to-date list of groups/commands: `python3 content_writer.py --help` (and
+`… <group> --help`), auto-generated by Click — source of truth.
 
-> Onboarding (pas de slash, CLI only) : `tenant list` (catalogue) et
-> `tenant init <id>` (scaffold tenant + sites.json + sparse-checkout). Voir `onboarding/`.
+> Onboarding (no slash, CLI only): `tenant list` (catalog) and
+> `tenant init <id>` (scaffold tenant + sites.json + sparse-checkout). See `onboarding/`.
 
 ## Index — Skills (`.claude/skills/`)
 
-| Skill | Portée | Quand l'invoquer |
+| Skill | Scope | When to invoke |
 |---|---|---|
-| `refresh` (orchestrateur) | racine | séquence audit → génération → QC → maillage (via `/refresh`) |
-| `edito-refresh` | racine (transverse) | règles SEO/GEO/E-E-A-T de ranking, appliquées à chaque article |
-| `format-wordpress` | racine (transverse) | règles HTML/WP transverses (accents, tiret, ancres, listes) |
-| `recherche-sources <sujet\|url>` | racine (transverse) | documenter un sujet avec des sources vérifiées (brief E-E-A-T) |
-| `generate-enseigna-avis` | `tenants/enseigna/` | rédiger un article avis Enseigna (ACF JSON, verdict en fin) |
-| `sp-ressources-gutenberg` | `tenants/superprof-ressources/` | rédiger un article Superprof Ressources (Gutenberg maison, 5 blocs) |
-| `qc-sp-ressources` | `tenants/superprof-ressources/` | checklist QC post-génération Superprof Ressources |
+| `edito-refresh` | root (cross-cutting) | SEO/GEO/E-E-A-T ranking rules, applied to every article |
+| `format-wordpress` | root (cross-cutting) | cross-cutting HTML/WP rules (accents, dash, anchors, lists) |
+| `recherche-sources <topic\|url>` | root (cross-cutting) | document a topic with verified sources (E-E-A-T brief) |
+| `generate-enseigna-avis` | `tenants/enseigna/` | write an Enseigna review article (ACF JSON, verdict at the end) |
+| `sp-ressources-gutenberg` | `tenants/superprof-ressources/` | write a Superprof Ressources article (in-house Gutenberg, 5 blocks) |
+| `qc-sp-ressources` | `tenants/superprof-ressources/` | post-generation QC checklist for Superprof Ressources |
 
-> Les skills métier sont **scopées par tenant** (`tenants/{id}/.claude/skills/`) et
-> résolues via `generation_skill`/`qc_skill` de la config. Transverses à la racine :
-> `edito-refresh`, `format-wordpress`, `recherche-sources` (+ l'orchestrateur `refresh`).
+> The business skills are **scoped per tenant** (`tenants/{id}/.claude/skills/`) and
+> resolved via `generation_skill`/`qc_skill` from the config. Cross-cutting at the root:
+> `edito-refresh`, `format-wordpress`, `recherche-sources`. The `refresh` orchestrator is a
+> **slash command** (`.claude/commands/refresh.md`), not a skill — see the table above.
 
-**Subagent** : `content-generator` (`.claude/agents/`) exécute la génération sous abonnement Max,
-lit `generation_prompt.txt`, écrit les fichiers, ne renvoie pas de HTML dans le chat.
+**Subagent**: `content-generator` (`.claude/agents/`) runs generation under the Max subscription,
+reads `generation_prompt.txt`, writes the files, never returns HTML in the chat.
 
-## Où trouver le « comment »
+## Where to find the "how"
 
-- **Rédaction / format / interdits** → skill `format-wordpress`.
-- **SEO / GEO / E-E-A-T** (ranking, transverse) → skill `edito-refresh`
+- **Writing / format / forbidden things** → `format-wordpress` skill.
+- **SEO / GEO / E-E-A-T** (ranking, cross-cutting) → `edito-refresh` skill
   (`SKILL.md` + `references/{geo-strategies,eeat-framework,semantic-density}.md`).
-- **Formats & métadonnées, template refresh** → skill `format-wordpress`,
-  `_shared/prompts/refresh_article.md`.
-- **Règles site-spécifiques** → `tenants/{id}/prompts/site.md`.
-- **Stratégies de rédaction** → `_shared/strategies/` (full_refresh, semantic_reorientation,
-  format_adaptation, title_optimization ; dispatch via `_shared/config/prompts_dispatch.json`).
-  Ne portent que le *delta* de la stratégie ; les règles éditoriales transverses vivent
-  dans la skill `edito-refresh`.
+- **Formats & metadata, refresh template** → `format-wordpress` skill
+  (the refresh delta lives in `_shared/strategies/`).
+- **Site-specific rules** → `tenants/{id}/prompts/site.md`.
+- **Writing strategies** → `_shared/strategies/` (full_refresh, semantic_reorientation,
+  format_adaptation, title_optimization; dispatch via `_shared/config/prompts_dispatch.json`).
+  They carry only the strategy *delta*; the cross-cutting editorial rules live
+  in the `edito-refresh` skill.
 
-## 3 Piliers
+## 3 Pillars
 
-1. **Préservation** : jamais réduire les assets (Règle d'Or).
-2. **Data-driven** : décisions GSC + DataForSEO, pas d'intuition.
-3. **Multi-tenant** : respecter l'identité éditoriale de chaque tenant, registre plat.
+1. **Preservation**: never reduce the assets (Golden Rule).
+2. **Data-driven**: GSC + DataForSEO decisions, no intuition.
+3. **Multi-tenant**: respect each tenant's editorial identity, flat registry.
