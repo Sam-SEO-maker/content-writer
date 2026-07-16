@@ -54,7 +54,7 @@ Tu dois UNIQUEMENT optimiser :
 ## Règles pour la Meta Description
 
 ### Structure Recommandée
-- **Longueur** : 150-160 caractères
+- **Longueur** : 150-155 caractères (cohérent avec `format-wordpress`)
 - **Début** : Réponse directe ou accroche
 - **Milieu** : Bénéfice ou promesse
 - **Fin** : Call-to-action implicite
@@ -109,7 +109,7 @@ Tu dois UNIQUEMENT optimiser :
 [Meta originale]
 
 ### Proposée :
-[Nouvelle meta - max 160 caractères]
+[Nouvelle meta - max 155 caractères]
 
 ### Justification :
 [Pourquoi ce changement améliore le CTR]
@@ -121,7 +121,7 @@ Tu dois UNIQUEMENT optimiser :
 
 - [ ] Titre < 70 caractères
 - [ ] Mot-clé principal présent dans le titre
-- [ ] Meta < 160 caractères
+- [ ] Meta ≤ 155 caractères
 - [ ] Meta contient un bénéfice clair
 - [ ] Pas de clickbait mensonger
 - [ ] Cohérent avec le contenu réel de l'article
