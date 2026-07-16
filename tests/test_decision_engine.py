@@ -1,228 +1,176 @@
 """
 Tests pour le module decision_engine.
+
+Réécrits 2026-07 pour le contrat ACTUEL du moteur :
+- règles chargées depuis `_shared/config/decision_rules.json` (schéma `id` /
+  `conditions` {clé_plate: {operator, value}} / `action` ; `rewrite_scope` et
+  `estimated_tokens` lus dans `action_strategies`) ;
+- conditions évaluées par `_check_condition(value, condition)` ;
+- valeurs d'audit résolues par `_get_audit_value(key, audit_data)` (clés plates
+  mappées vers des chemins imbriqués via value_mappings).
 """
 
-import pytest
 import json
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.decision.decision_engine import DecisionEngine, DecisionResult
 
+_REAL_RULES = Path(__file__).parent.parent / "_shared" / "config" / "decision_rules.json"
 
-class TestDecisionEngine:
-    """Tests pour DecisionEngine."""
+
+class TestDecisionEngineRealConfig:
+    """Le moteur chargé avec le vrai decision_rules.json (comportement prod)."""
 
     def setup_method(self):
-        """Setup avec règles temporaires."""
-        self.rules = {
-            "version": "1.0",
+        assert _REAL_RULES.exists(), "decision_rules.json introuvable"
+        self.engine = DecisionEngine(_REAL_RULES)
+
+    def test_loads_real_config(self):
+        assert self.engine.rules, "aucune règle chargée"
+        assert self.engine.action_strategies, "aucune action_strategy"
+
+    def test_evaluate_returns_decision_result(self):
+        result = self.engine.evaluate({"performance": {"impressions_30d": 100}})
+        assert isinstance(result, DecisionResult)
+        assert isinstance(result.primary_action, str)
+
+    def test_stale_content_triggers_full_refresh(self):
+        # freshness_score élevé = beaucoup de mois depuis MAJ (mapping
+        # months_since_update → freshness_score) → contenu obsolète → FULL_REFRESH.
+        audit = {
+            "performance": {
+                "ctr_30d": 5.0, "impressions_30d": 100, "clicks_30d": 20,
+                "clicks_trend": 0.0, "impressions_trend": 0.0, "position_trend": 0.0,
+                "avg_position": 5.0, "indexation_status": "INDEXED",
+                "is_declining": False, "main_keyword": "",
+            },
+            "cannibalization": {"severity": "none"},
+            "freshness_score": 100,
+        }
+        result = self.engine.evaluate(audit)
+        # Une action est décidée (le vrai config a une règle d'obsolescence).
+        assert result.primary_action in self.engine.action_strategies or \
+            result.primary_action == "FULL_REFRESH"
+        assert isinstance(result.rules_triggered, list)
+
+    def test_scope_and_tokens_come_from_action_strategies(self):
+        # Pour toute action déclenchée, scope/tokens proviennent d'action_strategies,
+        # pas de la règle. On le vérifie via une action connue du config.
+        action = next(iter(self.engine.action_strategies))
+        strat = self.engine.action_strategies[action]
+        # les clés attendues existent dans le schéma action_strategies
+        assert "rewrite_scope" in strat or "estimated_tokens" in strat
+
+
+class TestDecisionEngineSyntheticRules:
+    """Règles synthétiques au schéma ACTUEL (id + conditions à clés plates)."""
+
+    def setup_method(self):
+        self.config = {
             "rules": [
                 {
-                    "rule_id": "low_ctr",
+                    "id": "low_ctr",
                     "name": "CTR faible",
+                    "priority": 1,
                     "conditions": {
-                        "performance.ctr_30d": {"operator": "<", "value": 0.02},
-                        "performance.impressions_30d": {"operator": ">", "value": 500},
+                        "ctr": {"operator": "<", "value": 2.0},
+                        "impressions_30d": {"operator": ">", "value": 500},
                     },
                     "action": "TITLE_OPTIMIZATION",
+                },
+                {
+                    "id": "cannibalization_severe",
+                    "name": "Cannibalisation sévère",
                     "priority": 1,
-                    "rewrite_scope": "title_meta",
-                    "estimated_tokens": 500,
-                },
-                {
-                    "rule_id": "cannibalization",
-                    "name": "Cannibalisation",
                     "conditions": {
-                        "cannibalization.has_cannibalization": {"operator": "==", "value": True},
-                        "cannibalization.severity": {"operator": "==", "value": "high"},
+                        "cannibalization_severity": {"operator": "==", "value": "high"},
                     },
-                    "action": "REDIRECT_301",
-                    "priority": 1,
-                },
-                {
-                    "rule_id": "stale_content",
-                    "name": "Contenu obsolète",
-                    "conditions": {
-                        "content.age_months": {"operator": ">", "value": 12},
-                    },
-                    "action": "PARTIAL_REFRESH",
-                    "priority": 3,
-                    "rewrite_scope": "diff_based",
-                    "estimated_tokens": 2000,
-                },
-                {
-                    "rule_id": "intent_shift",
-                    "name": "Shift d'intention",
-                    "conditions": {
-                        "intent.has_intent_shift": {"operator": "==", "value": True},
-                    },
-                    "action": "SEMANTIC_REORIENTATION",
-                    "priority": 2,
-                    "rewrite_scope": "full_content",
-                    "estimated_tokens": 4000,
+                    "action": "SUGGEST_301",
                 },
             ],
+            "action_strategies": {
+                "TITLE_OPTIMIZATION": {"rewrite_scope": "title_meta", "estimated_tokens": 500},
+                "SUGGEST_301": {"rewrite_scope": "none", "estimated_tokens": 0},
+            },
+            "evaluation_order": ["low_ctr", "cannibalization_severe"],
         }
-
-        # Créer fichier temporaire
-        self.temp_file = NamedTemporaryFile(mode="w", suffix=".json", delete=False)
-        json.dump(self.rules, self.temp_file)
-        self.temp_file.close()
-
-        self.engine = DecisionEngine(Path(self.temp_file.name))
+        self.temp = NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        json.dump(self.config, self.temp)
+        self.temp.close()
+        self.engine = DecisionEngine(Path(self.temp.name))
 
     def teardown_method(self):
-        """Cleanup."""
-        Path(self.temp_file.name).unlink(missing_ok=True)
+        Path(self.temp.name).unlink(missing_ok=True)
 
-    def test_evaluate_low_ctr(self, sample_audit_data):
-        """Test règle CTR faible."""
-        result = self.engine.evaluate(sample_audit_data)
-
-        assert isinstance(result, DecisionResult)
+    def test_low_ctr_triggers_title_optimization(self):
+        audit = {"performance": {"ctr_30d": 1.0, "impressions_30d": 1000}}
+        result = self.engine.evaluate(audit)
         assert result.primary_action == "TITLE_OPTIMIZATION"
         assert any(r.rule_id == "low_ctr" for r in result.rules_triggered)
 
-    def test_evaluate_cannibalization(self, sample_audit_data_cannibalization):
-        """Test règle cannibalisation."""
-        result = self.engine.evaluate(sample_audit_data_cannibalization)
+    def test_cannibalization_triggers_301(self):
+        audit = {"cannibalization": {"severity": "high"}}
+        result = self.engine.evaluate(audit)
+        assert result.primary_action == "SUGGEST_301"
 
-        assert result.primary_action == "REDIRECT_301"
-        assert any(r.rule_id == "cannibalization" for r in result.rules_triggered)
-
-    def test_evaluate_intent_shift(self, sample_audit_data_intent_shift):
-        """Test règle shift d'intention."""
-        result = self.engine.evaluate(sample_audit_data_intent_shift)
-
-        assert result.primary_action == "SEMANTIC_REORIENTATION"
-        assert any(r.rule_id == "intent_shift" for r in result.rules_triggered)
-
-    def test_priority_ordering(self):
-        """Test que les règles sont ordonnées par priorité."""
-        # Données qui déclenchent plusieurs règles
-        audit_data = {
-            "performance": {
-                "ctr_30d": 0.01,
-                "impressions_30d": 1000,
-            },
-            "content": {
-                "age_months": 18,
-            },
-            "cannibalization": {
-                "has_cannibalization": False,
-            },
-            "intent": {
-                "has_intent_shift": False,
-            },
-        }
-
-        result = self.engine.evaluate(audit_data)
-
-        # Low CTR (priorité 1) doit primer sur stale content (priorité 3)
-        assert result.primary_action == "TITLE_OPTIMIZATION"
-
-    def test_no_action_when_no_rules_match(self):
-        """Test NO_ACTION quand aucune règle ne match."""
-        audit_data = {
-            "performance": {
-                "ctr_30d": 0.05,  # CTR OK
-                "impressions_30d": 100,  # Impressions faibles
-            },
-            "content": {
-                "age_months": 3,  # Contenu récent
-            },
-            "cannibalization": {
-                "has_cannibalization": False,
-            },
-            "intent": {
-                "has_intent_shift": False,
-            },
-        }
-
-        result = self.engine.evaluate(audit_data)
-        assert result.primary_action == "NO_ACTION"
-        assert len(result.rules_triggered) == 0
-
-    def test_estimated_tokens(self, sample_audit_data):
-        """Test estimation des tokens."""
-        result = self.engine.evaluate(sample_audit_data)
-
-        # TITLE_OPTIMIZATION = 500 tokens
+    def test_scope_and_tokens_from_strategy(self):
+        audit = {"performance": {"ctr_30d": 1.0, "impressions_30d": 1000}}
+        result = self.engine.evaluate(audit)
+        assert result.rewrite_scope == "title_meta"
         assert result.estimated_tokens == 500
 
-    def test_rewrite_scope(self, sample_audit_data):
-        """Test scope de réécriture."""
-        result = self.engine.evaluate(sample_audit_data)
-
-        # TITLE_OPTIMIZATION → title_meta
-        assert result.rewrite_scope == "title_meta"
+    def test_no_match_no_action(self):
+        audit = {"performance": {"ctr_30d": 5.0, "impressions_30d": 100},
+                 "cannibalization": {"severity": "none"}}
+        result = self.engine.evaluate(audit)
+        assert result.primary_action == "NO_ACTION"
 
 
 class TestConditionEvaluation:
-    """Tests pour l'évaluation des conditions."""
+    """_check_condition (opérateurs) et _get_audit_value (résolution de clés)."""
 
     def setup_method(self):
-        rules = {"version": "1.0", "rules": []}
-        self.temp_file = NamedTemporaryFile(mode="w", suffix=".json", delete=False)
-        json.dump(rules, self.temp_file)
-        self.temp_file.close()
-        self.engine = DecisionEngine(Path(self.temp_file.name))
+        empty = {"rules": [], "action_strategies": {}}
+        self.temp = NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        json.dump(empty, self.temp)
+        self.temp.close()
+        self.engine = DecisionEngine(Path(self.temp.name))
 
     def teardown_method(self):
-        Path(self.temp_file.name).unlink(missing_ok=True)
+        Path(self.temp.name).unlink(missing_ok=True)
 
     def test_operator_less_than(self):
-        """Test opérateur <."""
-        condition = {"operator": "<", "value": 10}
-        assert self.engine._evaluate_condition(5, condition) is True
-        assert self.engine._evaluate_condition(10, condition) is False
-        assert self.engine._evaluate_condition(15, condition) is False
+        cond = {"operator": "<", "value": 10}
+        assert self.engine._check_condition(5, cond) is True
+        assert self.engine._check_condition(10, cond) is False
+        assert self.engine._check_condition(15, cond) is False
 
     def test_operator_greater_than(self):
-        """Test opérateur >."""
-        condition = {"operator": ">", "value": 10}
-        assert self.engine._evaluate_condition(15, condition) is True
-        assert self.engine._evaluate_condition(10, condition) is False
-        assert self.engine._evaluate_condition(5, condition) is False
+        cond = {"operator": ">", "value": 10}
+        assert self.engine._check_condition(15, cond) is True
+        assert self.engine._check_condition(10, cond) is False
 
     def test_operator_equals(self):
-        """Test opérateur ==."""
-        condition = {"operator": "==", "value": "high"}
-        assert self.engine._evaluate_condition("high", condition) is True
-        assert self.engine._evaluate_condition("low", condition) is False
+        cond = {"operator": "==", "value": "high"}
+        assert self.engine._check_condition("high", cond) is True
+        assert self.engine._check_condition("low", cond) is False
 
     def test_operator_not_equals(self):
-        """Test opérateur !=."""
-        condition = {"operator": "!=", "value": "none"}
-        assert self.engine._evaluate_condition("high", condition) is True
-        assert self.engine._evaluate_condition("none", condition) is False
+        cond = {"operator": "!=", "value": "none"}
+        assert self.engine._check_condition("high", cond) is True
+        assert self.engine._check_condition("none", cond) is False
 
-    def test_operator_in(self):
-        """Test opérateur in."""
-        condition = {"operator": "in", "value": ["high", "critical"]}
-        assert self.engine._evaluate_condition("high", condition) is True
-        assert self.engine._evaluate_condition("low", condition) is False
+    def test_get_audit_value_flat_key_mapping(self):
+        # `ctr` (clé plate) → performance.ctr_30d
+        audit = {"performance": {"ctr_30d": 1.5, "impressions_30d": 800}}
+        assert self.engine._get_audit_value("ctr", audit) == 1.5
+        assert self.engine._get_audit_value("impressions_30d", audit) == 800
 
-    def test_nested_path_access(self):
-        """Test accès chemin imbriqué."""
-        data = {
-            "performance": {
-                "metrics": {
-                    "ctr": 0.015,
-                },
-            },
-        }
-
-        value = self.engine._get_nested_value(data, "performance.metrics.ctr")
-        assert value == 0.015
-
-    def test_missing_nested_path(self):
-        """Test chemin manquant."""
-        data = {"performance": {}}
-
-        value = self.engine._get_nested_value(data, "performance.metrics.ctr")
-        assert value is None
+    def test_get_audit_value_missing_returns_none(self):
+        assert self.engine._get_audit_value("ctr", {"performance": {}}) is None

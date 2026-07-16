@@ -61,7 +61,7 @@ Maillage → Sync.
 |---|---|
 | `/refresh <url> --blog <id>` | Refresh complet : audit → décision → recherche sources → génération → `cw finalize` |
 | `/batch --action X --blog <id>` | Refresh batch depuis Google Sheets |
-| `/audit serp\|editorial <url>` | Audit ciblé (SERP/PAA ou éditorial/quality gate) |
+| `/audit serp <url>` | Audit SERP ciblé (PAA, secondary keywords) |
 | `/decide --blog <id>` | Moteur de décision data-driven (Sheet) |
 | `/market-status --site <id>` | État des lieux SEO GSC d'un tenant |
 
@@ -90,7 +90,6 @@ lit `generation_prompt.txt`, écrit les fichiers, ne renvoie pas de HTML dans le
 - **Rédaction / format / interdits** → skills ci-dessus + `_shared/docs/STYLE_GUIDE.md`.
 - **E-E-A-T** (framework + exemples) → `_shared/docs/EEAT_GUIDE.md` (canonique).
 - **GEO / SEO** → `_shared/docs/GEO_2026_GUIDELINES.md`, `_shared/docs/SEO_GUIDELINES.md` (hub).
-- **Cocons sémantiques** (PARENT/CHILD, maillage) → `_shared/docs/COCONS_GUIDE.md`.
 - **Formats & métadonnées, template refresh** → skill `format-wordpress`,
   `_shared/docs/CONTENT_REFRESH_GUIDE.md`, `_shared/prompts/refresh_article.md`.
 - **Règles site-spécifiques** → `tenants/{id}/prompts/site.md`.

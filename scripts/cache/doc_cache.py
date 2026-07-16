@@ -304,17 +304,16 @@ class DocumentCache:
         # PRIORITY 2: SEO Guidelines (hub)
         parts.append(self.get_guidelines())
 
-        # PRIORITY 2bis: anti-patterns & cocons — désormais dans _shared/docs/
-        # (déplacés hors de CLAUDE.md par la refonte v4.0). Chargés en entier :
-        # ce sont des références compactes que le générateur doit voir complètes.
+        # PRIORITY 2bis: anti-patterns & style — dans _shared/docs/ (déplacés hors
+        # de CLAUDE.md par la refonte v4.0). Chargés en entier : références compactes
+        # que le générateur doit voir complètes.
         # (Les règles de FORMAT — tiret cadratin, ancres, ponctuation listes —
         # vivent dans la skill format-wordpress, lue par le subagent générateur.)
+        # NB: le maillage en silo (cocons PARENT/CHILD) n'est plus pratiqué → le
+        # COCONS_GUIDE n'est plus injecté (retiré 2026-07).
         style = self._load_file("_shared/docs/STYLE_GUIDE.md")
         if style:
             parts.append("\n\n---\n\n" + style)
-        cocons = self._load_file("_shared/docs/COCONS_GUIDE.md")
-        if cocons:
-            parts.append("\n\n---\n\n" + cocons)
 
         # PRIORITY 3: GEO Guidelines (résumé)
         if include_geo:

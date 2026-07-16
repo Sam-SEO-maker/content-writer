@@ -22,7 +22,7 @@ class TestAssetManager:
 
     def test_extract_images(self, sample_html):
         """Test extraction des images."""
-        assets = self.manager.extract_assets(sample_html)
+        assets = self.manager.extract_assets(sample_html, exclude_featured_image=False)
 
         assert "images" in assets
         assert len(assets["images"]) == 2
@@ -56,19 +56,24 @@ class TestAssetManager:
         assert assets["superprof_link"] is None
 
     def test_detect_blacklisted_links(self, sample_html_blacklisted):
-        """Test détection liens blacklistés."""
-        assets = self.manager.extract_assets(sample_html_blacklisted)
+        """Détection des liens blacklistés — via validate() (pas extract_assets).
 
-        blacklisted = assets["blacklisted_links"]
-        assert len(blacklisted) == 2
-
-        domains = [link["domain"] for link in blacklisted]
-        assert "acadomia.fr" in domains
-        assert "kelprof.com" in domains
+        La blacklist est une préoccupation de VALIDATION du nouveau contenu, pas
+        de l'extraction des assets d'origine → elle vit dans validation.blacklist_violations.
+        """
+        original_assets = {
+            "images": [], "internal_links": [], "external_links": [],
+            "superprof_link": {"href": "https://superprof.fr", "anchor": "SP"},
+            "counts": {"images": 0, "internal_links": 0, "superprof_links": 1},
+        }
+        validation = self.manager.validate(original_assets, sample_html_blacklisted)
+        violations = " ".join(validation.blacklist_violations).lower()
+        assert "acadomia.fr" in violations
+        assert "kelprof.com" in violations
 
     def test_assets_counts(self, sample_html):
         """Test comptage des assets."""
-        assets = self.manager.extract_assets(sample_html)
+        assets = self.manager.extract_assets(sample_html, exclude_featured_image=False)
         counts = assets["counts"]
 
         assert counts["images"] == 2
@@ -111,7 +116,7 @@ class TestAssetValidation:
 
         assert validation.is_valid is False
         assert validation.images_valid is False
-        assert len(validation.missing_images) == 2
+        assert validation.images_new < validation.images_original
 
     def test_missing_internal_links(self, sample_html):
         """Test détection liens internes manquants."""
@@ -128,7 +133,7 @@ class TestAssetValidation:
         validation = self.manager.validate(original_assets, new_content)
 
         assert validation.links_valid is False
-        assert len(validation.missing_links) > 0
+        assert validation.links_new < validation.links_original
 
     def test_missing_superprof(self, sample_html):
         """Test détection lien Superprof manquant."""
@@ -159,7 +164,7 @@ class TestAssetValidation:
 
         # Devrait échouer: exactement 1 lien Superprof requis
         assert validation.superprof_valid is False
-        assert "multiple" in validation.superprof_error.lower() or validation.superprof_count > 1
+        assert validation.superprof_count > 1
 
     def test_blacklisted_links_detected(self, sample_html_blacklisted):
         """Test détection liens blacklistés dans nouveau contenu."""
@@ -173,8 +178,7 @@ class TestAssetValidation:
 
         validation = self.manager.validate(original_assets, sample_html_blacklisted)
 
-        assert validation.has_blacklisted is True
-        assert len(validation.blacklisted_found) == 2
+        assert len(validation.blacklist_violations) == 2
 
 
 class TestAssetRestoration:
@@ -185,7 +189,9 @@ class TestAssetRestoration:
 
     def test_restore_missing_images(self, sample_html):
         """Test restauration images manquantes."""
-        original_assets = self.manager.extract_assets(sample_html)
+        # exclude_featured_image=False : on veut restaurer TOUTES les images du
+        # corps (l'exclusion featured-image par défaut en écarterait une).
+        original_assets = self.manager.extract_assets(sample_html, exclude_featured_image=False)
 
         # Contenu sans images
         new_content = """
@@ -260,9 +266,10 @@ class TestAssetReport:
 
         report = self.manager.generate_assets_report(original_assets, validation)
 
-        assert "original_counts" in report
-        assert "validation_status" in report
-        assert "is_valid" in report
+        # Le rapport est un markdown (string).
+        assert isinstance(report, str)
+        assert "## Validation" in report
+        assert "VALIDE" in report
 
     def test_report_with_issues(self, sample_html):
         """Test rapport avec problèmes."""
@@ -274,5 +281,5 @@ class TestAssetReport:
         validation = self.manager.validate(original_assets, new_content)
         report = self.manager.generate_assets_report(original_assets, validation)
 
-        assert report["is_valid"] is False
-        assert len(report.get("issues", [])) > 0
+        assert isinstance(report, str)
+        assert "INVALIDE" in report

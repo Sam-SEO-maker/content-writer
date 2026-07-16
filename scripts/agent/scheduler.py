@@ -56,8 +56,12 @@ class TaskScheduler:
             priority: Niveau de priorité
             metadata: Données supplémentaires
         """
-        # Éviter les doublons
+        # Éviter les doublons : ni déjà traité, ni déjà en file d'attente.
+        # (Avant : seul _processed était vérifié → une même URL pouvait être
+        # empilée plusieurs fois dans la file.)
         if url in self._processed:
+            return
+        if any(t.url == url for t in self._queue):
             return
 
         # Extraire main_keyword de metadata si disponible

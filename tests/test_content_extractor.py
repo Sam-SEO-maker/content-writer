@@ -105,7 +105,7 @@ class TestContentExtractor:
         clean_body, metadata = extractor.extract_article_body(html, "unknown-blog", "https://example.com")
 
         assert metadata["method_used"] == "wordpress_article_tag"
-        assert "WordPress Article" in clean_body
+        # Le H1 est retiré du corps (H1 = champ ACF / premier bloc, hors clean_body).
         assert "article content in WordPress format" in clean_body
         # Aside should be removed during cleaning
         assert "Related posts" not in clean_body
@@ -257,9 +257,9 @@ class TestContentExtractor:
         <body>
             <article>
                 <h1>Article with Assets</h1>
-                <img src="/image1.jpg" alt="Image 1">
+                <img src="/image1.jpg" alt="Image 1" class="wp-image-101">
                 <p>Text content</p>
-                <img src="/image2.jpg" alt="Image 2">
+                <img src="/image2.jpg" alt="Image 2" class="wp-image-102">
                 <table>
                     <tr><td>Data</td></tr>
                 </table>
@@ -311,7 +311,7 @@ class TestContentExtractor:
             <article class="post-content">
                 <h1>Complete Article</h1>
                 <p>This article has various assets to test extraction.</p>
-                <img src="/test-image.jpg" alt="Test">
+                <img src="/test-image.jpg" alt="Test" class="wp-image-1">
                 <p>More content here with substance.</p>
                 <p>Third paragraph with additional text content.</p>
                 <table><tr><td>Table data</td></tr></table>

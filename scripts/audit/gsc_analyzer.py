@@ -728,6 +728,18 @@ class GSCAnalyzer:
             severity = "moderate"
             alerts.append(f"Baisse de trafic modérée: {performance.clicks_trend:.1f}% sur 30 jours")
 
+        # Vérifier la baisse d'impressions (règle produit : impressions OU clics
+        # en baisse → page en déclin → FULL_REFRESH côté audit_engine).
+        if performance.impressions_trend < TRAFFIC_DECLINE_SEVERE:
+            is_declining = True
+            severity = "severe"
+            alerts.append(f"Chute d'impressions sévère: {performance.impressions_trend:.1f}% sur 30 jours")
+        elif performance.impressions_trend < TRAFFIC_DECLINE_MODERATE:
+            is_declining = True
+            if severity != "severe":
+                severity = "moderate"
+            alerts.append(f"Baisse d'impressions modérée: {performance.impressions_trend:.1f}% sur 30 jours")
+
         # Vérifier la perte de positions
         if performance.position_trend < -POSITION_DECLINE_ALERT:
             is_declining = True

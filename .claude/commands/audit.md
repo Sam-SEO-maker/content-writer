@@ -1,6 +1,6 @@
 ---
-description: Audit d'une URL — SERP (PAA, secondary keywords) ou éditorial (E-E-A-T, fraîcheur, quality gate).
-argument-hint: serp <url> [--keyword K]  |  editorial <url> --blog <id>
+description: Audit d'une URL — SERP (PAA, secondary keywords) ou état GSC/Ahrefs.
+argument-hint: serp <url> [--keyword K]  |  gsc-state --site <id>
 allowed-tools: Bash(python3 content_writer.py audit:*), Read
 ---
 
@@ -13,8 +13,6 @@ python3 content_writer.py audit $ARGUMENTS
 Sous-commandes utiles :
 
 - `audit serp <url> [--keyword K]` — PAA, secondary keywords, features SERP.
-- `audit editorial <url> --blog <id>` — E-E-A-T, fraîcheur, quality gate
-  (score < 4 bloque un refresh).
 - `audit gsc-state --site <id>` — état des lieux SEO GSC (KW positionnés top-N).
 - `audit ahrefs-state` — état des lieux via Ahrefs.
 

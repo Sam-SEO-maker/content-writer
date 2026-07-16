@@ -397,11 +397,16 @@ class AuditEngine:
                 return "REDIRECT_301", 1
             return "LONG_TAIL_SPECIALIZATION", 2
 
-        # Priorité 1: Chute de trafic sévère
-        if gsc.decline_severity == "severe":
-            return "FULL_REWRITE", 1
+        # Priorité 1: Baisse d'impressions/clics → FULL_REFRESH (règle produit).
+        # Toute page en déclin de trafic (clics ou impressions en baisse) est
+        # rafraîchie en profondeur, quelle que soit la sévérité. Prime sur la
+        # règle CTR ci-dessous : un contenu qui perd du trafic ne se corrige pas
+        # au seul titre.
+        if gsc.is_declining or gsc.decline_severity in ("severe", "moderate"):
+            return "FULL_REFRESH", 1
 
-        # Priorité 2: CTR faible avec bonnes impressions
+        # Priorité 2: CTR faible avec bonnes impressions (trafic stable, pas en
+        # baisse) → optimisation du titre suffit.
         if (gsc.performance.ctr_30d < 2.0 and
             gsc.performance.impressions_30d > 500):
             return "TITLE_OPTIMIZATION", 2

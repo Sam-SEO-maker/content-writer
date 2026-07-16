@@ -142,7 +142,7 @@ class TestGhostwriter:
         )
 
         instruction = context["instruction"]
-        assert "complet" in instruction.lower() or "réécrire" in instruction.lower()
+        assert "complèt" in instruction.lower() or "réécri" in instruction.lower()
 
     def test_output_format_diff(self, sample_html, sample_audit_data):
         """Test format sortie diff."""
@@ -282,10 +282,14 @@ class TestDiffEngine:
         <p>Contenu section 2 original.</p>
         """
 
+        # Section 1 réécrite en profondeur (au-delà du seuil de similarité 0.8 :
+        # les changements triviaux d'un mot sont volontairement ignorés comme du
+        # bruit ; on teste donc une vraie réécriture de section).
         modified = """
         <h1>Titre original</h1>
         <h2>Section 1</h2>
-        <p>Contenu section 1 MODIFIÉ.</p>
+        <p>Voici une explication entièrement nouvelle et beaucoup plus détaillée
+        de cette notion, avec des exemples concrets et une méthodologie pas à pas.</p>
         <h2>Section 2</h2>
         <p>Contenu section 2 original.</p>
         """
@@ -300,7 +304,7 @@ class TestDiffEngine:
         text1 = "Le chat mange la souris."
         text2 = "Le chat attrape la souris."
 
-        similarity = self.diff_engine.calculate_similarity(text1, text2)
+        similarity = self.diff_engine._calculate_similarity(text1, text2)
 
         # Textes similaires mais pas identiques
         assert 0 < similarity < 1
@@ -310,7 +314,7 @@ class TestDiffEngine:
         """Test similarité textes identiques."""
         text = "Texte identique."
 
-        similarity = self.diff_engine.calculate_similarity(text, text)
+        similarity = self.diff_engine._calculate_similarity(text, text)
         assert similarity == 1.0
 
     def test_similarity_different(self):
@@ -318,7 +322,7 @@ class TestDiffEngine:
         text1 = "ABC XYZ 123"
         text2 = "Complètement différent autre chose"
 
-        similarity = self.diff_engine.calculate_similarity(text1, text2)
+        similarity = self.diff_engine._calculate_similarity(text1, text2)
         assert similarity < 0.3  # Très différents
 
 

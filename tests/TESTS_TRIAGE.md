@@ -35,9 +35,13 @@ Objectif = vert franc **sans masquer de vraie régression**.
 | `test_year_updater` | 7 | logique d'exclusion citations académiques | Vérifier l'intention (préserver années de citations = voulu, cf. E-E-A-T). |
 | `test_ghostwriter` | 5 | fixtures `rewrite_context` incomplètes vs signature actuelle | Compléter les fixtures. |
 | `test_content_extractor` | 3 | sortie d'extraction changée | Vérifier le contrat actuel. |
-| `test_editorial_auditor` | 2 | FactChecker date-mismatch topic/année | Vérifier l'intention. |
 | `test_scheduler` | 1 | dedup file : ⚠️ **VRAI DOUTE** — `add_task` dédup contre `_processed`, PAS la file. `size()`=2 pour 2 ajouts identiques non-traités. Bug ou voulu ? | Décision produit sur la sémantique de dédup. |
-| `test_parent_h2_whitelist` | 1 | `Ghostwriter.validate_parent_h2_structure` **absent du code** mais présent dans `PARENT_H2_WHITELIST_GUIDE.md` | ⚠️ Mismatch doc↔code : méthode documentée non implémentée. Trancher : implémenter ou retirer doc+test. |
+
+**Résolus par suppression de features** (décisions produit 2026-07) :
+- `test_editorial_auditor` (2) + `test_parent_h2_whitelist` (1) : supprimés — les
+  features EditorialAuditor/FactChecker (quality gate bloquant) et le maillage en
+  silo (parent-H2 whitelist, cocons) ont été retirées du repo (véracité déléguée à
+  `recherche-sources` ; décision de refresh data-driven).
 
 ## Garde-fous (VRAIS problèmes — ne PAS green-washer)
 

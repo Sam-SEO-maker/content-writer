@@ -23,11 +23,10 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding='utf-8')
 
 from _shared.core.models import RefreshWorkflowResult
-from _shared.core.models.audit_models import EditorialAuditResult
 from _shared.core.utils.timing import OperationTimer, timed
 
 # Imports des modules internes
-from ..audit import AuditEngine, GSCAnalyzer, SERPAnalyzer, HTMLAnalyzer, EditorialAuditor
+from ..audit import AuditEngine, GSCAnalyzer, SERPAnalyzer, HTMLAnalyzer
 from ..decision import DecisionEngine, StrategySelector
 from ..ghostwriter import Ghostwriter, TitleOptimizer
 from ..assets import AssetManager
@@ -100,9 +99,8 @@ class RefreshOrchestrator:
         # Content extractor for HTML parsing (asset baseline extraction)
         self.content_extractor = ContentExtractor(base_path=self.base_path)
 
-        # Editorial auditor pour quality gate (étape 1.5)
-        editorial_rules_path = self.base_path / "_shared" / "config" / "editorial_rules.json"
-        self.editorial_auditor = EditorialAuditor(editorial_rules_path)
+        # (Quality gate EditorialAuditor retiré 2026-07 : plus de blocage éditorial ;
+        # décision data-driven + véracité via recherche-sources en amont.)
 
         # Semantic checker pour validation post-génération (anti-suroptimisation)
         self.semantic_checker = SemanticChecker(
@@ -485,68 +483,12 @@ class RefreshOrchestrator:
                 self.workflow_tracker.advance_step(url, "ingest")
 
             # =========================================================
-            # STEP 1.5: EDITORIAL AUDIT (Quality Gate)
-            # =========================================================
-            # Update status in spreadsheet
-            if self.sheets_client:
-                with timed(timer, "sheets_write"):
-                    self.sheets_client.update_refresh_status(url, "AUDITING")
-
-            editorial_result = self._run_editorial_audit(url, html_content, blog_id)
-
-            # Si l'audit éditorial bloque, terminer ici
-            if editorial_result and not editorial_result.should_proceed:
-                if self.workflow_tracker:
-                    self.workflow_tracker.complete_workflow(url, success=False)
-
-                # Générer l'URL du rapport (path relatif pour Sheets)
-                url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
-                report_relative_url = f"tenants/{blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
-
-                # Log dans Sheets si disponible
-                if self.sheets_client:
-                    with timed(timer, "sheets_write"):
-                        self.sheets_client.log_editorial_audit(
-                            url=url,
-                            score=editorial_result.overall_score,
-                            verdict="BLOCKED",
-                            blocking_issues_count=len(editorial_result.blocking_issues),
-                            blocking_issues="; ".join(editorial_result.blocking_issues[:3]),
-                            report_url=report_relative_url
-                        )
-
-                if timer is not None:
-                    timer.success = False
-                    timer.errors.append("BLOCKED_QUALITY_ISSUES")
-                return RefreshWorkflowResult(
-                    url=url,
-                    blog_id=blog_id,
-                    success=False,
-                    action_taken="BLOCKED_QUALITY_ISSUES",
-                    audit_score=0,
-                    rewrite_type=None,
-                    new_title=None,
-                    new_meta=None,
-                    assets_valid=False,
-                    errors=[f"Editorial audit blocked: {', '.join(editorial_result.blocking_issues[:2])}"],
-                    execution_time_seconds=(datetime.now() - start_time).total_seconds(),
-                )
-
-            # Si l'audit passe, continuer avec STEP 2
-            if editorial_result and self.sheets_client:
-                verdict = "PASSED" if editorial_result.overall_score >= 7.0 else "REVIEW_REQUIRED"
-                url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
-                report_relative_url = f"tenants/{blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
-
-                with timed(timer, "sheets_write"):
-                    self.sheets_client.log_editorial_audit(
-                        url=url,
-                        score=editorial_result.overall_score,
-                        verdict=verdict,
-                        blocking_issues_count=len(editorial_result.blocking_issues),
-                        blocking_issues="",
-                        report_url=report_relative_url
-                    )
+            # STEP 1.5 (RETIRÉ 2026-07) : le quality gate EditorialAuditor bloquait
+            # le refresh des pages jugées de mauvaise qualité. Supprimé : dans le
+            # modèle actuel, la décision de refresh vient des signaux data (GSC :
+            # baisse trafic → FULL_REFRESH) et la véracité factuelle est garantie en
+            # amont de la génération par la skill `recherche-sources` (sources
+            # réelles vérifiées) + le prompt tenant. Plus de blocage éditorial.
 
             # =========================================================
             # STEP 2: AUDIT
@@ -952,109 +894,6 @@ class RefreshOrchestrator:
     # =========================================================================
     # NEW: v2.0 Single-Sheet Architecture Batch Operations
     # =========================================================================
-
-    def batch_editorial_audit(self, blog_id: Optional[str] = None, post_type: Optional[str] = None) -> dict:
-        """
-        Batch editorial audit pour lignes où editorial_verdict est vide.
-
-        Updates:
-        - Columns Y-AC: Editorial audit results
-        - Column H: status (if BLOCKED)
-        - Column W: error_message (if BLOCKED)
-
-        Args:
-            blog_id: Filter by blog_id (optional)
-            post_type: Filter by post_type - "CHILD", "PARENT", "STANDALONE" (optional)
-
-        Returns:
-            {
-                "processed": int,
-                "passed": int,
-                "blocked": int,
-                "review_required": int,
-                "failed": int,
-                "errors": list[str]
-            }
-        """
-        if not self.sheets_client:
-            return {"processed": 0, "passed": 0, "blocked": 0, "review_required": 0, "failed": 0, "errors": ["No sheets client"]}
-
-        # Read rows where editorial audit not done yet
-        rows = self.sheets_client.read_pending_for_editorial_audit(blog_id)
-
-        # Filter by post_type if specified
-        if post_type:
-            rows = [r for r in rows if r.post_type == post_type]
-
-        results = {
-            "processed": 0,
-            "passed": 0,
-            "blocked": 0,
-            "review_required": 0,
-            "failed": 0,
-            "errors": []
-        }
-
-        for idx, row in enumerate(rows):
-            results["processed"] += 1
-
-            try:
-                # STEP 1: Fetch HTML content (autonomous scraping)
-                extraction_result = self._fetch_html(row.blogpost_url, row.blog_id)
-                if not extraction_result.get("clean_body"):
-                    raise ValueError(f"Failed to fetch HTML for {row.blogpost_url}")
-
-                # STEP 2: Run editorial audit
-                editorial_result = self.editorial_auditor.audit(
-                    url=row.blogpost_url,
-                    html_content=extraction_result["clean_body"],
-                    blog_id=row.blog_id,
-                    use_llm_verification=False  # Tier 2 LLM not implemented yet
-                )
-
-                # STEP 3: Generate markdown report
-                report_md = self.editorial_auditor.generate_markdown_report(editorial_result)
-
-                # STEP 4: Save report
-                url_slug = re.sub(r'[^a-z0-9]+', '_', row.blogpost_url.lower()).strip('_')
-                self.output_mgr.save_editorial_audit(row.blog_id, url_slug, report_md)
-
-                # STEP 5: Determine verdict
-                if not editorial_result.should_proceed:
-                    verdict = "BLOCKED"
-                    results["blocked"] += 1
-                elif editorial_result.overall_score >= 7.0:
-                    verdict = "PASSED"
-                    results["passed"] += 1
-                else:
-                    verdict = "REVIEW_REQUIRED"
-                    results["review_required"] += 1
-
-                # STEP 6: Log to spreadsheet (columns X-AB)
-                report_relative_url = f"tenants/{row.blog_id}/outputs/editorial_audits/{url_slug}_editorial_audit.md"
-
-                self.sheets_client.log_editorial_audit(
-                    url=row.blogpost_url,
-                    score=editorial_result.overall_score,
-                    verdict=verdict,
-                    blocking_issues_count=len(editorial_result.blocking_issues),
-                    blocking_issues="; ".join(editorial_result.blocking_issues[:3]),
-                    report_url=report_relative_url
-                )
-
-                print(f"[EDITORIAL] {row.blogpost_url[:50]} → {verdict} ({editorial_result.overall_score:.1f}/10)")
-
-            except Exception as e:
-                results["failed"] += 1
-                error_msg = str(e)[:50]
-                results["errors"].append(error_msg)
-                print(f"[ERROR] Editorial audit failed for {row.blogpost_url[:50]}: {error_msg}")
-
-            # Rate limiting: pause between processing
-            if idx < len(rows) - 1:
-                time.sleep(0.5)  # 0.5 seconds pause
-
-        return results
 
     def batch_keyword_discovery(self, blog_id: Optional[str] = None, post_type: Optional[str] = None) -> dict:
         """
@@ -2555,7 +2394,6 @@ class RefreshOrchestrator:
         Workflow automatisé complet en 5 étapes séquentielles.
 
         Exécute sans intervention :
-        1. batch_editorial_audit → Colonnes Y-AC (Quality Gate)
         2. batch_audit_gsc → Colonnes I, K-M, X
         3. batch_audit_serp → Colonnes J, N-O
         4. batch_decision → Colonnes G, R-V
@@ -2568,7 +2406,6 @@ class RefreshOrchestrator:
 
         Returns:
             {
-                "step1_editorial_audit": {...},
                 "step2_audit_gsc": {...},
                 "step3_audit_serp": {...},
                 "step4_decision": {...},
@@ -2583,7 +2420,6 @@ class RefreshOrchestrator:
         start_time = time.time()
 
         workflow_result = {
-            "step1_editorial_audit": None,
             "step2_audit_gsc": None,
             "step3_audit_serp": None,
             "step4_decision": None,
@@ -2623,21 +2459,8 @@ class RefreshOrchestrator:
                     print(f"  ✓ {prepared_count} URL(s) préparée(s) pour audit SERP")
                 print()
 
-            # ================================================================
-            # STEP 1: Editorial Audit (X-AB) - Quality Gate
-            # ================================================================
-            print(f"[STEP 1/6] 📝 Editorial Audit (colonnes X-AB)...")
-            step1_result = self.batch_editorial_audit(blog_id, post_type=post_type)
-            workflow_result["step1_editorial_audit"] = step1_result
-
-            if step1_result["failed"] > 0:
-                workflow_result["errors"].append(f"Step 1: {step1_result['failed']} échecs Editorial Audit")
-
-            print(f"  ✅ Editorial: {step1_result['passed']} passed, "
-                  f"{step1_result['review_required']} review required, "
-                  f"{step1_result['blocked']} blocked, "
-                  f"{step1_result['failed']} failed")
-            print()
+            # STEP 1 (Editorial Audit / Quality Gate) RETIRÉ 2026-07 : plus de
+            # blocage éditorial. Le workflow démarre directement à l'audit GSC.
 
             # ================================================================
             # STEP 2: Audit GSC (H, J-L, W)
@@ -2763,86 +2586,5 @@ class RefreshOrchestrator:
 
             return workflow_result
 
-    def _run_editorial_audit(
-        self,
-        url: str,
-        html_content: str,
-        blog_id: str
-    ) -> Optional[EditorialAuditResult]:
-        """
-        Exécute l'audit éditorial (Quality Gate - Step 1.5).
-
-        Args:
-            url: URL de l'article
-            html_content: Contenu HTML à auditer
-            blog_id: Identifiant du blog
-
-        Returns:
-            EditorialAuditResult si audit réussi, None si erreur
-        """
-        import logging
-        import os
-        logger = logging.getLogger("RefreshOrchestrator")
-
-        # Check if editorial audit is enabled
-        if os.getenv("EDITORIAL_AUDIT_ENABLED", "true").lower() == "false":
-            logger.info(f"[STEP 1.5] Editorial Audit DISABLED (skipped)")
-            # Return a dummy result that allows workflow to continue
-            from _shared.core.models.audit_models import EditorialAuditResult
-            return EditorialAuditResult(
-                url=url,
-                topic="N/A",
-                ymyl_level="low",
-                truth_score=100,
-                eeat_score=100,
-                freshness_score=100,
-                genericness_score=100,
-                overall_score=10.0,
-                fact_checks=[],
-                factual_errors_count=0,
-                critical_errors_count=0,
-                eeat_diagnosis=None,
-                recommendations=[],
-                blocking_issues=[],
-                should_proceed=True,
-                execution_time_ms=0
-            )
-
-        try:
-            logger.info(f"[STEP 1.5] Editorial Audit for {url[:50]}")
-
-            # Exécuter l'audit éditorial
-            editorial_result = self.editorial_auditor.audit(
-                url=url,
-                html_content=html_content,
-                blog_id=blog_id,
-                use_llm_verification=False  # Tier 2 LLM not implemented yet
-            )
-
-            # Générer le rapport markdown
-            report_md = self.editorial_auditor.generate_markdown_report(editorial_result)
-
-            # Sauvegarder le rapport
-            url_slug = re.sub(r'[^a-z0-9]+', '_', url.lower()).strip('_')
-            report_path = self.output_mgr.save_editorial_audit(blog_id, url_slug, report_md)
-
-            logger.info(
-                f"Editorial audit completed: score={editorial_result.overall_score:.1f}/10, "
-                f"should_proceed={editorial_result.should_proceed}, "
-                f"blocking_issues={len(editorial_result.blocking_issues)}"
-            )
-
-            if not editorial_result.should_proceed:
-                logger.warning(
-                    f"🚫 BLOCKED by editorial audit (score < 4.0): {url[:50]}\n"
-                    f"   Issues: {', '.join(editorial_result.blocking_issues[:3])}"
-                )
-                logger.info(f"   Report saved: {report_path}")
-
-            return editorial_result
-
-        except Exception as e:
-            logger.error(f"Editorial audit failed: {str(e)[:200]}")
-            return None
 
     # =========================================================================
