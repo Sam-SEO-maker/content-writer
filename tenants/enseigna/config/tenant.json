@@ -76,7 +76,6 @@
     "cta_format": "Section 'Notre verdict final' avec recommandation claire"
   },
   "special_rules": {
-    "independence_statement": "Cet article est indépendant. Nous ne recevons aucune compensation de [Plateforme] pour cet avis.",
     "methodology_disclosure": true,
     "price_verification_required": true,
     "competitor_blacklist_strict": true
