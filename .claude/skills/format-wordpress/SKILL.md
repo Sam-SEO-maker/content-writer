@@ -93,6 +93,16 @@ Chaque `<table>` → un **CSV** dans `csv/` (`{slug}_tableau_{descriptif}.csv`),
 max 3/article, **aucun shortcode** `[table id=X /]` dans le HTML. Réf.
 [[feedback-csv-naming-tablepress]].
 
+## Règle d'Or — ne jamais réduire les assets
+
+Invariant absolu, tous blogs : le contenu généré ne réduit **jamais** le nombre
+d'assets de l'original (`assets_after ≥ assets_before`) — images, tableaux,
+vidéos, liens internes **et** liens externes (y compris vers des concurrents).
+On peut enrichir, jamais appauvrir. Conserver chaque lien existant à l'identique
+(URL **et** texte d'ancre), sans en injecter de nouveau. Le périmètre exact des
+assets comptés est propre à chaque tenant (Superprof Ressources n'émet ni
+`<table>` ni vidéo) : voir la skill du site.
+
 ## Métadonnées JSON
 
 `title` (post_title WP, ≤ 60 car.), `h1` (H1 éditorial du corps, peut différer),

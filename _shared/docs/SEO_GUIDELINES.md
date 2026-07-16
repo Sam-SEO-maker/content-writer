@@ -8,9 +8,9 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 
 | Guide | Description | Fichier |
 |-------|-------------|---------|
-| GEO 2026 | Optimisation pour moteurs génératifs (IA) | [docs/GEO_2026_GUIDELINES.md](docs/GEO_2026_GUIDELINES.md) |
-| E-E-A-T 2026 | Experience, Expertise, Authority, Trust | [docs/EEAT_GUIDE.md](docs/EEAT_GUIDE.md) |
-| Content Refresh | Guide de rafraîchissement de contenu | [docs/CONTENT_REFRESH_GUIDE.md](docs/CONTENT_REFRESH_GUIDE.md) |
+| GEO 2026 | Optimisation pour moteurs génératifs (IA) | [docs/GEO_2026_GUIDELINES.md](GEO_2026_GUIDELINES.md) |
+| E-E-A-T 2026 | Experience, Expertise, Authority, Trust | [docs/EEAT_GUIDE.md](EEAT_GUIDE.md) |
+| Content Refresh | Guide de rafraîchissement de contenu | [docs/CONTENT_REFRESH_GUIDE.md](CONTENT_REFRESH_GUIDE.md) |
 
 ---
 
@@ -168,7 +168,7 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 
 **Statistique clé**: ChatGPT cite préférentiellement les pages mises à jour dans les 30 derniers jours (76.4% des citations).
 
-> **Voir le guide complet**: [docs/CONTENT_REFRESH_GUIDE.md](docs/CONTENT_REFRESH_GUIDE.md)
+> **Voir le guide complet**: [docs/CONTENT_REFRESH_GUIDE.md](CONTENT_REFRESH_GUIDE.md)
 
 ### Politique de rafraîchissement
 | Âge du contenu | Action | Priorité |
@@ -208,7 +208,7 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 
 **Principe**: La Confiance (Trust) est l'élément le plus important. Sans confiance, les autres signaux sont insuffisants.
 
-> **Voir le guide complet**: [docs/EEAT_GUIDE.md](docs/EEAT_GUIDE.md)
+> **Voir le guide complet**: [docs/EEAT_GUIDE.md](EEAT_GUIDE.md)
 
 ### Les 4 Piliers
 
@@ -268,51 +268,9 @@ Ce document définit les meilleures pratiques SEO pour la rédaction d'articles 
 
 ## 9. Critères GEO (Generative Engine Optimization)
 
-**Contexte 2026**: Gartner prévoit -25% de trafic de recherche conventionnel. 50% des consommateurs utilisent l'IA comme méthode principale de recherche. Les AI Overviews ne citent que **3 sources** au lieu de 10 liens traditionnels.
-
-> **Voir le guide complet**: [docs/GEO_2026_GUIDELINES.md](docs/GEO_2026_GUIDELINES.md)
-
-### Stratégies GEO Obligatoires
-
-| Stratégie | Impact | Exemple |
-|-----------|--------|---------|
-| Ajout de statistiques | +41% visibilité | "Selon l'INSEE 2026, 18% des élèves..." |
-| Citations d'experts | +28% impression | "...explique Dr. Dupont, chercheur à l'ENS" |
-| Réponse directe | Extraction IA | Première phrase de chaque H2 = réponse |
-
-### Structure GEO-Optimisée
-
-```
-## [Question H2]
-
-[Réponse directe en 1-2 phrases] ← L'IA extrait ceci
-
-[Développement avec statistiques sourcées (2025-2026)]
-
-> "Citation d'expert" - [Nom], [Credentials]
-
-- Point clé 1
-- Point clé 2
-- Point clé 3
-```
-
-### Éléments de Crédibilité (obligatoires)
-- **Statistiques**: Minimum 2 par article, sources 2025-2026
-- **Citations d'experts**: Minimum 1, avec credentials vérifiables
-- **Sources institutionnelles**: eduscol, education.gouv, has-sante, inserm
-- **Auteur identifié**: Nom + bio + credentials
-
-### Formats Extractibles par IA
-- Listes à puces pour énumérations
-- Tableaux de synthèse comparatifs
-- Sections FAQ avec questions PAA exactes
-- Définitions claires en début de section
-
-### Ce qu'il NE FAUT PAS Faire
-- ❌ Keyword stuffing (moins efficace en GEO)
-- ❌ Statistiques sans dates (considéré obsolète)
-- ❌ Contenu générique sans sources (non cité)
-- ❌ Absence d'auteur identifié
+Le détail GEO (stratégies, structure optimisée IA, éléments de crédibilité,
+formats extractibles) vit dans sa source unique : **[GEO_2026_GUIDELINES.md](GEO_2026_GUIDELINES.md)**.
+Ne pas dupliquer ces règles ici.
 
 ---
 
