@@ -206,10 +206,19 @@ class RefreshOrchestrator:
         return self._gsc_analyzers[blog_id]
 
     def _get_serp_analyzer(self, blog_id: str) -> SERPAnalyzer:
-        """Récupère ou crée un SERPAnalyzer pour un blog."""
+        """Récupère ou crée un SERPAnalyzer pour un blog.
+
+        `serp_location` et `language` sont optionnels dans tenant.json : un tenant
+        qui ne les déclare pas cible France/fr (marchés historiques).
+        """
         if blog_id not in self._serp_analyzers:
-            # SERPAnalyzer est agnostic au blog, on crée juste une instance
-            self._serp_analyzers[blog_id] = SERPAnalyzer()
+            # Normalize blog_id to get correct config
+            normalized_blog_id = self._normalize_blog_id(blog_id)
+            blog_config = self.doc_cache.get_blog_config(normalized_blog_id)
+            self._serp_analyzers[blog_id] = SERPAnalyzer(
+                location=blog_config.get("serp_location", "France"),
+                language=blog_config.get("language", "fr"),
+            )
         return self._serp_analyzers[blog_id]
 
     def _get_wp_api_client(self, blog_id: str) -> Optional[WordPressAPIClient]:
