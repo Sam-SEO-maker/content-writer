@@ -16,9 +16,11 @@ class StrategySelector:
     Sélecteur de stratégie de refresh.
 
     Combine la décision du moteur avec:
-    - Les prompts spécifiques par matière
     - Les overrides par blog
     - Les guidelines spécifiques
+
+    Le prompt de site n'est PAS résolu ici : la composition
+    strategy + tenants/{id}/prompts/site.md est faite par PromptComposer.
     """
 
     def __init__(
@@ -73,9 +75,6 @@ class StrategySelector:
         # Déterminer le prompt de base
         prompt_template = self._get_prompt_template(strategy)
 
-        # Déterminer le prompt par matière
-        subject_prompt = self._get_subject_prompt()
-
         # Récupérer les overrides du blog
         blog_overrides = self.blog_config.get("prompt_overrides", {})
 
@@ -97,7 +96,7 @@ class StrategySelector:
             rewrite_scope=rewrite_scope,
             estimated_tokens=estimated_tokens,
             prompt_template=prompt_template,
-            subject_prompt=subject_prompt,
+            subject_prompt=None,
             blog_overrides=blog_overrides,
             preserve_assets=True,  # Toujours préserver
             requires_eeat_enrichment=requires_eeat,
@@ -121,22 +120,7 @@ class StrategySelector:
         if key and key in strategy_prompts:
             return strategy_prompts[key].get("file", "")
 
-        return "strategies/full_refresh.md"  # Fallback
-
-    def _get_subject_prompt(self) -> Optional[str]:
-        """Retourne le prompt spécifique à la matière du blog."""
-        blog_id = self.blog_config.get("blog_id", "")
-        subject_category = self.blog_config.get("subject_category", "")
-
-        # Mapper via prompts_dispatch
-        blog_mapping = self.prompts_dispatch.get("blog_to_subject_mapping", {})
-        subject = blog_mapping.get(blog_id, subject_category)
-
-        subject_prompts = self.prompts_dispatch.get("subject_prompts", {})
-        if subject in subject_prompts:
-            return subject_prompts[subject].get("file")
-
-        return None
+        return "_shared/strategies/full_refresh.md"  # Fallback
 
     def _estimate_tokens(self, strategy: RefreshStrategy, audit_data: dict) -> int:
         """Estime le nombre de tokens nécessaires."""

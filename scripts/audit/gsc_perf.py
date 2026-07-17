@@ -97,11 +97,23 @@ def run_gsc_page(url: str, days: int = 28, dry_run: bool = False) -> dict:
 
     total_clicks = sum(r["clicks"] for r in rows)
     total_impr = sum(r["impressions"] for r in rows)
+    # Position moyenne pondérée par les impressions (méthode GSC), pas une
+    # moyenne simple qui donnerait le même poids à une requête à 1 impression.
+    avg_position = (
+        sum(r["position"] * r["impressions"] for r in rows) / total_impr
+        if total_impr else 0.0
+    )
+    ctr = (total_clicks / total_impr * 100) if total_impr else 0.0
     snapshot = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     result = {
         "url": url, "site_id": blog, "snapshot_date": snapshot,
         "source": source, "days": days,
-        "totals": {"clicks": total_clicks, "impressions": total_impr},
+        "totals": {
+            "clicks": total_clicks,
+            "impressions": total_impr,
+            "ctr": round(ctr, 2),
+            "position": round(avg_position, 1),
+        },
         "keywords": rows,
     }
 

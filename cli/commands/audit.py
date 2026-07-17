@@ -52,21 +52,30 @@ def serp(url, keyword):
             keyword = last.replace("-", " ") if last else url
             click.echo(f"  (Mot-clé déduit du slug : '{keyword}')")
 
-        result = analyzer.analyze_serp(keyword)
+        from urllib.parse import urlparse
+        our_domain = urlparse(url).netloc
+
+        result = analyzer.to_dict(analyzer.analyze(keyword, our_domain))
 
         click.echo(f"\n📊 RÉSULTATS:")
-        click.echo(f"  PAA questions:      {len(result.get('paa', []))}")
-        click.echo(f"  Secondary keywords: {len(result.get('secondary_kw', []))}")
+        if result.get('our_url_found'):
+            click.echo(f"  Notre position:     {result.get('our_position')}")
+        else:
+            click.echo(f"  Notre position:     hors top 10")
+        click.echo(f"  Format dominant:    {result.get('dominant_format')}")
+        if result.get('format_mismatch'):
+            click.echo(f"  ⚠️  Format inadapté → recommandé: {result.get('recommended_format')}")
+        click.echo(f"  PAA questions:      {len(result.get('paa_questions', []))}")
 
-        if result.get('paa'):
+        if result.get('paa_questions'):
             click.echo(f"\n  PAA:")
-            for q in result['paa'][:5]:
+            for q in result['paa_questions']:
                 click.echo(f"    - {q}")
 
-        if result.get('secondary_kw'):
-            click.echo(f"\n  Secondary KW:")
-            for kw in result['secondary_kw'][:10]:
-                click.echo(f"    - {kw}")
+        if result.get('top_10_results'):
+            click.echo(f"\n  Top 10 SERP:")
+            for r in result['top_10_results']:
+                click.echo(f"    {r['position']:>2}. [{r['format_type']}] {r['domain']}")
 
     except Exception as e:
         click.echo(f"\n❌ ERREUR: {str(e)}", err=True)
@@ -171,6 +180,8 @@ def gsc_page(url, days, dry_run):
         click.echo(f"  Tenant: {r['site_id']} | Source: {r['source']}")
         click.echo(f"  Clics:       {t['clicks']:,}")
         click.echo(f"  Impressions: {t['impressions']:,}")
+        click.echo(f"  CTR:         {t['ctr']}%")
+        click.echo(f"  Position:    {t['position']} (moyenne pondérée par impressions)")
         kws = r.get("keywords", [])
         if kws:
             click.echo(f"\n  {len(kws)} requêtes :")

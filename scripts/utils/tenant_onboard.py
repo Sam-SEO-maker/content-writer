@@ -25,6 +25,7 @@ from typing import Optional
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 CATALOG_PATH = _PROJECT_ROOT / "_shared" / "config" / "superprof_blogs_catalog.json"
 SITES_JSON = _PROJECT_ROOT / "_shared" / "config" / "sites.json"
+LOCATIONS_PATH = _PROJECT_ROOT / "_shared" / "config" / "dataforseo_locations.json"
 
 
 def load_catalog_entry(tenant_id: str) -> Optional[dict]:
@@ -36,6 +37,19 @@ def load_catalog_entry(tenant_id: str) -> Optional[dict]:
         if entry.get("tenant_id") == tenant_id:
             return entry
     return None
+
+
+def resolve_serp_location(country: str) -> str:
+    """`location_name` DataForSEO pour un code pays du catalogue, "" si inconnu.
+
+    La table est générée/validée par `build_dataforseo_locations.py` : un
+    `location_name` inventé ferait échouer l'appel SERP. Un pays absent laisse le
+    champ vide plutôt que de deviner — le moteur retombe alors sur France/fr.
+    """
+    if not country or not LOCATIONS_PATH.exists():
+        return ""
+    table = json.loads(LOCATIONS_PATH.read_text(encoding="utf-8"))
+    return table.get("locations", {}).get(country, "")
 
 
 def _domain_from_gsc(gsc_property: str) -> str:
@@ -60,6 +74,9 @@ def build_tenant_config(entry: dict) -> dict:
         "content_type": "blog_article",
         "subject_category": "education_general",
         "language": entry.get("language", ""),
+        # Locale SERP : lus par l'orchestrateur (_get_serp_analyzer). Absents ou
+        # vides → France/fr, le défaut des marchés historiques.
+        "serp_location": resolve_serp_location(entry.get("country", "")),
         "_TODO": (
             "Compléter par le responsable pays : tone_profile, seo_settings, "
             "editorial_guides (déposer prompts/site.md + guides dans ce dossier), "

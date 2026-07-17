@@ -84,6 +84,11 @@ _TLD_META = {
 _SUBDOMAIN_META = {
     "nl.superprof.be": ("BE", "nl"),   # Belgique néerlandophone
     "de.superprof.ch": ("CH", "de"),   # Suisse germanophone
+    # Suisse : deux blogs distincts et vivants. `www` sert le marché
+    # francophone (vérifié sur le contenu 2026-07-17), `de.` le germanophone —
+    # sans cette entrée, _TLD_META['ch']=('CH','de') donne à `www` le même
+    # tenant_id que `de.` et la déduplication en perd un.
+    "superprof.ch": ("CH", "fr"),
     "super-prof.me": ("ME", "sr"),     # Monténégro (domaine à trait d'union)
     "super-prof.nl": ("NL", "nl"),     # Pays-Bas (domaine à trait d'union)
 }

@@ -176,34 +176,6 @@ class DocumentCache:
         """
         return self._decision_rules
 
-    def get_subject_prompt_for_blog(self, blog_id: str) -> str:
-        """
-        Retourne le prompt spécifique à la matière d'un blog.
-
-        Args:
-            blog_id: Identifiant du blog
-
-        Returns:
-            Contenu du prompt de matière
-        """
-        blog_config = self.get_blog_config(blog_id)
-        subject_category = blog_config.get("subject_category", "")
-
-        if not subject_category:
-            return ""
-
-        subject_prompts = self._prompts_dispatch.get("subject_prompts", {})
-        prompt_info = subject_prompts.get(subject_category, {})
-        prompt_file = prompt_info.get("file", "")
-
-        if prompt_file:
-            # Retirer un éventuel préfixe legacy "prompts/" ; le chemin est
-            # ensuite résolu sous _shared/ par get_prompt.
-            prompt_path = prompt_file.replace("prompts/", "")
-            return self.get_prompt(prompt_path)
-
-        return ""
-
     def get_combined_guidelines(self, include_geo: bool = True, include_eeat: bool = True, include_claude: bool = True) -> str:
         """
         Retourne l'orientation issue de CLAUDE.md (Règle d'Or + architecture).

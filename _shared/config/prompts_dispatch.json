@@ -1,10 +1,13 @@
 {
-  "_comment": "Configuration du dispatch des prompts par matière et format",
-
+  "_comment": "Dispatch des prompts de strategie. Les chemins sont relatifs a la racine du repo. Les cles subject_prompts/site_overrides/blog_to_subject_mapping ont ete retirees (2026-07-17) : elles pointaient sur _shared/prompts/sites/*.md, disparus au profit de tenants/{id}/prompts/site.md, et leur sortie n'etait consommee par personne (PromptComposer compose strategy + site.md).",
   "content_type_mapping": {
     "review_comparatif": {
       "base_prompt": "prompts/formats/comparatif_review.md",
-      "required_sections": ["verdict", "tableau_comparatif", "pour_contre"],
+      "required_sections": [
+        "verdict",
+        "tableau_comparatif",
+        "pour_contre"
+      ],
       "tone_override": "expert_analytique",
       "structure": {
         "must_have_rating": true,
@@ -14,7 +17,11 @@
     },
     "guide_complet": {
       "base_prompt": "prompts/formats/guide_complete.md",
-      "required_sections": ["introduction", "etapes", "faq"],
+      "required_sections": [
+        "introduction",
+        "etapes",
+        "faq"
+      ],
       "tone_override": null,
       "structure": {
         "min_h2_sections": 4,
@@ -23,7 +30,11 @@
     },
     "listicle": {
       "base_prompt": "prompts/formats/listicle.md",
-      "required_sections": ["introduction", "liste_numerotee", "conclusion"],
+      "required_sections": [
+        "introduction",
+        "liste_numerotee",
+        "conclusion"
+      ],
       "tone_override": null,
       "structure": {
         "list_format": "numbered",
@@ -33,7 +44,11 @@
     },
     "tutoriel": {
       "base_prompt": "prompts/formats/tutoriel.md",
-      "required_sections": ["prerequis", "etapes", "resultat"],
+      "required_sections": [
+        "prerequis",
+        "etapes",
+        "resultat"
+      ],
       "tone_override": "pedagogique",
       "structure": {
         "step_by_step_required": true,
@@ -42,7 +57,11 @@
     },
     "blog_article": {
       "base_prompt": "prompts/formats/blog_article.md",
-      "required_sections": ["introduction", "body", "conclusion"],
+      "required_sections": [
+        "introduction",
+        "body",
+        "conclusion"
+      ],
       "tone_override": "natural_informal",
       "structure": {
         "paragraph_length": "3-5 sentences",
@@ -50,79 +69,51 @@
       }
     }
   },
-
-  "subject_prompts": {
-    "education_reviews": {
-      "file": "sites/enseigna.md",
-      "applicable_blogs": ["enseigna"],
-      "keywords": ["avis", "comparatif", "test", "plateforme", "soutien scolaire"],
-      "tone": "expert_analytique",
-      "eeat_level": "high",
-      "ymyl_category": "education_finance",
-      "sources_required": [],
-      "special_rules": {
-        "comparison_table_mandatory": true,
-        "rating_mandatory": true,
-        "independence_statement_mandatory": true
-      }
-    },
-    "education_general": {
-      "file": "sites/superprof-ressources.md",
-      "applicable_blogs": ["superprof-ressources"],
-      "keywords": ["cours", "soutien", "aide", "apprentissage", "tuteur", "professeur"],
-      "tone": "natural_informal",
-      "eeat_level": "high",
-      "sources_required": []
-    }
-  },
-
   "strategy_prompts": {
     "title_optimization": {
-      "file": "strategies/title_optimization.md",
-      "trigger_conditions": ["ctr_low", "impressions_high"],
+      "file": "_shared/strategies/title_optimization.md",
+      "trigger_conditions": [
+        "ctr_low",
+        "impressions_high"
+      ],
       "scope": "title_meta_only",
       "estimated_tokens": 500
     },
     "semantic_reorientation": {
-      "file": "strategies/semantic_reorientation.md",
-      "trigger_conditions": ["keyword_decline", "variants_rising"],
+      "file": "_shared/strategies/semantic_reorientation.md",
+      "trigger_conditions": [
+        "keyword_decline",
+        "variants_rising"
+      ],
       "scope": "full_with_eeat",
       "estimated_tokens": 4000
     },
     "format_adaptation": {
-      "file": "strategies/format_adaptation.md",
-      "trigger_conditions": ["format_mismatch"],
+      "file": "_shared/strategies/format_adaptation.md",
+      "trigger_conditions": [
+        "format_mismatch"
+      ],
       "scope": "structure_change",
       "estimated_tokens": 3000
     },
     "partial_refresh": {
-      "file": "strategies/full_refresh.md",
-      "trigger_conditions": ["content_stale", "stats_outdated"],
+      "file": "_shared/strategies/full_refresh.md",
+      "trigger_conditions": [
+        "content_stale",
+        "stats_outdated"
+      ],
       "scope": "diff_based",
       "estimated_tokens": 1500
     }
   },
-
   "category_paths": {
     "education_reviews": "education/education_reviews.md",
     "education_general": "education/education_general.md"
   },
-
-  "site_overrides": {
-    "enseigna": "sites/enseigna.md",
-    "superprof-ressources": "sites/superprof-ressources.md"
-  },
-
-  "blog_to_subject_mapping": {
-    "enseigna": "education_reviews",
-    "superprof-ressources": "education_general"
-  },
-
   "blog_to_category_mapping": {
     "enseigna": "education_reviews",
     "superprof-ressources": "education_general"
   },
-
   "eeat_levels": {
     "very_high": {
       "description": "YMYL content - maximum E-E-A-T requirements",

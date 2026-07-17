@@ -83,9 +83,9 @@ Internal linking → Sync.
 
 | Command | Role |
 |---|---|
-| `/refresh <url> --blog <id>` | Full refresh: audit → decision → source research → generation → `cw finalize` |
+| `/refresh <url> --blog <id> --keyword ""` | Full refresh: audit → decision → source research → generation → `cw finalize` |
 | `/batch --action X --blog <id>` | Batch refresh from Google Sheets |
-| `/audit serp <url>` | Targeted SERP audit (PAA, secondary keywords) |
+| `/audit serp <url> --keyword ""` | Targeted SERP audit (PAA, SERP features, top 10). Always pass `--keyword`: without it the keyword is derived from the URL slug, so any typo or shorthand in the slug is queried verbatim and the SERP answers a keyword nobody searches |
 | `/decide --blog <id>` | Data-driven decision engine (Sheet) |
 | `/market-status --site <id>` | GSC SEO status of a tenant (→ Sheet) |
 | `/blog --market <id>` | SEO performance of a blog via GSC MCP: totals + top KW (chat summary) |
