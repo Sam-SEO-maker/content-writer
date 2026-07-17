@@ -1,16 +1,28 @@
 """Sync unidirectionnel : base Notion « Config blogs » → catalogue Superprof.
 
-Phase 6d (révisé 2026-07-16). La base Notion « Config blogs Superprof dans le
-monde » est un annuaire HUMAIN : `Pays` (libellé), `URL du blog`, `Région`,
-`Drapeau` (emoji). Elle NE porte PAS les champs machine (tenant_id, gsc_property,
-langue) — ceux-ci vivent déjà, plus complets, dans le catalogue généré
-`_shared/config/superprof_blogs_catalog.json` (source machine).
+Phase 6d (révisé 2026-07-16 ; constat réévalué 2026-07-17). La base Notion
+« Config blogs Superprof dans le monde » est l'annuaire tenu par l'équipe :
+`Pays` (libellé), `URL du blog`, `Région`, `Drapeau` (emoji).
 
-Rôle du sync (décision 2026-07-16) : **enrichir le catalogue** avec les libellés
-humains de Notion, en joignant par `URL du blog` ↔ `gsc_property`. Notion devient
-la source des libellés (country_label / region / flag) ; le catalogue reste la
-source machine et le pilote de l'onboarding (`cw tenant init`). Le registre
-runtime `sites.json` n'est PAS touché ici (Notion ne porte pas ses champs).
+Elle porte AUSSI, depuis, des champs machine (`Tenant ID`, `GSC Property`,
+`Language`, `Country code`, `Onboardable`) — contrairement à ce que décrivait
+cette note. Ils n'en font pas pour autant la source machine : c'est une saisie
+humaine, qui peut être en retard ou fautive. Écarts constatés le 2026-07-17 :
+
+  - blogs absents de Notion mais présents dans GSC (`en-us-blog`) ou saisis
+    sans champs machine ;
+  - langues contredites par le contenu réel des blogs (Notion `cz-cz-blog`/`cz`
+    vs contenu tchèque → `cs-cz-blog`/`cs`, vérifié par WebFetch).
+
+Répartition qui reste en vigueur : le catalogue généré depuis GSC
+(`build_superprof_catalog.py`, + overrides de langue vérifiés sur le contenu)
+est la source MACHINE et le pilote de l'onboarding (`cw tenant init`) ; Notion
+est la source des LIBELLÉS humains (country_label / region / flag), joints par
+`URL du blog` ↔ `gsc_property`. Le registre runtime `sites.json` n'est pas
+touché ici.
+
+Divergence sur un champ machine = Notion à corriger (annuaire), pas le
+catalogue. Le sync ne réécrit pas Notion : il est unidirectionnel.
 
 API Notion 2025-09-03 : une "database" (conteneur, ID de l'URL) référence un ou
 plusieurs `data_source`. On résout d'abord le data_source_id via le conteneur,

@@ -51,6 +51,25 @@ def test_catalog_blog_id_convention():
     assert by_prop["https://www.superprof.com.br/blog/"]["tenant_id"] == "pt-br-blog"
 
 
+def test_suisse_deux_blogs_non_dedupliques():
+    """www.superprof.ch (fr) et de.superprof.ch (de) sont deux marchés distincts.
+
+    Sans override de sous-domaine, _TLD_META['ch']=('CH','de') donnait le même
+    tenant_id aux deux et la déduplication en perdait un (régression 2026-07-17).
+    """
+    urls = parse_properties(
+        "- https://www.superprof.ch/blog/ (siteFullUser)\n"
+        "- https://de.superprof.ch/blog/ (siteFullUser)\n"
+    )
+    cat = build_catalog(urls)
+    by_prop = {b["gsc_property"]: b for b in cat["blogs"]}
+
+    assert len(cat["blogs"]) == 2, "un des deux blogs suisses a été dédupliqué"
+    assert by_prop["https://www.superprof.ch/blog/"]["tenant_id"] == "fr-ch-blog"
+    assert by_prop["https://de.superprof.ch/blog/"]["tenant_id"] == "de-ch-blog"
+    assert cat["counts"]["blog_duplicates_dropped"] == 0
+
+
 def test_language_overrides_verified_on_real_content():
     """Golfe/Maghreb : langue arabe vérifiée sur le contenu réel (pas l'heuristique).
 

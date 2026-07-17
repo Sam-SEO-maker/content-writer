@@ -580,6 +580,15 @@
       "onboardable": true
     },
     {
+      "tenant_id": "fr-ch-blog",
+      "type": "blog",
+      "country": "CH",
+      "language": "fr",
+      "gsc_property": "https://www.superprof.ch/blog/",
+      "url_base": "/blog/",
+      "onboardable": true
+    },
+    {
       "tenant_id": "fr-cm-blog",
       "type": "blog",
       "country": "CM",
@@ -888,7 +897,7 @@
   ],
   "counts": {
     "ressources": 6,
-    "blogs": 92,
-    "blog_duplicates_dropped": 1
+    "blogs": 93,
+    "blog_duplicates_dropped": 0
   }
 }
