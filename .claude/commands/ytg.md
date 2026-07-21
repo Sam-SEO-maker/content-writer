@@ -34,7 +34,9 @@ Ajoute `--fix` (signaler les A_CORRIGER au correcteur) ou `--json-out`
 `--keyword` exige `--slug` (un seul article) — le CLI refuse sinon.
 
 Le moteur résout le mot-clé principal (Notion/Sheet/GSC/slug), résout ou crée le guide YTG,
-analyse le HTML → SOSEO/DSEO vs cibles TOP3, et rend un verdict
+analyse le HTML → SOSEO/DSEO vs les **moyennes TOP 3 / TOP 10 de la SERP de la
+requête** (cible variable par requête : SOSEO > moyennes, DSEO strictement <
+moyennes — jamais un seuil uniforme), et rend un verdict
 **OPTIMAL / A_CORRIGER / BLOQUE / SKIP**.
 
 Si aucun `*.gutenberg.html` local ne correspond au slug → le rapporter (rien à analyser :

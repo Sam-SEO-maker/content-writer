@@ -60,7 +60,11 @@ sémantique) sans **suroptimiser** (répétition). Plafonds :
 - Mot-clé principal (exact) : **3-6 occurrences** (H1 + intro + 1-2 H2 + conclusion).
 - Top termes du sujet : 2-5 occurrences chacun, distribués.
 - Tout terme ≥ 3 occurrences → varier par synonyme/périphrase dans ≥ 50% des cas.
-- Cible SOSEO 55-75% / DSEO < 20% (zone TOP 3). Détail + exemples : `references/semantic-density.md`.
+- Cible SOSEO/DSEO : **variable selon la SERP de chaque requête**, jamais uniforme.
+  Calculer la **moyenne des scores du TOP 3** et celle du **TOP 10** (guide YTG :
+  `top3_soseo`/`top3_dseo`, `top10_soseo`/`top10_dseo`) ; l'article doit avoir un
+  **SOSEO supérieur** à ces moyennes et un **DSEO strictement inférieur** à ces
+  moyennes. Détail + exemples : `references/semantic-density.md`.
 
 ## 5. Formats extractibles par l'IA
 

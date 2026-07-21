@@ -30,13 +30,18 @@ dans ≥ 50% de ses occurrences. Exemples :
 
 ## Cible SOSEO / DSEO (YourTextGuru)
 
-| Métrique | Zone cible | Zone danger |
-|----------|-----------|-------------|
-| **SOSEO** (couverture) | **55-75%** (zone TOP 3) | > 80% = suroptimisé |
-| **DSEO** (danger) | **< 20%** (zone TOP 3) | > 25% = keyword stuffing |
+La cible est **variable : elle dépend de la SERP de chaque requête**, jamais d'un
+seuil uniforme. Le guide YTG fournit les scores moyens des concurrents
+(`top3_soseo`/`top3_dseo` et `top10_soseo`/`top10_dseo`) ; la règle :
 
-Un article à 116% SOSEO / 37% DSEO est inexploitable. Viser le milieu du peloton
-TOP 3, pas au-dessus.
+| Métrique | Règle vs moyenne TOP 3 | Règle vs moyenne TOP 10 |
+|----------|------------------------|--------------------------|
+| **SOSEO** (couverture) | article **> moyenne** (ex. moyenne 60% → viser > 60%) | article **> moyenne** |
+| **DSEO** (danger) | article **strictement < moyenne** (ex. moyenne 5% → rester < 5%) | article **strictement < moyenne** |
+
+Battre la moyenne, pas l'exploser : un article à 116% SOSEO / 37% DSEO est
+inexploitable (suroptimisation). Dépasser la moyenne SOSEO de quelques points
+suffit ; le DSEO doit toujours rester sous les deux moyennes.
 
 ## ❌ Interdit / ✅ Correct
 
