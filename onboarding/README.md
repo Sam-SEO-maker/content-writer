@@ -6,19 +6,14 @@ SEO Manager for one country (ES, UK, US, MX, ID, JP, …) and you work on **your
 ## How this works in one picture
 
 - **One shared repo.** Everyone clones the same repository.
-- **You only see your own site.** Thanks to a git *sparse-checkout*, your computer
-  materialises the shared engine (`_shared/`, `cli/`, `scripts/`, …) **and your single
-  `sites/{site-slug}/` folder**. The other sites stay on GitHub but are **not** written
-  to your disk — no clutter, no risk of editing someone else's site. Note that the
-  sparse-checkout is a *disk convenience*: the engine files it does materialise are
-  fully writable locally — nothing about sparse-checkout makes them read-only.
-- **The engine is off-limits for you — enforced at merge time, not on your disk.** You
-  never modify `_shared/`, `cli/`, `scripts/`, `.github/` or `content_writer.py`. Those
-  belong to the maintainer. You *can* edit them locally, but a pull request that touches
-  them is **blocked until the maintainer approves it**: `main` is protected and those
-  paths require a Code Owner review (see [`.github/CODEOWNERS`](../.github/CODEOWNERS)).
-  So the real guarantee is the branch protection rule on `main` — not the clone. You only
-  ship changes inside your own site folder.
+- **You only see your own site.** The setup script copies to your computer the
+  shared engine and **your single `sites/{site-slug}/` folder**. The other sites
+  stay on GitHub and never appear on your disk — no clutter, no risk of touching
+  someone else's site.
+- **Please, do not change anything in the engine.** You might not have to modify anything outside your site folder
+  (`_shared/`, `cli/`, `scripts/`, `content_writer.py`, …).
+  In practice: work only inside `sites/{site-slug}/`, and if you think the engine
+  needs a change, ask the maintainer.
 
 ## Your path (do these in order)
 

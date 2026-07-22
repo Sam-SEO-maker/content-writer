@@ -1,37 +1,33 @@
-# CODEOWNERS — propriété par dossier pour le monorepo multi-tenant.
-# Chaque tenant est possédé par son responsable ; le moteur central par le mainteneur.
-# Doc : https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+# CODEOWNERS — per-folder ownership for the multi-site monorepo.
+# Each site is owned by its SEO Manager; the shared engine by the maintainer.
+# Doc: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
 #
-# Un responsable de tenant ne peut modifier que son dossier tenants/{id}/ ;
-# toute modif du moteur central requiert la revue du mainteneur.
+# A site's SEO Manager only owns their sites/<site-slug>/ subtree;
+# any change to the shared engine requires the maintainer's review.
 #
-# ⚠️ NOTE MAINTENEUR — ce fichier ne bloque RIEN à lui seul. CODEOWNERS assigne juste
-# des reviewers. Le moteur n'est réellement protégé que si `main` porte une branch
-# protection rule avec « Require a pull request before merging » + « Require review from
-# Code Owners ». Cette règle est INDISPONIBLE sur repo privé plan Free (état actuel :
-# Sam-SEO-maker/content-writer est privé/Free) → aujourd'hui la protection n'est PAS
-# appliquée, un push direct sur main reste possible. Pour l'activer : passer le repo
-# public (gratuit) OU GitHub Team/Pro, puis créer la règle. Tant que ce n'est pas fait,
-# « moteur read-only » est une convention, pas une contrainte technique.
+# ⚠️ MAINTAINER NOTE — this file blocks nothing by itself: CODEOWNERS only assigns
+# reviewers. The engine is actually protected because `main` carries a branch
+# protection rule with "Require a pull request before merging" + "Require review
+# from Code Owners" (active since 2026-07-16, repo public). If the repo ever goes
+# back to private/Free, that rule stops applying and the protection becomes a
+# convention again.
 
-# --- Défaut : moteur central (mainteneur) --------------------------------------
+# --- Default: shared engine (maintainer) ---------------------------------------
 *                                   @Sam-SEO-maker
 
-# --- Moteur / cœur (explicite, verrouillé) -------------------------------------
-/_shared/core/                      @Sam-SEO-maker
+# --- Engine / core (explicit, locked) ------------------------------------------
+/_shared/                           @Sam-SEO-maker
 /scripts/                           @Sam-SEO-maker
 /cli/                               @Sam-SEO-maker
 /content_writer.py                  @Sam-SEO-maker
 /.claude/                           @Sam-SEO-maker
 /.github/                           @Sam-SEO-maker
 
-# --- Dossiers tenants ----------------------------------------------------------
-# Un responsable ne possède QUE son sous-arbre. Ajouter le handle GitHub du
-# responsable à la ligne de son tenant lorsqu'un collaborateur est onboardé.
-# Exemple : /tenants/es-es-ressources/  @Sam-SEO-maker @responsable-es
-#
-# GESTE MAINTENEUR à chaque onboarding (le SEO Manager ne peut pas modifier .github/) :
-# ajouter une ligne `/tenants/<id>/  @Sam-SEO-maker @<handle>` ci-dessous. Le sparse-checkout
-# (onboarding/) isole le disque ; CODEOWNERS impose la revue. Parcours : onboarding/README.md.
-/tenants/enseigna/                  @Sam-SEO-maker
-/tenants/superprof-ressources/      @Sam-SEO-maker
+# --- Site folders ---------------------------------------------------------------
+# An SEO Manager only owns their own subtree. MAINTAINER STEP at each onboarding
+# (the SEO Manager cannot edit .github/): add a line
+# `/sites/<site-slug>/  @Sam-SEO-maker @<github-handle>` below.
+# The sparse-checkout (onboarding/) isolates the disk; CODEOWNERS enforces review.
+# Walkthrough: onboarding/README.md.
+/sites/enseigna.fr/                 @Sam-SEO-maker
+/sites/superprof.fr-ressources/     @Sam-SEO-maker

@@ -4,14 +4,6 @@ Goal: get a working copy of Content Writer on your computer that contains **only
 site**, with Python ready to run. No prior developer experience required — follow the
 steps in order.
 
-> Throughout, `<site-slug>` means your site's **`site_slug`** — the exact identifier
-> shown in the catalog (e.g. `superprof.ae`, `superprof.es-apuntes`). It's
-> one thing under three names you'll see: the `site_slug` field in the catalog, the
-> `<site-slug>` placeholder in this guide, and the name of your folder `sites/<site-slug>/`.
-> Wherever a command says `<site-slug>`, type your `site_slug` verbatim. Don't know it yet?
-> The maintainer can tell you, or you'll list it with `site list` in
-> [02 — Onboard my site](02-onboard-my-site.md).
-
 ## 1. Prerequisites
 
 - A **GitHub account** with access to the `content-writer` repository. Ask the
@@ -26,14 +18,12 @@ It's the editor you'll use to open the project and run commands in its built-in 
 ## 3. Install the Claude Code extension and sign in
 
 Content Writer runs **inside Claude Code** — every article is written by a Claude Code
-subagent, so this is not optional.
+subagent.
 
 1. In VS Code, open the **Extensions** panel (left sidebar, or `Cmd/Ctrl+Shift+X`),
    search for **Claude Code** (publisher **Anthropic**) and click **Install**.
 2. Open Claude Code (the Claude icon in the sidebar) and **sign in**.
-3. **Sign in with `superteamseo@gmail.com`** — this is the shared account that carries
-   the **Claude Max subscription** the maintainer provides. Ask the maintainer for the
-   password. All generation runs on this Max plan; **we never use the paid API.**
+3. **Sign in with `superteamseo@gmail.com`** — All generation runs on this Max plan; **we never use the paid API.**
 
 > If you sign in with a different account, generation will fall back to the paid API or
 > fail. Use `superteamseo@gmail.com`.

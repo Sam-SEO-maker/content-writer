@@ -47,9 +47,9 @@
     "no_pronouns": true
   },
   "sheets": {
-    "_TODO": "Optionnel : ton Google Sheet si tu pilotes les refresh depuis une feuille. Sinon supprime ce bloc.",
+    "_TODO": "Optional: your Google Sheet if you drive refreshes from a spreadsheet. Otherwise delete this block.",
     "spreadsheet_id": "<sheet-id>",
-    "spreadsheet_env": "SPREADSHEET_ID_<YOUR_MARKET>",
+    "spreadsheet_env": "SPREADSHEET_ID_<YOUR_SITE>",
     "tabs": [
       {
         "name": "<TabName>",
@@ -61,8 +61,8 @@
   },
   "wp_api_config": {
     "api_base_url": "<https://www.superprof.xx/blog/wp-json/wp/v2>",
-    "user_env_var": "WP_<YOUR_MARKET>_USER",
-    "password_env_var": "WP_<YOUR_MARKET>_APP_PASSWORD",
+    "user_env_var": "WP_<YOUR_SITE>_USER",
+    "password_env_var": "WP_<YOUR_SITE>_APP_PASSWORD",
     "timeout": 30
   },
   "generation_skill": "<your-writing-skill-name>",

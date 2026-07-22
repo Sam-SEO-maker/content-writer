@@ -25,26 +25,21 @@ Type these in the Claude Code chat. They wrap the CLI and load the right skills.
 
 | Command | What it does |
 |---|---|
-| `/refresh <url> --site <site-slug>` | Full refresh: audit → decision → sources → generation → finalize |
+| `/refresh <url> --site <site-slug> --main-keyword "<main keyword>"` | Full refresh: audit → decision → sources → generation → finalize. Always pass the main keyword: the SERP analysis and the YTG semantic guide are built from it |
 | `/batch --action X --site <site-slug>` | Batch refresh from your Google Sheet |
-| `/audit serp <url>` | Targeted SERP audit (PAA, secondary keywords) |
+| `/audit serp <url> --main-keyword "<main keyword>"` | Targeted SERP audit (PAA, secondary keywords) |
 | `/decide --site <site-slug>` | Data-driven decision engine on your sheet's URLs |
 | `/site-status --site <site-slug>` | GSC state of your site → sheet |
 | `/blog --site <site-slug>` | SEO performance of your blog via GSC (totals + top keywords) |
 | `/page <url>` | SEO performance of a single URL via GSC |
-| `/ytg <url>` | Semantic QC (YourTextGuru) of an article |
+| `/ytg <url> "<main keyword>"` | Semantic QC (YourTextGuru) of an article. Always pass the main keyword — the semantic guide is built from that exact query; without it the engine guesses from the URL slug, which is often not the real SEO keyword |
 
-## CLI (what the slash commands call)
+## Under the hood (you can skip this)
 
-The source of truth for commands is always `--help` (auto-generated):
-
-```bash
-python3 content_writer.py --help
-python3 content_writer.py <group> --help    # e.g. refresh, batch, audit, site
-```
-
-Key groups: `refresh`, `batch`, `audit`, `finalize`, `linking`, `ytg`, `notion`,
-`site`, `workflow` — plus `audit gsc-state` (via `/site-status`).
+The slash commands drive a command-line tool, `python3 content_writer.py` — but
+**Claude runs it for you**, you never have to type it yourself. If you're ever
+curious about what it can do, ask Claude, or run `python3 content_writer.py --help`
+in a terminal: it prints the always-up-to-date list of available commands.
 
 ## Skills (loaded on demand)
 
@@ -56,7 +51,7 @@ Key groups: `refresh`, `batch`, `audit`, `finalize`, `linking`, `ytg`, `notion`,
 ## A typical refresh, end to end
 
 1. Pick a URL on your blog that needs work (from your sheet or `/site-status`).
-2. Run `/refresh <url> --site <site-slug>`.
+2. Run `/refresh <url> --site <site-slug> --main-keyword "<main keyword>"`.
 3. The engine audits it (GSC + DataForSEO/SERP), decides a strategy, researches sources,
    then a subagent generates the new HTML into `sites/<site-slug>/outputs/`.
 4. Review the output, run `/ytg <url>` for semantic QC, and publish per your site's flow.

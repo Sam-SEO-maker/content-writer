@@ -1,8 +1,19 @@
 # 02 — Onboard my site
 
 Goal: create your site's folder — `sites/<site-slug>/`, where `<site-slug>` is your
-**`site_slug`** from the catalog (e.g. `en-ae-blog`) — then configure it and give it the
-editorial rules and writing skill it needs. This is where you "load your files".
+**`site_slug`** from the catalog (e.g. `superprof.com`) — then fill it in. Everything
+you write goes into one of three places inside that folder:
+
+- **`config/site.json`** — your site's settings: WordPress login names, SEO targets,
+  Google Sheet ids (steps 3–4). You don't need to know JSON: you'll ask **Claude**
+  to fill it — you bring the information, it
+  writes the file.
+- **`prompts/site.md`** — your editorial rules in plain text: tone, do's and don'ts,
+  formatting specifics (step 5).
+- **`.claude/skills/<your-skill-name>/`** — your writing skill: how an article for
+  your country should be structured and written (step 6).
+
+The steps below walk you through each one in order.
 
 > Prerequisite: you've finished [01 — Set up your machine](01-setup-machine.md) and
 > `python3 content_writer.py --help` works.
@@ -45,65 +56,79 @@ This does three things:
 ## 3. Connect your WordPress login
 
 Your site now exists, so you can set up the WordPress credentials for your blog. They
-live in **two files you connect together** — this is the step people find fiddly, so
-follow the two parts in order.
+live in **two files you connect together** — this is the step people find fiddly.
 
-**a. Add the `wp_api_config` block to your site config.** Open
+**The easy way: ask Claude.** Open the Claude Code panel in VS Code and say:
+
+> Add the `wp_api_config` block to `sites/<site-slug>/config/site.json`, following
+> step 3 of `onboarding/02-onboard-my-site.md`.
+
+Claude derives every value from your site and writes the block for you. Then do
+**part b yourself** (it involves your password — see the 🔒 rule below).
+
+The rest of this step explains what Claude is doing, so you can check its work —
+read it once, you don't have to build the block by hand.
+
+**a. Add the `wp_api_config` block to your site config.** The block goes in
 `sites/<site-slug>/config/site.json` (in VS Code: `Cmd/Ctrl+P`, then type
-`site.json`). `site init` did **not** create this block — you add it now. Every value
-is derived from **your own** site, from the `gsc_property` already in the file. Build it
-with these three rules:
+`site.json`). `site init` did **not** create this block. Every value
+is derived from **your own** site, from the `gsc_property` already in the file, with
+these three rules:
 
 - **`api_base_url`** = your `gsc_property` + `wp-json/wp/v2`.
   If `gsc_property` is `https://www.superprof.it/blog/`, then
   `api_base_url` is `https://www.superprof.it/blog/wp-json/wp/v2`.
 - **`user_env_var`** / **`password_env_var`** = `WP_<SITE>_USER` /
-  `WP_<SITE>_APP_PASSWORD`, where `<SITE>` is your `site_slug` upper-cased with `-`
-  turned into `_`. For `it-it-blog` → `WP_IT_IT_BLOG_USER` /
-  `WP_IT_IT_BLOG_APP_PASSWORD`. (Pick any consistent name — it just has to match `.env`
-  in part b; the slug-based convention keeps it unambiguous.)
+  `WP_<SITE>_APP_PASSWORD`, where `<SITE>` is your `site_slug` upper-cased with `.`
+  and `-` turned into `_`. For `superprof.it` → `WP_SUPERPROF_IT_USER` /
+  `WP_SUPERPROF_IT_APP_PASSWORD`. (Pick any consistent name — it just has to match
+  `.env` in part b; the slug-based convention keeps it unambiguous.)
 
 So a `superprof.it` blog gets:
 
 ```jsonc
 "wp_api_config": {
   "api_base_url": "https://www.superprof.it/blog/wp-json/wp/v2",
-  "user_env_var": "WP_IT_IT_BLOG_USER",
-  "password_env_var": "WP_IT_IT_BLOG_APP_PASSWORD",
+  "user_env_var": "WP_SUPERPROF_IT_USER",
+  "password_env_var": "WP_SUPERPROF_IT_APP_PASSWORD",
   "timeout": 30
 }
 ```
 
-The two `*_env_var` values are just **names** — the real login/password go in `.env`
-(part b), never in this file. Copy the block from
-[`site-model/config/site.model.json`](site-model/config/site.model.json) and
-swap in your own URL and names.
+Careful: `user_env_var` and `password_env_var` do **not** contain your login and
+password. They only hold **labels** — like the name written on a mailbox. Your real
+login and password go into another file, `.env` (part b), under those exact labels.
+`site.json` writes the name on the mailbox; `.env` puts the contents inside. That's
+why this file is safe to commit while `.env` never is.
 
-**b. Put the real values in `.env`.** Generate an *Application Password* on your WP site
-(WP admin → *Users → Application Passwords*), then open the `.env` you created in
+**b. Put the real values in `.env`.** Ask the **tech team** for your blog's WordPress
+login and *Application Password*. Then open the `.env` you created in
 [01 — step 7](01-setup-machine.md) and add exactly the two names you wrote in part a, with
-your values (continuing the `superprof.it` example):
+the values they gave you (continuing the `superprof.it` example):
 
 ```bash
-WP_IT_IT_BLOG_USER=your-wp-login
-WP_IT_IT_BLOG_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
+WP_SUPERPROF_IT_USER=your-wp-login
+WP_SUPERPROF_IT_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
 ```
 
-The names in `.env` must match the `*_env_var` names in your `site.json`
-**character for character** — that string is the only link between the two files. Fill in
-**only** your blog's two lines.
+The two labels in `.env` must match the ones you wrote in `site.json`
+(`user_env_var` and `password_env_var`) **character for character** — that label is
+the only link between the two files. Fill in **only** your blog's two lines.
 
 > 🔒 Your Application Password goes **only** into `.env` — never pasted into the Claude
 > Code chat. You can ask Claude to write the line into `.env` for you; just don't show it
 > the value in the conversation. (Same golden rule as [01 — step 7](01-setup-machine.md).)
 
-> Not `superprof_sites_catalog.json` — that's the site *catalog*, unrelated to
-> credentials. The only files involved are your site's `site.json` (to read) and
-> `.env` (to write).
-
 ## 4. Complete the rest of your `site.json`
 
-Back in `sites/<site-slug>/config/site.json`, replace the remaining `_TODO` values:
+Back in `sites/<site-slug>/config/site.json`, the remaining `_TODO` values need your
+input. Same method as step 3: **tell Claude the information and let it write the
+JSON**. For example:
+
+> In my `site.json`, fill in `tone_profile` (friendly, informal "tu", for students),
+> `sheets` (my Google Sheet id is …), and set `generation_skill` to `<my-skill-name>`.
+
+What each field means:
 
 - `tone_profile` — voice and register for your site.
 - `seo_settings` — your SEO thresholds/targets.
@@ -111,9 +136,9 @@ Back in `sites/<site-slug>/config/site.json`, replace the remaining `_TODO` valu
 - `generation_skill` / `qc_skill` — the name of the writing/QC skills you'll create
   in step 6 (this is how the generator finds them; it is **not** hardcoded).
 
-Copy from **[`site-model/config/site.model.json`](site-model/config/site.model.json)**
-and fill every `<...>` / `_TODO`. See **[site-model/](site-model/README.md)** for the
-field-by-field guide.
+Want to see what a finished config looks like? Open
+**[`site-model/config/site.model.json`](site-model/config/site.model.json)**
+(explained field by field in **[site-model/](site-model/README.md)**).
 
 ## 5. Write your `site.md`
 
@@ -172,19 +197,19 @@ The `.github/` folder is locked to the maintainer, so you can't add yourself. As
 
 This makes you the required reviewer for your own site.
 
-## 8. Ship your site (pull request)
+## 8. Send your site for review
 
-Commit **only your site folder** and open a pull request:
+Your site folder only exists on your computer so far. This last step sends it to the
+shared repository, where the maintainer reviews and approves it. You don't need to
+know git — ask Claude:
 
-```bash
-git checkout -b onboard/<site-slug>
-git add sites/<site-slug>
-git commit -m "feat(site): onboard <site-slug>"
-git push -u origin onboard/<site-slug>
-```
+> Send my new site folder `sites/<site-slug>` for review, following step 8 of
+> `onboarding/02-onboard-my-site.md`: branch `onboard/<site-slug>`, commit only
+> `sites/<site-slug>`, commit message `feat(site): onboard <site-slug>`, then open
+> the pull request.
 
-Then open the PR on GitHub. Note: `_shared/config/sites.json` is git-ignored (it's your
-local runtime registry) — it is **not** part of your commit, and that's expected.
+Claude runs the git commands and gives you a link to the review page. Tell the
+maintainer it's ready — once they approve, your site is officially part of the repo.
 
 ## Done
 
