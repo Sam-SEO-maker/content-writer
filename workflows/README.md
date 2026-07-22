@@ -1,18 +1,14 @@
 # Workflows
 
-Scripts de workflow exécutables pour des tâches spécifiques.
+Executable workflow scripts for specific tasks.
 
 ## Scripts
 
-- **run_workflow_parcoursup.py** - Workflow Phase 4 automatisé (avec MCP DataforSEO)
-- **sitemap_discovery.py** - Découverte et analyse de sitemaps
+- **sitemap_discovery.py** - Sitemap discovery and analysis (finds new URLs published since the last crawl)
 
 ## Usage
 
 ```bash
-# Lancer le workflow Parcoursup
-python workflows/run_workflow_parcoursup.py
-
-# Découvrir un sitemap
-python workflows/sitemap_discovery.py --site enseigna.fr.fr
+# Discover a sitemap
+python workflows/sitemap_discovery.py --site enseigna.fr
 ```

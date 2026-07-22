@@ -1,21 +1,21 @@
 ---
-description: Perfs SEO d'une URL précise via le MCP GSC (requêtes, clics, impressions, position).
+description: SEO performance of a specific URL via the GSC MCP (queries, clicks, impressions, position).
 argument-hint: <url> [--days 28] [--dry-run]
 allowed-tools: Bash(python3 content_writer.py audit gsc-page:*), Read
 ---
 
-Récupère les performances GSC d'une **page précise** : les requêtes sur lesquelles
-elle se positionne, avec clics, impressions et position, sur la fenêtre donnée.
+Fetches the GSC performance of a **specific page**: the queries it ranks for,
+with clicks, impressions and position, over the given window.
 
 ```bash
 python3 content_writer.py audit gsc-page $ARGUMENTS
 ```
 
-Le site est déduit automatiquement de l'URL (aucun `--site` à passer).
-Routage : superprof.* → MCP gsc-remote (fallback service account) ; le MCP
-plafonne l'affichage à ~20 requêtes.
+The site is inferred automatically from the URL (no `--site` to pass).
+Routing: superprof.* → gsc-remote MCP (service account fallback); the MCP
+caps the display at ~20 queries.
 
-Options : `<url>` (requis), `--days` (défaut 28), `--dry-run` (pas de dump JSON).
+Options: `<url>` (required), `--days` (default 28), `--dry-run` (no JSON dump).
 
-Pour les perfs du **blog entier**, utiliser `/blog --site <site-slug>`.
-Lecture seule. Rapporter un résumé compact (trafic + principales requêtes).
+For the performance of the **whole blog**, use `/blog --site <site-slug>`.
+Read-only. Report a compact summary (traffic + main queries).

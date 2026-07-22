@@ -1,21 +1,21 @@
 ---
-description: Perfs SEO d'un blog/site via le MCP GSC (totaux de trafic + top keywords).
+description: SEO performance of a blog/site via the GSC MCP (traffic totals + top keywords).
 argument-hint: --site <site-slug> [--days 28] [--top-kw 20] [--dry-run]
 allowed-tools: Bash(python3 content_writer.py audit gsc-perf:*), Read
 ---
 
-Récupère les performances SEO d'un blog via le MCP GSC : totaux de trafic
-(clics, impressions, CTR, position moyenne) + top requêtes sur la fenêtre.
+Fetches a blog's SEO performance via the GSC MCP: traffic totals
+(clicks, impressions, CTR, average position) + top queries over the window.
 
 ```bash
 python3 content_writer.py audit gsc-perf $ARGUMENTS
 ```
 
-Options : `--site`/`--site` (requis, id du site), `--days` (défaut 28),
-`--top-kw` (défaut 20), `--dry-run` (pas de dump JSON local).
+Options: `--site`/`--site` (required, site id), `--days` (default 28),
+`--top-kw` (default 20), `--dry-run` (no local JSON dump).
 
-Routage automatique : superprof.* → MCP gsc-remote (fallback service account) ;
-enseigna et sites hors MCP → service account. La source utilisée est indiquée
-dans le résumé (`source: mcp` ou `service_account`).
+Automatic routing: superprof.* → gsc-remote MCP (service account fallback);
+enseigna and sites outside the MCP → service account. The source used is shown
+in the summary (`source: mcp` or `service_account`).
 
-Lecture seule. Rapporter un résumé compact (totaux + quelques top requêtes).
+Read-only. Report a compact summary (totals + a few top queries).

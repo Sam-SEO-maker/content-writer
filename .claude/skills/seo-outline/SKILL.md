@@ -1,115 +1,115 @@
 ---
 name: seo-outline
 description: >-
-  Comment construire un bon plan éditorial optimisé pour le SEO/GEO (tous
-  sites), AVANT de rédiger. Transforme les signaux data-driven (PAA, user
-  intent, top 10 SERP, mot-clé, brief de sources) en un outline H2/H3 traçable
-  (content_plan.md) : couverture des questions, placement des preuves, gap
-  concurrentiel, hiérarchie de titres saine (≥3 H2, pas d'orphelin, 2-4 H3 par
-  H2, `?` sur les questions). Invoquée à l'étape 2bis de /refresh, avant la
-  génération. Complète edito-refresh (fond) et format-wordpress (forme).
+  How to build a good SEO/GEO-optimised editorial outline (all sites), BEFORE
+  writing. Turns the data-driven signals (PAA, user intent, top 10 SERP,
+  keyword, sources brief) into a traceable H2/H3 outline (content_plan.md):
+  question coverage, proof placement, competitive gap, healthy heading
+  hierarchy (at least 3 H2s, no orphans, 2-4 H3s per H2, `?` on questions).
+  Invoked at step 2bis of /refresh, before generation. Complements
+  edito-refresh (substance) and format-wordpress (form).
 disable-model-invocation: false
 ---
 
-# Construire un bon plan pour le SEO (outline éditorial)
+# Building a good SEO plan (editorial outline)
 
-Skill de **méthode** : comment passer des signaux collectés (PAA, intent, SERP,
-mot-clé, sources) à un **outline traçable** — le `content_plan.md` de l'étape 2bis
-de `/refresh` — *avant* de brûler les tokens de rédaction.
+A **method** skill: how to go from the collected signals (PAA, intent, SERP,
+keyword, sources) to a **traceable outline**, the `content_plan.md` of step 2bis
+of `/refresh`, *before* burning writing tokens.
 
-Pourquoi un outline séparé de la rédaction :
+Why an outline separate from the writing:
 
-- **Vérifiable** : la couverture des questions, le placement des sources et la
-  structure des titres se contrôlent sur une page, pas sur 2000 mots.
-- **Correction bon marché** : si l'outline est mauvais, on corrige l'outline
-  (quelques lignes), pas l'article entier re-généré (boucle QC YTG A_CORRIGER
-  coûteuse).
+- **Verifiable**: question coverage, source placement and heading structure
+  can be checked on one page, not across 2000 words.
+- **Cheap to fix**: if the outline is bad, you fix the outline
+  (a few lines), not the whole re-generated article (costly YTG QC
+  NEEDS_FIX loop).
 
-> **Frontière avec les autres skills.** Le *fond* (réponse directe, densité,
-> sources, GEO) = `edito-refresh`. La *forme* (balises, HTML clean, liens
-> interdits dans les headings) = `format-wordpress`. La *structure d'ensemble*
-> (blocs, ordre, intro/FAQ) = la skill du site, qui **prime**. Cette skill-ci
-> ne redéfinit rien de tout ça : elle organise l'outline.
+> **Boundary with the other skills.** The *substance* (direct answer, density,
+> sources, GEO) = `edito-refresh`. The *form* (tags, clean HTML, no links
+> in headings) = `format-wordpress`. The *overall structure*
+> (blocks, order, intro/FAQ) = the site's skill, which **takes precedence**. This
+> skill redefines none of that: it organises the outline.
 
-## Où écrire — le squelette est posé par `plan init`
+## Where to write: the skeleton is laid down by `plan init`
 
-Ne pas deviner le chemin : lancer d'abord `python3 content_writer.py plan init <url>
---site <site-slug>`. Le CLI crée `content_plan.md` dans le bon `context_dir`, pré-rempli
-d'un template + des signaux (PAA, mot-clé, intent, assets) extraits de
-`audit_data.json` en commentaires. Cette skill **remplit** ce squelette ; le CLI ne
-rédige aucune phrase. Une fois rempli, `plan check` valide (verdict OK / A_CORRIGER).
+Do not guess the path: first run `python3 content_writer.py plan init <url>
+--site <site-slug>`. The CLI creates `content_plan.md` in the right `context_dir`,
+pre-filled with a template plus the signals (PAA, keyword, intent, assets) extracted
+from `audit_data.json` as comments. This skill **fills in** that skeleton; the CLI
+writes no prose. Once filled, `plan check` validates it (verdict OK / NEEDS_FIX).
 
-## Entrées
+## Inputs
 
-- Le **squelette `content_plan.md`** posé par `plan init` (chemin + signaux prêts).
-- `generation_prompt.txt` : PAA, user intent + format dominant, top 10 SERP,
-  mot-clé principal + secondaires (déjà collectés par `cw refresh`).
-- Le **brief de sources vérifiées** (`recherche-sources`) : source → claim → url → année.
-- `Assets avant` : counts images/tableaux/vidéos/liens à préserver (Règle d'Or).
+- The **`content_plan.md` skeleton** laid down by `plan init` (path + signals ready).
+- `generation_prompt.txt`: PAA, user intent + dominant format, top 10 SERP,
+  main + secondary keywords (already collected by `cw refresh`).
+- The **verified sources brief** (`source-research`): source → claim → url → year.
+- `Assets before`: counts of images/tables/videos/links to preserve (Golden Rule).
 
-## Sortie — `content_plan.md`
+## Output: `content_plan.md`
 
-Une section par bloc, chacune traçable à un signal :
+One section per block, each traceable to a signal:
 
-1. **Outline H2/H3** — une ligne par section, avec en regard :
-   - la/les **PAA couverte(s)** (chaque PAA doit apparaître au moins une fois),
-   - l'**intention** servie (informationnelle / comparative / transactionnelle),
-   - l'**angle** (ce que la section apporte).
-2. **Placement des preuves** — où vont les **≥ 3 sources institutionnelles** et les
-   **≥ 2 statistiques** du brief, rattachées à un H2 précis (jamais « quelque part »).
-3. **Gap concurrentiel** — angles présents dans le **top 10 SERP** mais absents de
-   l'article (à ajouter) ; angles différenciants propres à préserver.
-4. **Assets** — assets existants à **préserver** (Règle d'Or) + assets à **ajouter**,
-   par section.
+1. **H2/H3 outline**: one line per section, with alongside it:
+   - the **PAA(s) covered** (each PAA must appear at least once),
+   - the **intent** served (informational / comparative / transactional),
+   - the **angle** (what the section brings).
+2. **Proof placement**: where the **3 or more institutional sources** and the
+   **2 or more statistics** from the brief go, attached to a specific H2 (never "somewhere").
+3. **Competitive gap**: angles present in the **top 10 SERP** but missing from
+   the article (to add); own differentiating angles to preserve.
+4. **Assets**: existing assets to **preserve** (Golden Rule) + assets to **add**,
+   per section.
 
-## Méthode (ordre de construction)
+## Method (order of construction)
 
-1. **Ancrer l'intention** : le format dominant de la SERP dicte le squelette
-   (guide « comment », comparatif, définition…). Ne pas plaquer un plan générique.
-2. **Mapper les PAA sur des sections** : chaque question PAA → un H2 ou un H3 qui y
-   répond en tête (réponse directe, cf. `edito-refresh`). Regrouper les PAA proches
-   sous un même H2. Aucune PAA orpheline (non couverte).
-3. **Combler le gap** : comparer aux angles du top 10 ; ajouter les sections
-   manquantes qui expliquent leur ranking, sans copier — apporter l'angle en plus.
-4. **Distribuer les preuves** : répartir sources et stats sur plusieurs H2 (pas
-   toutes dans l'intro). Chaque affirmation forte adossée à une source du brief.
-5. **Assainir la hiérarchie** : appliquer les invariants ci-dessous.
-6. **Placer les assets** : rattacher chaque asset à préserver/ajouter à une section.
+1. **Anchor the intent**: the SERP's dominant format dictates the skeleton
+   ("how-to" guide, comparison, definition...). Do not slap on a generic plan.
+2. **Map the PAAs onto sections**: each PAA question → an H2 or H3 that answers
+   it up front (direct answer, see `edito-refresh`). Group related PAAs
+   under a single H2. No orphan (uncovered) PAA.
+3. **Fill the gap**: compare against the top 10's angles; add the missing
+   sections that explain their ranking, without copying: bring the extra angle.
+4. **Distribute the proofs**: spread sources and stats across several H2s (not
+   all in the intro). Every strong claim backed by a source from the brief.
+5. **Clean up the hierarchy**: apply the invariants below.
+6. **Place the assets**: attach each asset to preserve/add to a section.
 
-## Invariants de hiérarchie des titres (toujours vrais)
+## Heading hierarchy invariants (always true)
 
-La skill du site peut **resserrer** ces bornes, jamais les desserrer.
+The site's skill may **tighten** these bounds, never loosen them.
 
-- **≥ 3 H2** par article. En dessous, sujet sous-structuré pour l'extraction IA.
-- **Pas de H2 orphelin** : chaque H2 porte du contenu (jamais deux H2 collés, ni un
-  H2 vide servant de simple transition).
-- **Pas de H3 orphelin** : sous un H2, soit **0 H3**, soit **≥ 2 H3**. Un unique H3
-  se fusionne dans le corps du H2.
-- **Seuil de subdivision** : si le contenu prévu d'un H2 dépasse **150 mots** de
-  paragraphes, le découper en **2 à 4 H3**. En dessous de 150 mots, pas de H3.
-- **Plafond** : **max 4 H3 par H2** ; au-delà, scinder le H2 en deux H2 distincts
-  (chacun respectant à son tour la règle des 2-4 H3).
-- **Titre interrogatif → `?`** : tout H2/H3 formulé comme une question se termine
-  par un point d'interrogation (« Comment réviser le bac ? ») ; un titre déclaratif
-  n'en prend pas.
-- **Syntaxe ATX correcte, jamais de heading vide** : un H2 s'écrit `## Titre` — le
-  `#` en tête de ligne suivi d'un **espace** puis du texte. `##Titre` collé (sans
-  espace) n'est PAS un titre pour markdown : il ressortirait en texte brut dans
-  WordPress. Et un `## ` sans texte produit un `<h2></h2>` vide qui casse l'éditeur
-  Gutenberg : chaque `##`/`###` porte un titre réel, aucun placeholder laissé nu.
-- Rappel `format-wordpress` : **pas de lien** dans les H2/H3.
+- **At least 3 H2s** per article. Below that, the topic is under-structured for AI extraction.
+- **No orphan H2**: every H2 carries content (never two H2s back to back, nor an
+  empty H2 serving as a mere transition).
+- **No orphan H3**: under an H2, either **0 H3s** or **2 or more H3s**. A single H3
+  gets merged into the body of the H2.
+- **Subdivision threshold**: if an H2's planned content exceeds **150 words** of
+  paragraphs, split it into **2 to 4 H3s**. Below 150 words, no H3.
+- **Ceiling**: **max 4 H3s per H2**; beyond that, split the H2 into two separate H2s
+  (each in turn respecting the 2-4 H3 rule).
+- **Interrogative heading → `?`**: any H2/H3 phrased as a question ends with a
+  question mark (French example: « Comment réviser le bac ? »); a declarative
+  heading takes none.
+- **Correct ATX syntax, never an empty heading**: an H2 is written `## Title`, the
+  leading `#` followed by a **space** then the text. `##Title` with no
+  space is NOT a heading for markdown: it would come out as plain text in
+  WordPress. And a `## ` with no text produces an empty `<h2></h2>` that breaks the
+  Gutenberg editor: every `##`/`###` carries a real title, no placeholder left bare.
+- `format-wordpress` reminder: **no links** in H2/H3 headings.
 
-> Cas particuliers de subdivision (H2 à la limite des 150 mots, PAA multiples sous
-> un même H2, arbitrage 3 vs 4 H3) : `references/outline-heuristics.md`.
+> Edge cases of subdivision (H2 at the 150-word limit, multiple PAAs under
+> one H2, choosing 3 vs 4 H3s): `references/outline-heuristics.md`.
 
-## Checklist avant de passer à la génération
+## Checklist before moving on to generation
 
-- [ ] ≥ 3 H2, aucun H2 ni H3 orphelin, ≤ 4 H3 par H2.
-- [ ] Chaque PAA collectée est couverte par au moins une section.
-- [ ] ≥ 3 sources institutionnelles et ≥ 2 stats placées sur des H2 précis.
-- [ ] Gap top 10 comblé (sections manquantes ajoutées).
-- [ ] Tous les assets à préserver rattachés à une section (Règle d'Or).
-- [ ] Titres interrogatifs ponctués `?`.
+- [ ] At least 3 H2s, no orphan H2 or H3, at most 4 H3s per H2.
+- [ ] Every collected PAA is covered by at least one section.
+- [ ] 3 or more institutional sources and 2 or more stats placed on specific H2s.
+- [ ] Top 10 gap filled (missing sections added).
+- [ ] All assets to preserve attached to a section (Golden Rule).
+- [ ] Interrogative headings punctuated with `?`.
 
-L'outline validé est transmis au subagent `content-generator`, qui rédige **section
-par section à partir de lui** sans réorganiser la structure.
+The validated outline is handed to the `content-generator` subagent, which writes
+**section by section from it** without reorganising the structure.

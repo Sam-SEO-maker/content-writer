@@ -1,7 +1,7 @@
 """
 Boucle de correction sémantique automatique YTG.
 
-Enchaîne, pour un article dont le QC a rendu le verdict A_CORRIGER :
+Enchaîne, pour un article dont le QC a rendu le verdict NEEDS_FIX :
     1. analyse par terme (couleurs YTG) → prompt de correction ciblée,
     2. réécriture du HTML par un SUB-AGENT Claude Code (plan Max),
     3. re-validation (assets préservés + SOSEO/DSEO re-mesurés),
@@ -117,7 +117,7 @@ class YTGAutoCorrector:
         current_scores: Optional[dict] = None,
     ) -> Optional[CorrectionTask]:
         """
-        Analyse un article A_CORRIGER et écrit son prompt de correction ciblée.
+        Analyse un article NEEDS_FIX et écrit son prompt de correction ciblée.
 
         Retourne un CorrectionTask (à confier à un sub-agent), ou None si l'analyse
         par terme échoue.

@@ -41,7 +41,7 @@ Objectif = vert franc **sans masquer de vraie régression**.
 - `test_editorial_auditor` (2) + `test_parent_h2_whitelist` (1) : supprimés — les
   features EditorialAuditor/FactChecker (quality gate bloquant) et le maillage en
   silo (parent-H2 whitelist, cocons) ont été retirées du repo (véracité déléguée à
-  `recherche-sources` ; décision de refresh data-driven).
+  `source-research` ; décision de refresh data-driven).
 
 ## Garde-fous (VRAIS problèmes — ne PAS green-washer)
 

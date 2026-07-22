@@ -1,36 +1,36 @@
 ---
-description: Valide la qualité SEO d'un content_plan.md (hiérarchie titres, couverture PAA, preuves) — déterministe, sans génération.
+description: Validates the SEO quality of a content_plan.md (heading hierarchy, PAA coverage, proofs) - deterministic, no generation.
 argument-hint: <url> --site <site-slug> [--plan-file path] [--json]
 allowed-tools: Bash(python3 content_writer.py plan check:*), Bash(python3 content_writer.py plan init:*), Read
 ---
 
-> Cycle du plan : `plan init` (scaffold + signaux injectés) → l'agent remplit
-> l'outline via la skill `seo-outline` → **`plan check`** (cette commande) valide.
-> `plan init` pose le fichier au bon chemin ; le CLI ne rédige jamais le contenu.
+> Plan lifecycle: `plan init` (scaffold + injected signals) → the agent fills in
+> the outline via the `seo-outline` skill → **`plan check`** (this command) validates.
+> `plan init` lays the file at the right path; the CLI never writes the content.
 
-Note la qualité SEO du plan éditorial (`content_plan.md`) produit à l'étape 2bis
-de `/refresh` (skill `seo-outline`). **100% déterministe** : aucune génération,
-aucun appel API — la commande ne fait que *vérifier*, jamais rédiger.
+Grades the SEO quality of the editorial outline (`content_plan.md`) produced at
+step 2bis of `/refresh` (`seo-outline` skill). **100% deterministic**: no
+generation, no API call - the command only *checks*, never writes.
 
-Exécute :
+Runs:
 
 ```bash
 python3 content_writer.py plan check $ARGUMENTS
 ```
 
-Contrôles mécaniques appliqués (invariants de la skill `seo-outline`) :
+Mechanical checks applied (invariants of the `seo-outline` skill):
 
-- **Hiérarchie des titres** : ≥ 3 H2, pas de H2 ni H3 orphelin, 2-4 H3 par H2,
-  subdivision requise au-delà de 150 mots, `?` sur les titres interrogatifs ;
-- **Couverture PAA** : chaque question PAA de l'`audit_data.json` apparaît dans le
-  plan (résolue automatiquement depuis le context_dir de l'URL) ;
-- **Preuves** : ≥ 3 liens sources et ≥ 2 statistiques chiffrées placées.
+- **Heading hierarchy**: ≥ 3 H2s, no orphan H2 or H3, 2-4 H3s per H2,
+  subdivision required beyond 150 words, `?` on interrogative headings;
+- **PAA coverage**: every PAA question from `audit_data.json` appears in the
+  plan (resolved automatically from the URL's context_dir);
+- **Proofs**: ≥ 3 source links and ≥ 2 numbered statistics placed.
 
-Verdict :
+Verdict:
 
-- **OK** (exit 0) → le plan est sain, passer à la génération (étape 3 de `/refresh`) ;
-- **A_CORRIGER** (exit 1) → liste des manquements ; corriger le plan (bon marché)
-  **avant** de rédiger l'article, pas après.
+- **OK** (exit 0) → the plan is sound, move on to generation (step 3 of `/refresh`);
+- **NEEDS_FIX** (exit 1) → list of shortcomings; fix the plan (cheap)
+  **before** writing the article, not after.
 
-Le plan est résolu depuis l'URL (`_shared/context/<slug>/content_plan.md`) ; passer
-`--plan-file` pour pointer un fichier explicite, `--json` pour une sortie scriptable.
+The plan is resolved from the URL (`_shared/context/<slug>/content_plan.md`); pass
+`--plan-file` to point to an explicit file, `--json` for scriptable output.

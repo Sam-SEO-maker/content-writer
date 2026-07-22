@@ -59,32 +59,32 @@ def plan():
 
 
 _PLAN_TEMPLATE = """\
-<!-- PLAN ÉDITORIAL — page : {url}
+<!-- EDITORIAL PLAN, page: {url}
 
-     Outline rédigé par l'agent via la skill `seo-outline`, puis validé par
-     `cw plan check`. Le CLI a posé la structure + injecté les signaux ci-dessous ;
-     il ne rédige AUCUNE phrase. Remplis les H2/H3, place les PAA et les preuves,
-     supprime les commentaires au fur et à mesure.
+     Outline written by the agent via the `seo-outline` skill, then validated by
+     `cw plan check`. The CLI laid out the structure and injected the signals below;
+     it writes NO prose. Fill in the H2/H3, place the PAA and the proofs,
+     delete the comments as you go.
 
-     SIGNAUX (extraits de audit_data.json — à couvrir, pas à recopier tels quels) :
-       Mot-clé principal : {main_keyword}
-       Intention / action : {action}
-       PAA à couvrir ({paa_count}) :
+     SIGNALS (extracted from audit_data.json; to cover, not to copy verbatim):
+       Main keyword: {main_keyword}
+       Intent / action: {action}
+       PAA to cover ({paa_count}):
 {paa_block}
-       Secondary keywords : {secondary}
-       Assets à préserver (Règle d'Or) : {assets}
+       Secondary keywords: {secondary}
+       Assets to preserve (Golden Rule): {assets}
 
-     INVARIANTS (vérifiés par `cw plan check`) :
-       - >= 3 H2, aucun H2 ni H3 orphelin
-       - sous un H2 : 0 H3, ou >= 2 H3 (jamais un seul)
-       - subdiviser en 2-4 H3 dès que le H2 dépasse ~150 mots ; max 4 H3/H2
-       - `?` sur tout titre interrogatif
-       - >= 3 liens sources institutionnels + >= 2 statistiques chiffrées, par H2
-       - chaque PAA ci-dessus couverte par au moins une section
+     INVARIANTS (checked by `cw plan check`):
+       - >= 3 H2, no orphan H2 or H3
+       - under an H2: 0 H3, or >= 2 H3 (never a single one)
+       - split into 2-4 H3 as soon as the H2 exceeds ~150 words; max 4 H3/H2
+       - `?` on every interrogative heading
+       - >= 3 institutional source links + >= 2 numbered statistics, per H2
+       - every PAA above covered by at least one section
 
-     STRUCTURE À RÉDIGER (≥ 3 H2). Écris chaque titre sur une ligne `## Titre`,
-     puis son contenu dessous ; ajoute des `### Sous-titre` si le H2 dépasse
-     ~150 mots. N'émets JAMAIS de `##` sans texte (heading vide = invalide). -->
+     STRUCTURE TO WRITE (>= 3 H2). Put each heading on its own `## Title` line,
+     then its content below; add `### Subheading` lines if the H2 exceeds
+     ~150 words. NEVER emit a `##` without text (empty heading = invalid). -->
 """
 
 
@@ -92,7 +92,7 @@ def _format_paa_block(paa_raw: str) -> tuple[str, int]:
     from scripts.audit.plan_validator import _split_terms
     terms = _split_terms(paa_raw)
     if not terms:
-        return "    (aucune PAA collectée)", 0
+        return "    (no PAA collected)", 0
     return "\n".join(f"    - {t}" for t in terms), len(terms)
 
 
@@ -133,11 +133,11 @@ def init(url: str, blog: str, force: bool):
     paa_block, paa_count = _format_paa_block(audit.get("people_also_ask", "") or "")
     content = _PLAN_TEMPLATE.format(
         url=url,
-        main_keyword=audit.get("main_keyword", "(inconnu)") or "(inconnu)",
-        action=audit.get("action", "(inconnue)") or "(inconnue)",
+        main_keyword=audit.get("main_keyword", "(unknown)") or "(unknown)",
+        action=audit.get("action", "(unknown)") or "(unknown)",
         paa_count=paa_count,
         paa_block=paa_block,
-        secondary=audit.get("secondary_keywords", "") or "(aucun)",
+        secondary=audit.get("secondary_keywords", "") or "(none)",
         assets=json.dumps(audit.get("assets_counts", {}), ensure_ascii=False),
     )
     plan_file.write_text(content, encoding="utf-8")
@@ -162,8 +162,8 @@ def check(url: str, blog: str, plan_file: Optional[Path], as_json: bool):
     """
     Valide un content_plan.md contre les invariants SEO (seo-outline).
 
-    Verdict OK → passer à la génération. A_CORRIGER → corriger le plan (bon
-    marché) avant de rédiger l'article. Code de sortie 1 si A_CORRIGER.
+    Verdict OK → passer à la génération. NEEDS_FIX → corriger le plan (bon
+    marché) avant de rédiger l'article. Code de sortie 1 si NEEDS_FIX.
     """
     context_dir = _find_context_dir(url)
     paa_raw = ""

@@ -1,7 +1,7 @@
 """
 Blacklist de domaines — chargée depuis le markdown canonique.
 
-Source de vérité : `.claude/skills/recherche-sources/references/blacklisted-domains.md`
+Source de vérité : `.claude/skills/source-research/references/blacklisted-domains.md`
 (~750 domaines : concurrents, agrégateurs, toutes les éditions Wikipédia). Le fichier
 est livré dans tous les clones (`.claude` figure dans onboarding/engine-sparse-paths.txt).
 
@@ -27,7 +27,7 @@ from .constants import BLACKLIST_DOMAINS as LEGACY_BLACKLIST_DOMAINS
 
 logger = logging.getLogger(__name__)
 
-BLACKLIST_MD_RELPATH = Path(".claude/skills/recherche-sources/references/blacklisted-domains.md")
+BLACKLIST_MD_RELPATH = Path(".claude/skills/source-research/references/blacklisted-domains.md")
 
 # Famille Wikipédia (toutes langues via suffix match) + projets sœurs — toujours
 # blacklistée, même si le markdown évolue.

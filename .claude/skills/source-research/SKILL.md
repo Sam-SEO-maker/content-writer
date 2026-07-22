@@ -1,148 +1,148 @@
 ---
-name: recherche-sources
+name: source-research
 description: >-
-  Documente un sujet ou une URL avec des sources vérifiées pour nourrir le brief
-  E-E-A-T avant génération. Recherche en cascade : bibliothèque curée par matière
-  d'abord, puis complément web (deep-research / WebSearch / WebFetch) qui enrichit
-  la bibliothèque. Sources réelles et vérifiées, jamais inventées. Invocable seule
-  ou appelée par l'orchestrateur refresh. Lecture + écriture biblio.
+  Documents a topic or a URL with verified sources to feed the E-E-A-T brief
+  before generation. Cascading research: curated per-subject library first, then
+  web complement (deep-research / WebSearch / WebFetch) that enriches the
+  library. Real, verified sources, never invented. Invocable on its own or
+  called by the refresh orchestrator. Library read + write.
 disable-model-invocation: false
 ---
 
-# Recherche de sources — brief E-E-A-T
+# Source research: the E-E-A-T brief
 
-Constitue un socle de **sources vérifiées** pour un sujet/URL, en amont de la
-génération. Objectif : nourrir le E-E-A-T avec des références réelles (académiques,
-institutionnelles, données chiffrées récentes), **jamais fabriquées**. Ce fichier
-porte la **méthode** (transverse, tous sites) ; le détail vit dans `references/`
-(à lire au besoin) :
+Builds a foundation of **verified sources** for a topic/URL, upstream of
+generation. Goal: feed E-E-A-T with real references (academic, institutional,
+recent figures), **never fabricated**. This file carries the **method**
+(cross-cutting, all sites); the details live in `references/` (read as needed):
 
-- `references/source-quality.md`, grille de qualité par type de source + exemples ✅/❌.
-- `references/brief-schema.md`, schéma JSON complet du brief + exemple + flux d'injection.
-- `references/blacklisted-domains.md`, liste canonique des ~750 domaines interdits
-  (concurrents, agrégateurs, tous les Wikipédia) + règle des sous-domaines,
-  exceptions (Règle d'Or, article avis dont le sujet EST la plateforme) et substituts.
+- `references/source-quality.md`, quality grid per source type + ✅/❌ examples.
+- `references/brief-schema.md`, full JSON schema of the brief + example + injection flow.
+- `references/blacklisted-domains.md`, canonical list of the ~750 forbidden domains
+  (competitors, aggregators, all Wikipedia editions) + subdomain rule,
+  exceptions (Golden Rule, review article whose subject IS the platform) and substitutes.
 
-L'**annuaire** des domaines d'autorité (donnée, par site) vit côté site, ex.
-`sites/superprof.fr-ressources/sources/authority-map.md` : la skill le consomme au
-tier 1, elle ne le remplace pas.
+The **directory** of authority domains (data, per site) lives on the site side, e.g.
+`sites/superprof.fr-ressources/sources/authority-map.md`: the skill consumes it at
+tier 1, it does not replace it.
 
-> **Statut : chantier en cours.** Le socle se construit « par le haut » (un annuaire
-> matière → autorités par site, cf. tier 1) puis s'enrichit article par article
-> (tier 3, l'agent propose → l'humain valide). Sans annuaire pour un site donné, la
-> skill opère en mode « web seul » (tier 2-3) et amorce l'annuaire au passage.
+> **Status: work in progress.** The foundation is built "top-down" (a subject
+> directory → authorities per site, see tier 1) then enriched article by article
+> (tier 3, the agent proposes → a human validates). Without a directory for a given
+> site, the skill operates in "web only" mode (tiers 2-3) and bootstraps the
+> directory along the way.
 
-## Étape 0 — Charger la blacklist (obligatoire, AVANT toute recherche)
+## Step 0: load the blacklist (mandatory, BEFORE any research)
 
-**Lire `references/blacklisted-domains.md` en entier avant le moindre WebSearch,
-WebFetch ou appel deep-research.** Garder la liste en mémoire de travail pour toute
-la session et l'appliquer **a priori** :
+**Read `references/blacklisted-domains.md` in full before any WebSearch,
+WebFetch or deep-research call.** Keep the list in working memory for the whole
+session and apply it **a priori**:
 
-- Un domaine blacklisté n'est **jamais fetché** ni retenu comme candidat — il est
-  écarté dès la lecture de la SERP ou des résultats de recherche, pas après coup.
-- Ne jamais empaqueter un « top N » de résultats sans l'avoir d'abord passé au
-  crible de la blacklist : le tri se fait **avant** la curation, pas après.
-- En **batch / multi-articles** : re-vérifier la blacklist au début de **chaque
-  article** (relire le fichier ou re-résumer ses catégories) — la contrainte ne
-  doit jamais sortir de la mémoire de travail entre deux itérations.
+- A blacklisted domain is **never fetched** nor kept as a candidate; it is
+  discarded as soon as the SERP or search results are read, not after the fact.
+- Never package a "top N" of results without first sifting it against the
+  blacklist: the filtering happens **before** curation, not after.
+- In **batch / multi-article** mode: re-check the blacklist at the start of **each
+  article** (re-read the file or re-summarise its categories); the constraint must
+  never drop out of working memory between two iterations.
 
-Les deux exceptions (Règle d'Or sur l'existant, article avis dont le sujet EST la
-plateforme) sont définies dans `references/blacklisted-domains.md` et prévalent.
+The two exceptions (Golden Rule on existing content, review article whose subject IS
+the platform) are defined in `references/blacklisted-domains.md` and prevail.
 
-## Recherche en cascade (3 tiers)
+## Cascading research (3 tiers)
 
-### Tier 1 — Annuaire des domaines d'autorité (prioritaire)
-Piocher d'abord dans `sites/<site-slug>/sources/` : l'**annuaire** validé par un
-humain, réutilisable d'un article à l'autre. Pour `superprof.fr-ressources`,
-`authority-map.md` donne les domaines d'autorité **par matière**. Démarche :
+### Tier 1: directory of authority domains (priority)
+Draw first from `sites/<site-slug>/sources/`: the **directory** validated by a
+human, reusable from one article to the next. For `superprof.fr-ressources`,
+`authority-map.md` gives the authority domains **per subject**. Approach:
 
-1. Identifier la **matière** de l'article (histoire, maths, SES…).
-2. Lire la ligne correspondante de l'annuaire → domaines d'autorité prioritaires,
-   types de sources à viser, pièges à éviter.
-3. Cibler ces domaines au tier 2.
+1. Identify the article's **subject** (history, maths, social sciences…).
+2. Read the corresponding line of the directory → priority authority domains,
+   source types to target, pitfalls to avoid.
+3. Target these domains at tier 2.
 
-> ⚠️ L'annuaire dit **où** chercher (domaines), jamais **quelle page exacte** : ne
-> pas inventer d'URL de page. Si le site n'a pas encore de dossier `sources/`,
-> passer directement au tier 2 sans inventer de chemin ni de contenu.
+> ⚠️ The directory says **where** to look (domains), never **which exact page**: do
+> not invent a page URL. If the site does not yet have a `sources/` folder,
+> go straight to tier 2 without inventing a path or content.
 
-### Tier 2 — Recherche web ciblée (résolution effective)
-Interroger les domaines retenus au tier 1 (ou, à défaut d'annuaire, les sources
-primaires du champ). Choisir l'outil selon le besoin :
-- **`deep-research`** (skill) pour un sujet large nécessitant vérification
-  multi-source et rapport cité.
-- **`WebSearch` / `WebFetch`** pour des vérifications ponctuelles (une stat, une
-  date, une source primaire précise).
+### Tier 2: targeted web research (effective resolution)
+Query the domains selected at tier 1 (or, absent a directory, the field's primary
+sources). Choose the tool based on the need:
+- **`deep-research`** (skill) for a broad topic requiring multi-source
+  verification and a cited report.
+- **`WebSearch` / `WebFetch`** for spot checks (a stat, a date, a specific
+  primary source).
 
-Bonnes pratiques de requête :
-- **Blacklist d'abord** (étape 0 déjà faite) : un résultat SERP/WebSearch appartenant
-  à un domaine blacklisté est **ignoré sans être fetché** ; chercher immédiatement
-  une alternative non blacklistée.
-- **Restreindre au domaine d'autorité** de l'annuaire (`site:insee.fr`,
-  `site:hal.science`) plutôt qu'une recherche ouverte.
-- **Cibler la page précise** (deep-link) qui porte l'information, jamais la homepage.
-- **Remonter d'un agrégateur à la source primaire** : d'un article de presse ou de
-  Wikipédia, aller à l'étude / au texte officiel cité, et retenir **celui-ci**.
-- **Écarter d'emblée** une source non résolue ou non datée : elle ne va pas au brief.
-  Critères détaillés : `references/source-quality.md`.
+Query best practices:
+- **Blacklist first** (step 0 already done): a SERP/WebSearch result belonging
+  to a blacklisted domain is **ignored without being fetched**; immediately look
+  for a non-blacklisted alternative.
+- **Restrict to the directory's authority domain** (`site:insee.fr`,
+  `site:hal.science`) rather than an open search.
+- **Target the precise page** (deep-link) that carries the information, never the homepage.
+- **Trace back from an aggregator to the primary source**: from a press article or
+  Wikipedia, go to the cited study / official text, and keep **that one**.
+- **Discard upfront** any unresolved or undated source: it does not go into the brief.
+  Detailed criteria: `references/source-quality.md`.
 
-### Tier 3 — Enrichissement de l'annuaire
-Un **domaine d'autorité** nouvellement confirmé au tier 2 est **proposé** pour ajout à
-l'annuaire du site (`sites/<site-slug>/sources/authority-map.md`), validation humaine
-avant intégration. C'est ce qui fait grossir le tier 1 au fil des articles. Ajouter un
-domaine (où chercher), pas une URL de page (qui reste propre à un article).
+### Tier 3: directory enrichment
+An **authority domain** newly confirmed at tier 2 is **proposed** for addition to
+the site's directory (`sites/<site-slug>/sources/authority-map.md`), human validation
+before integration. This is what grows tier 1 across articles. Add a
+domain (where to look), not a page URL (which stays specific to one article).
 
-## Critères de qualité d'une source
+## Source quality criteria
 
-- **Primaire de préférence** : INSERM, INSEE, ministères, revues à comité de
-  lecture, organismes officiels, plutôt que blogs/agrégateurs.
-- **Jamais Wikipédia** : c'est un agrégateur, pas une source. Remonter à la source
-  primaire qu'il cite et retenir celle-ci dans le brief.
-- **Récente** quand la donnée est datée (stats, réglementations).
-- **Vérifiable** : URL résolvable, auteur/organisme identifiable.
-- **Pertinente** au niveau E-E-A-T du blog (voir la skill du site).
+- **Primary preferred**: INSERM, INSEE, ministries, peer-reviewed
+  journals, official bodies, rather than blogs/aggregators.
+- **Never Wikipedia**: it is an aggregator, not a source. Trace back to the primary
+  source it cites and keep that one in the brief.
+- **Recent** when the data is dated (stats, regulations).
+- **Verifiable**: resolvable URL, identifiable author/organisation.
+- **Relevant** to the blog's E-E-A-T level (see the site's skill).
 
-Grille détaillée par type de source (académique, institutionnel, presse, données
-chiffrées) + exemples ✅/❌ : `references/source-quality.md`.
+Detailed grid per source type (academic, institutional, press, figures)
++ ✅/❌ examples: `references/source-quality.md`.
 
-## Sortie : brief de sources
+## Output: the source brief
 
-Restituer une liste structurée `sujet` / `sources[]` (`source`, `url`, `year`,
-`claim`) / `lacunes[]`, chaque source reliée à la **claim** qu'elle appuie (pour que
-la génération ne cite pas une source hors de son propos). **Schéma complet, exemple
-rempli et flux d'injection** : `references/brief-schema.md`.
+Return a structured list `sujet` / `sources[]` (`source`, `url`, `year`,
+`claim`) / `lacunes[]`, each source tied to the **claim** it supports (so that
+generation does not cite a source out of its scope). **Full schema, filled
+example and injection flow**: `references/brief-schema.md`.
 
-> Le brief circule **en argument** au subagent de génération (`content-generator`),
-> il alimente le contenu et le champ `eeat_sources` ; il ne transite pas par
-> `generation_prompt.txt`. Détail dans `references/brief-schema.md`.
+> The brief travels **as an argument** to the generation subagent (`content-generator`),
+> it feeds the content and the `eeat_sources` field; it does not go through
+> `generation_prompt.txt`. Details in `references/brief-schema.md`.
 
-## Interdits
+## Forbidden
 
-- ❌ **Inventer une source ou un chiffre.** Une anecdote/statistique sans source
-  vérifiable ne s'écrit pas (cf. Preuves d'Expérience E-E-A-T : ne pas fabriquer
-  d'anecdotes chiffrées).
-- ❌ **Retenir Wikipédia comme source** dans le brief — [[feedback-no-wikipedia-links]].
-- ❌ **Citer/lier un domaine blacklisté** (concurrents, agrégateurs) : l'exclusion se
-  joue **a priori** (étape 0 : blacklist chargée avant toute recherche, candidats
-  écartés avant fetch). Le filtrage du brief final contre
-  `references/blacklisted-domains.md` reste un **filet de sécurité**, pas le
-  mécanisme principal ; sans alternative, abandonner la claim (→ `lacunes[]`)
-  plutôt que citer un domaine interdit.
-- ❌ « Consulté le [date] » dans les références restituées — [[feedback-no-consulte-le]].
-- ❌ Tiret cadratin `—` — [[feedback-no-em-dash]].
+- ❌ **Inventing a source or a figure.** An anecdote/statistic without a verifiable
+  source is not written (cf. E-E-A-T Experience Proofs: do not fabricate
+  numbered anecdotes).
+- ❌ **Keeping Wikipedia as a source** in the brief: [[feedback-no-wikipedia-links]].
+- ❌ **Citing/linking a blacklisted domain** (competitors, aggregators): the exclusion
+  happens **a priori** (step 0: blacklist loaded before any research, candidates
+  discarded before fetch). Filtering the final brief against
+  `references/blacklisted-domains.md` remains a **safety net**, not the
+  main mechanism; without an alternative, drop the claim (→ `lacunes[]`)
+  rather than cite a forbidden domain.
+- ❌ "Consulté le [date]" ("Accessed on [date]") in the returned references: [[feedback-no-consulte-le]].
+- ❌ Em dash `—`: [[feedback-no-em-dash]].
 
-## Articulation
+## How it fits together
 
-- **Invocable seule** : « documente-moi ce sujet » → renvoie le brief de sources.
-- **Appelée par l'orchestrateur** `refresh` **avant** la génération (étape
-  « Recherche sources » du workflow), en amont des skills de rédaction
-  ([[generate-enseigna-avis]], [[sp-ressources-gutenberg]]) qui consomment le brief.
+- **Invocable on its own**: "document this topic for me" → returns the source brief.
+- **Called by the** `refresh` **orchestrator before** generation (the
+  "Source research" step of the workflow), upstream of the writing skills
+  ([[generate-enseigna-avis]], [[sp-ressources-gutenberg]]) that consume the brief.
 
-## Dépendances à construire (backlog, ne pas bloquer dessus)
+## Dependencies to build (backlog, do not block on this)
 
-1. Étendre l'annuaire `sites/<site-slug>/sources/authority-map.md` aux autres sites
-   (existe pour `superprof.fr-ressources`).
-2. Script de constitution semi-auto (agent propose → humain valide).
-3. Câblage déterministe du brief vers le générateur : aujourd'hui il circule en
-   argument au subagent (voir `references/brief-schema.md`) ; un câblage à la PAA
-   (`MinimalRow` → `audit_data` → section dédiée de `generation_prompt.txt`) reste à
-   faire si l'on veut le rendre reproductible sans intervention.
+1. Extend the `sites/<site-slug>/sources/authority-map.md` directory to the other
+   sites (exists for `superprof.fr-ressources`).
+2. Semi-automatic build script (agent proposes → human validates).
+3. Deterministic wiring of the brief to the generator: today it travels as an
+   argument to the subagent (see `references/brief-schema.md`); wiring like the PAA's
+   (`MinimalRow` → `audit_data` → dedicated section of `generation_prompt.txt`) is still
+   to be done to make it reproducible without intervention.

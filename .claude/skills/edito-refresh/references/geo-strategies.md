@@ -1,99 +1,101 @@
-# GEO 2026 : les 9 stratégies détaillées
+# GEO 2026: the 9 strategies in detail
 
-Référence chargée à la demande depuis la skill `edito-refresh`. Détail des
-stratégies GEO (Generative Engine Optimization) pour être **cité** par les
-moteurs génératifs, pas seulement bien classé en SERP.
+Reference loaded on demand from the `edito-refresh` skill. Details of the
+GEO (Generative Engine Optimization) strategies for getting **cited** by
+generative engines, not just ranking well in the SERP.
 
-> GEO vs SEO : le SEO vous fait trouver ; le GEO vous rend assez fiable pour être
-> **LA réponse** citée. Métrique : citations/mentions, pas seulement rankings.
+> GEO vs SEO: SEO gets you found; GEO makes you trustworthy enough to be
+> **THE answer** that gets cited. Metric: citations/mentions, not just rankings.
 
-## Les 9 stratégies
+## The 9 strategies
 
-**1. Ajout de statistiques** (+41% visibilité)
-Données chiffrées récentes (2025-2026), source précise, format `[chiffre] + [source] + [date]`.
+**1. Adding statistics** (+41% visibility)
+Recent numeric data (2025-2026), precise source, format `[figure] + [source] + [date]`.
+French content examples:
 - ❌ « De nombreux élèves prennent des cours particuliers. »
 - ✅ « Selon l'Éducation Nationale (2026), 18% des élèves français suivent un soutien scolaire régulier. »
 
-**2. Citations d'experts** (+28% impression)
-Experts reconnus, credentials inclus, guillemets pour les citations directes.
+**2. Expert quotes** (+28% impressions)
+Recognised experts, credentials included, quotation marks for direct quotes.
+French content example:
 - ✅ « Les cours particuliers permettent une différenciation pédagogique impossible en classe », explique Dr. Marie Dupont, chercheuse en sciences de l'éducation à l'ENS Lyon.
 
-**3. Optimisation de la fluidité**
-Phrases courtes (15-20 mots max), structure sujet-verbe-complément, transitions logiques, jargon défini.
+**3. Fluency optimisation**
+Short sentences (15-20 words max), subject-verb-object structure, logical transitions, jargon defined.
 
-**4. Structure de réponse directe**
-L'IA extrait les premières phrases de chaque section. Pattern : `## [Question H2]` → réponse directe 1-2 phrases (l'IA extrait ceci) → développement.
+**4. Direct-answer structure**
+The AI extracts the first sentences of each section. Pattern: `## [H2 question]` → direct answer in 1-2 sentences (the AI extracts this) → elaboration.
 
-**5. Listes et tableaux de synthèse**
-Formats structurés surreprésentés dans les réponses IA : puces pour énumérations, tableaux comparatifs, étapes numérotées.
+**5. Lists and summary tables**
+Structured formats are over-represented in AI answers: bullets for enumerations, comparison tables, numbered steps.
 
-**6. Format Q&A explicite**
-Les FAQ sont directement extractibles. Structure : `### Question exacte du PAA?` → réponse concise 50-100 mots + source.
+**6. Explicit Q&A format**
+FAQs are directly extractable. Structure: `### Exact PAA question?` → concise 50-100 word answer + source.
 
-**7. Preuve d'expertise (E-E-A-T)**
-Auteur identifié, section « Notre expérience »/« Ce que nous avons testé », cas concrets, sources institutionnelles. Détail : `eeat-framework.md`.
+**7. Proof of expertise (E-E-A-T)**
+Identified author, an "Our experience" / "What we tested" section, concrete cases, institutional sources. Details: `eeat-framework.md`.
 
-**8. Apparition dans les listes de classement**
-Les LLMs citent verbatim les comparatifs existants : apparaître dans des comparatifs tiers, guides de référence, mentions de marque non-liées.
+**8. Appearing in ranking lists**
+LLMs cite existing comparisons verbatim: appear in third-party comparisons, reference guides, unlinked brand mentions.
 
-**9. Stratégie multi-plateforme**
-Les LLMs agrègent des signaux multiples : réseaux sociaux cohérents, mentions presse, avis vérifiables, backlinks .edu/.gov.
+**9. Multi-platform strategy**
+LLMs aggregate multiple signals: consistent social media, press mentions, verifiable reviews, .edu/.gov backlinks.
 
-## Combinaisons optimales
+## Optimal combinations
 
-La meilleure combinaison (+5.5% vs stratégie unique) : **Fluency Optimization + Statistics Addition**.
+The best combination (+5.5% vs a single strategy): **Fluency Optimization + Statistics Addition**.
 
-Template de paragraphe GEO-optimisé :
+GEO-optimised paragraph template:
 ```
-[Affirmation claire avec statistique sourcée (2026)].
-[Citation d'expert avec credentials].
-[Liste de points clés] :
+[Clear claim with a sourced statistic (2026)].
+[Expert quote with credentials].
+[List of key points]:
 - Point 1
 - Point 2
-[Transition vers section suivante].
+[Transition to the next section].
 ```
 
-## À ne pas faire
+## What not to do
 
-| Pratique | Risque |
+| Practice | Risk |
 |----------|--------|
-| Keyword stuffing | Moins efficace en GEO qu'en SEO |
-| Contenu générique sans sources | Non cité par les LLMs |
-| Statistiques sans dates | Considéré obsolète |
-| Absence d'auteur identifié | Score E-E-A-T faible |
-| Mise à jour artificielle de dates | Pénalisé par Google |
+| Keyword stuffing | Less effective in GEO than in SEO |
+| Generic content without sources | Not cited by LLMs |
+| Statistics without dates | Treated as outdated |
+| No identified author | Weak E-E-A-T score |
+| Artificial date updates | Penalised by Google |
 
-## Structure d'article GEO-optimisé (canevas)
+## GEO-optimised article structure (canvas)
 
 ```markdown
-# H1: [Mot-clé principal] - Guide Complet [Année]
+# H1: [Main keyword] - Complete Guide [Year]
 
-[Réponse directe en 2-3 phrases - extractible par IA]
+[Direct answer in 2-3 sentences - AI-extractable]
 
-| Point Clé | Détail |
+| Key Point | Detail |
 |-----------|--------|
 
-## H2: [Question/Sous-thème]
-[Réponse directe immédiate]
-[Développement avec statistiques (Source, 2026)]
-> "Citation d'expert" - [Nom], [Titre/Organisation]
+## H2: [Question/Sub-topic]
+[Immediate direct answer]
+[Elaboration with statistics (Source, 2026)]
+> "Expert quote" - [Name], [Title/Organisation]
 - Point 1
 - Point 2
 
 ## FAQ
-### [Question PAA exacte]?
-[Réponse 50-100 mots avec source]
+### [Exact PAA question]?
+[50-100 word answer with source]
 
 ## Conclusion
-[Synthèse + appel à l'action]
+[Summary + call to action]
 ```
 
-## Signaux de fraîcheur pour l'IA
+## Freshness signals for the AI
 
-ChatGPT montre une préférence de récence : 76,4% des pages les plus citées ont
-été mises à jour dans les 30 derniers jours.
+ChatGPT shows a recency preference: 76.4% of the most-cited pages were
+updated within the last 30 days.
 
-- **Valide** : actualiser statistiques (sources 2026), ajouter des sections pertinentes, actualiser les liens externes, réviser l'obsolète.
-- **Pénalisé** : changer uniquement la date, modifier des mots mineurs, republier sans changement substantiel.
+- **Valid**: refresh statistics (2026 sources), add relevant sections, refresh external links, revise outdated content.
+- **Penalised**: changing only the date, tweaking minor words, republishing without a substantial change.
 
-*Source : fusion de l'ancien GEO_2026_GUIDELINES.md (savoir migré en references).*
+*Source: merger of the former GEO_2026_GUIDELINES.md (knowledge migrated into references).*

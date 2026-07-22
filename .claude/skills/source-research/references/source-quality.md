@@ -1,72 +1,72 @@
-# Qualité d'une source — grille par type
+# Source quality: grid by type
 
-Référence chargée à la demande depuis `recherche-sources`. Comment juger qu'une source
-mérite d'entrer au brief E-E-A-T. **Principe clé** : préférer toujours la source
-**primaire** (celle qui produit l'information) à un agrégateur qui la relaie.
+Reference loaded on demand from `source-research`. How to judge whether a source
+deserves to enter the E-E-A-T brief. **Key principle**: always prefer the
+**primary** source (the one that produces the information) over an aggregator that relays it.
 
-## 1. Académique (revues, thèses, laboratoires)
+## 1. Academic (journals, theses, laboratories)
 
-Le plus haut niveau de confiance quand la source est correctement identifiée.
+The highest level of trust when the source is properly identified.
 
-- ✅ Article de revue à comité de lecture, DOI résolvable, auteurs + institution
-  (ex. sur hal.science, cairn.info, une revue universitaire).
-- ✅ Thèse ou rapport de laboratoire signé (CNRS, INSERM, INRIA), daté.
-- ❌ « Une étude a montré que… » sans nom de revue, sans auteur, sans année.
-- ❌ Article prédateur / revue non indexée présentée comme « scientifique ».
+- ✅ Peer-reviewed journal article, resolvable DOI, authors + institution
+  (e.g. on hal.science, cairn.info, a university journal).
+- ✅ Thesis or signed laboratory report (CNRS, INSERM, INRIA), dated.
+- ❌ "A study showed that…" with no journal name, no author, no year.
+- ❌ Predatory article / non-indexed journal presented as "scientific".
 
-Signaux de fiabilité : comité de lecture, DOI, affiliation, bibliographie vérifiable.
+Reliability signals: peer review, DOI, affiliation, verifiable bibliography.
 
-## 2. Institutionnel (organismes officiels, ministères)
+## 2. Institutional (official bodies, ministries)
 
-L'ossature du E-E-A-T pour les sujets éducatifs et YMYL.
+The backbone of E-E-A-T for educational and YMYL topics.
 
-- ✅ Page d'un organisme de la whitelist (`education.gouv.fr`, `insee.fr`,
-  `legifrance.gouv.fr`, `unesco.org`…) portant l'information précise.
-- ✅ Rapport officiel PDF avec organisme émetteur et date en couverture.
-- ❌ Reprise commerciale d'un chiffre officiel (site marchand) au lieu de l'organisme.
-- ❌ Page d'accueil ou de catégorie de l'organisme, sans la donnée précise.
+- ✅ Page from a whitelisted organisation (`education.gouv.fr`, `insee.fr`,
+  `legifrance.gouv.fr`, `unesco.org`…) carrying the precise information.
+- ✅ Official PDF report with issuing organisation and date on the cover.
+- ❌ Commercial reuse of an official figure (merchant site) instead of the organisation.
+- ❌ Homepage or category page of the organisation, without the precise data point.
 
-Whitelist de référence : `edito-refresh/references/eeat-framework.md`. Annuaire par
-matière (site Ressources FR) : `sites/superprof.fr-ressources/sources/authority-map.md`.
+Reference whitelist: `edito-refresh/references/eeat-framework.md`. Per-subject
+directory (FR Ressources site): `sites/superprof.fr-ressources/sources/authority-map.md`.
 
-## 3. Presse de référence
+## 3. Reference press
 
-Utile pour l'actualité, le contexte, la citation d'expert. À traiter comme relais, pas
-comme source primaire d'un chiffre.
+Useful for news, context, expert quotes. Treat it as a relay, not
+as the primary source of a figure.
 
-- ✅ Article daté et signé d'un titre reconnu (Le Monde, Libération, Le Figaro, BBC…),
-  utilisé pour un fait ou une citation attribuée.
-- ✅ Servir de tremplin : remonter à l'étude/au rapport cité dans l'article et lier
-  **celui-ci** pour la donnée chiffrée.
-- ❌ Tribune d'opinion présentée comme un fait établi.
-- ❌ Reprise de dépêche sans source primaire quand un chiffre est en jeu.
+- ✅ Dated, bylined article from a recognised outlet (Le Monde, Libération, Le Figaro, BBC…),
+  used for a fact or an attributed quote.
+- ✅ Use it as a springboard: trace back to the study/report cited in the article and link
+  **that one** for the figure.
+- ❌ Opinion piece presented as established fact.
+- ❌ Wire-copy rehash with no primary source when a figure is at stake.
 
-## 4. Données chiffrées (statistiques, rapports)
+## 4. Figures (statistics, reports)
 
-Une statistique n'entre au brief qu'avec **source + année**, sinon elle est réputée
-obsolète par les moteurs.
+A statistic only enters the brief with **source + year**, otherwise search engines
+treat it as stale.
 
-- ✅ `[chiffre] + [organisme] + [année]` (ex. « Selon l'INSEE (2025), … »).
-- ✅ Page de résultats/tableau de l'organisme, année de la donnée explicite.
-- ❌ Chiffre sans année, ou année de publication de la page confondue avec l'année de
-  la donnée.
-- ❌ Chiffre « qui circule » sans producteur identifiable.
+- ✅ `[figure] + [organisation] + [year]` (e.g. "Selon l'INSEE (2025), …").
+- ✅ Results/table page from the organisation, year of the data explicit.
+- ❌ Figure without a year, or the page's publication year confused with the year of
+  the data.
+- ❌ Figure "in circulation" with no identifiable producer.
 
-## Pièges (rejet immédiat)
+## Traps (immediate rejection)
 
-- ❌ **Wikipédia comme source** : agrégateur, jamais une autorité E-E-A-T. Remonter à
-  la source primaire qu'il cite et retenir celle-ci — [[feedback-no-wikipedia-links]].
-- ❌ **Source non datée** quand la donnée est datable (stat, réglementation, actualité).
-- ❌ **PDF/page sans auteur ni organisme** identifiable.
-- ❌ **Contenu marketing déguisé** : page produit, blog d'agence, comparateur
-  commercial présentés comme neutres.
-- ❌ **Forums, réseaux sociaux, blogs perso non crédités** (sauf compte officiel d'une
-  institution, utilisé comme tel).
-- ❌ **Homepage / page de catégorie** au lieu de la page précise portant l'information
-  (cf. deep-link obligatoire, `sites/superprof.fr-ressources/prompts/site.md`).
+- ❌ **Wikipedia as a source**: an aggregator, never an E-E-A-T authority. Trace back to
+  the primary source it cites and keep that one: [[feedback-no-wikipedia-links]].
+- ❌ **Undated source** when the data is datable (stat, regulation, news).
+- ❌ **PDF/page with no identifiable author or organisation**.
+- ❌ **Disguised marketing content**: product page, agency blog, commercial
+  comparison site presented as neutral.
+- ❌ **Forums, social networks, uncredited personal blogs** (except the official account
+  of an institution, used as such).
+- ❌ **Homepage / category page** instead of the precise page carrying the information
+  (cf. mandatory deep-link, `sites/superprof.fr-ressources/prompts/site.md`).
 
-## Restitution
+## Output
 
-Ne jamais écrire « Consulté le [date] » dans les références restituées —
-[[feedback-no-consulte-le]]. Chaque source retenue est reliée à la **claim** qu'elle
-appuie (schéma : `brief-schema.md`).
+Never write "Consulté le [date]" ("Accessed on [date]") in the returned references:
+[[feedback-no-consulte-le]]. Each retained source is tied to the **claim** it
+supports (schema: `brief-schema.md`).

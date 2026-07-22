@@ -1,40 +1,40 @@
-# Brief de sources — schéma et flux
+# Source brief: schema and flow
 
-Référence chargée à la demande depuis `recherche-sources`. Format de sortie de la skill
-et façon dont il alimente la génération.
+Reference loaded on demand from `source-research`. The skill's output format
+and how it feeds generation.
 
-## Schéma
+## Schema
 
 ```json
 {
   "sujet": "…",
   "sources": [
     {
-      "source": "Nom de l'organisme/auteur (ex. INSEE)",
-      "url": "https://… (deep-link vers la page précise)",
+      "source": "Name of the organisation/author (e.g. INSEE)",
+      "url": "https://… (deep-link to the precise page)",
       "year": 2025,
-      "claim": "La donnée/affirmation exacte que cette source appuie"
+      "claim": "The exact data point/statement this source supports"
     }
   ],
-  "lacunes": ["Points non couverts, à traiter avec prudence ou sans chiffre"]
+  "lacunes": ["Points not covered, to handle with caution or without figures"]
 }
 ```
 
-Champ par champ :
+Field by field:
 
-- **`sujet`** — le sujet/URL documenté, tel que reçu.
-- **`sources[]`** — sources vérifiées, une entrée par (source × claim). Une même source
-  peut apparaître deux fois si elle appuie deux claims distinctes.
-  - `source` — organisme ou auteur identifiable (pas « une étude »).
-  - `url` — page précise portant l'information (deep-link), jamais une homepage.
-  - `year` — année **de la donnée** (pas de la consultation), entier. Obligatoire pour
-    toute statistique ; sinon la source est écartée (voir `source-quality.md`).
-  - `claim` — l'affirmation exacte appuyée, pour que la génération ne cite pas la source
-    hors de son propos.
-- **`lacunes[]`** — ce qui n'a pas pu être sourcé : la génération traite ces points sans
-  chiffre inventé, ou les évite.
+- **`sujet`**: the topic/URL being documented, as received.
+- **`sources[]`**: verified sources, one entry per (source × claim). The same source
+  can appear twice if it supports two distinct claims.
+  - `source`: identifiable organisation or author (not "a study").
+  - `url`: precise page carrying the information (deep-link), never a homepage.
+  - `year`: year **of the data** (not of consultation), integer. Mandatory for
+    any statistic; otherwise the source is discarded (see `source-quality.md`).
+  - `claim`: the exact statement supported, so that generation does not cite the
+    source out of its scope.
+- **`lacunes[]`**: what could not be sourced: generation handles these points without
+  invented figures, or avoids them.
 
-## Exemple rempli
+## Filled example
 
 ```json
 {
@@ -57,26 +57,26 @@ Champ par champ :
 }
 ```
 
-## Flux d'injection (état actuel)
+## Injection flow (current state)
 
-Le brief circule **en argument** (conversationnel), pas via un fichier :
+The brief travels **as an argument** (conversational), not via a file:
 
-1. La skill (invoquée seule ou par l'orchestrateur `refresh`, étape « Recherche
-   sources ») produit ce JSON.
-2. `refresh` le passe **en argument** au subagent `content-generator`, **à côté** du
-   chemin `generation_prompt.txt` (voir `.claude/commands/refresh.md`, étapes 2-3).
-3. Le subagent s'en sert pour **le contenu** (citations sourcées, statistiques datées)
-   et pour renseigner le champ **`eeat_sources`** de la métadonnée
-   (`source`/`url`/`year` — le `claim` n'y va pas, il ne sert qu'au placement in-texte ;
-   voir `format-wordpress/SKILL.md`).
+1. The skill (invoked on its own or by the `refresh` orchestrator, "Source
+   research" step) produces this JSON.
+2. `refresh` passes it **as an argument** to the `content-generator` subagent, **alongside**
+   the `generation_prompt.txt` path (see `.claude/commands/refresh.md`, steps 2-3).
+3. The subagent uses it for **the content** (sourced quotes, dated statistics)
+   and to fill in the **`eeat_sources`** field of the metadata
+   (`source`/`url`/`year`; the `claim` does not go there, it only serves in-text placement;
+   see `format-wordpress/SKILL.md`).
 
-> Le brief **ne transite pas** par `generation_prompt.txt` : ce fichier ne contient que
-> les données produites par `cw refresh` (GSC/SERP/PAA/intent/assets). Ne pas y chercher
-> de slot « sources ».
+> The brief **does not go through** `generation_prompt.txt`: that file only contains
+> the data produced by `cw refresh` (GSC/SERP/PAA/intent/assets). Do not look for a
+> "sources" slot in it.
 
-## Backlog — rendre le flux déterministe
+## Backlog: making the flow deterministic
 
-Pour reproduire le brief sans intervention, mirror du précédent PAA : ajouter le champ
-au `MinimalRow` (`cli/commands/refresh.py`), le propager dans `audit_data`, puis rendre
-une section `### Sources vérifiées` dans `ghostwriter._build_generation_prompt`
-(`scripts/ghostwriter/ghostwriter.py`, à côté de la section PAA). Non fait à ce jour.
+To reproduce the brief without intervention, mirror the earlier PAA fix: add the field
+to `MinimalRow` (`cli/commands/refresh.py`), propagate it into `audit_data`, then render
+a `### Sources vérifiées` section in `ghostwriter._build_generation_prompt`
+(`scripts/ghostwriter/ghostwriter.py`, next to the PAA section). Not done to date.

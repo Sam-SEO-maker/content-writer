@@ -83,11 +83,11 @@ class SitePaths:
         """`sites/{id}/linking_maps/` — cartes de maillage du site."""
         return self.site_dir(site_slug) / "linking_maps"
 
-    # --- Sources (annuaire d'autorité, tier 1 de recherche-sources) ----------
+    # --- Sources (annuaire d'autorité, tier 1 de source-research) ----------
     def sources_dir(self, site_slug: str) -> Path:
         """`sites/{id}/sources/` — annuaire des domaines d'autorité du site.
 
-        Alimente le tier 1 de la skill `recherche-sources` (ex. `authority-map.md`,
+        Alimente le tier 1 de la skill `source-research` (ex. `authority-map.md`,
         mapping matière → domaines d'autorité). Absent chez les sites sans annuaire.
         """
         return self.site_dir(site_slug) / "sources"

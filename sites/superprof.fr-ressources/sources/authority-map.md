@@ -1,6 +1,6 @@
 # Sources d'autorité par matière — Superprof Ressources FR
 
-Référence chargée à la demande depuis `recherche-sources` (site `superprof.fr-ressources`).
+Référence chargée à la demande depuis `source-research` (site `superprof.fr-ressources`).
 Tier 1 de la recherche en cascade : identifier la **matière** de l'article, puis viser en
 priorité ces domaines d'autorité au tier 2 (web), au lieu de chercher à l'aveugle.
 
@@ -77,5 +77,5 @@ d'`eeat-framework.md`, désormais consolidée ici) :
 > Liste ouverte : ajouter une matière ou un domaine validé au fil des articles (tier 3 de
 > la cascade). Un domaine cité ici doit respecter les types d'autorité transverses
 > (`edito-refresh/references/eeat-framework.md`) et ne jamais figurer dans la blacklist
-> (`recherche-sources/references/blacklisted-domains.md`) — pas de forum, pas de réseau
+> (`source-research/references/blacklisted-domains.md`) — pas de forum, pas de réseau
 > social, pas de Wikipédia.

@@ -67,7 +67,7 @@ sites/<site-slug>/
   (`canonical_site_slug`, `_shared/core/constants.py`).
 - **Per-site skills**: a site's own writing skills live under
   `sites/<site-slug>/.claude/skills/` (native scoped discovery, **already in place**);
-  `edito-refresh`, `format-wordpress`, `recherche-sources` are cross-cutting at the root.
+  `edito-refresh`, `format-wordpress`, `source-research` are cross-cutting at the root.
   The site→skill mapping is **not hardcoded**: the subagent reads `generation_skill` /
   `qc_skill` from `site.json`.
 
@@ -90,7 +90,7 @@ Internal linking → Sync.
 | `/refresh <url> --site <site-slug> --main-keyword ""` | Full refresh: audit → decision → source research → generation → `cw finalize` |
 | `/batch --action X --site <site-slug>` | Batch refresh from Google Sheets |
 | `/audit serp <url> --main-keyword ""` | Targeted SERP audit (PAA, SERP features, top 10). Always pass `--main-keyword`: without it the keyword is derived from the URL slug, so any typo or shorthand in the slug is queried verbatim and the SERP answers a keyword nobody searches |
-| `/plan-check <url> --site <site-slug>` | Validate the editorial outline (`content_plan.md`) against the SEO invariants — heading hierarchy, PAA coverage, proof placement. Deterministic (no generation). Verdict OK / A_CORRIGER before writing. Scaffold it first with `plan init` (CLI lays the file + injects signals; the agent fills the outline via the `seo-outline` skill) |
+| `/plan-check <url> --site <site-slug>` | Validate the editorial outline (`content_plan.md`) against the SEO invariants — heading hierarchy, PAA coverage, proof placement. Deterministic (no generation). Verdict OK / NEEDS_FIX before writing. Scaffold it first with `plan init` (CLI lays the file + injects signals; the agent fills the outline via the `seo-outline` skill) |
 | `/decide --site <site-slug>` | Data-driven decision engine (Sheet) |
 | `/site-status --site <site-slug>` | GSC SEO status of a site (→ Sheet) |
 | `/blog --site <site-slug>` | SEO performance of a blog via GSC MCP: totals + top KW (chat summary) |
@@ -110,14 +110,14 @@ Up-to-date list of groups/commands: `python3 content_writer.py --help` (and
 | `edito-refresh` | root (cross-cutting) | SEO/GEO/E-E-A-T ranking rules, applied to every article |
 | `seo-outline` | root (cross-cutting) | build the SEO/GEO editorial outline (content_plan.md) before writing — /refresh step 2bis |
 | `format-wordpress` | root (cross-cutting) | cross-cutting HTML/WP rules (accents, dash, anchors, lists) |
-| `recherche-sources <topic\|url>` | root (cross-cutting) | document a topic with verified sources (E-E-A-T brief) |
+| `source-research <topic\|url>` | root (cross-cutting) | document a topic with verified sources (E-E-A-T brief) |
 | `generate-enseigna-avis` | `sites/enseigna.fr/` | write an Enseigna review article (ACF JSON, verdict at the end) |
 | `sp-ressources-gutenberg` | `sites/superprof.fr-ressources/` | write a Superprof Ressources article (in-house Gutenberg, 5 blocks) |
 | `qc-sp-ressources` | `sites/superprof.fr-ressources/` | post-generation QC checklist for Superprof Ressources |
 
 > The business skills are **scoped per site** (`sites/<site-slug>/.claude/skills/`) and
 > resolved via `generation_skill`/`qc_skill` from the config. Cross-cutting at the root:
-> `edito-refresh`, `format-wordpress`, `recherche-sources`. The `refresh` orchestrator is a
+> `edito-refresh`, `format-wordpress`, `source-research`. The `refresh` orchestrator is a
 > **slash command** (`.claude/commands/refresh.md`), not a skill — see the table above.
 
 **Subagent**: `content-generator` (`.claude/agents/`) runs generation under the Max subscription,

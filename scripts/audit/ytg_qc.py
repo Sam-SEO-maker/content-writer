@@ -12,8 +12,8 @@ Il est appelé par trois call-sites :
 
 Verdicts :
     OPTIMAL     — SOSEO ≥ cible TOP3 ET DSEO ≤ cible TOP3.
-    A_CORRIGER  — SOSEO ou DSEO hors cible (contenu publiable mais sous-optimisé).
-    BLOQUE      — impossible d'analyser (guide introuvable, API KO) OU asset check KO.
+    NEEDS_FIX  — SOSEO ou DSEO hors cible (contenu publiable mais sous-optimisé).
+    BLOCKED      — impossible d'analyser (guide introuvable, API KO) OU asset check KO.
     SKIP        — YTG désactivé/non configuré pour ce blog (non-bloquant).
 
 Persistance : le résultat est écrit dans `_shared/context/{url_slug}/audit_data.json`
@@ -35,8 +35,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Verdicts (constantes exportées)
 VERDICT_OPTIMAL = "OPTIMAL"
-VERDICT_A_CORRIGER = "A_CORRIGER"
-VERDICT_BLOQUE = "BLOQUE"
+VERDICT_NEEDS_FIX = "NEEDS_FIX"
+VERDICT_BLOCKED = "BLOCKED"
 VERDICT_SKIP = "SKIP"
 
 
@@ -194,8 +194,8 @@ class YTGQualityCheck:
         result.main_keyword = main_keyword
         result.keyword_source = keyword_source
         if not main_keyword:
-            result.verdict = VERDICT_BLOQUE
-            result.message = "Mot-clé principal introuvable (aucune source)"
+            result.verdict = VERDICT_BLOCKED
+            result.message = "Main keyword not found (no source)"
             return result
 
         # 3. Guide YTG
@@ -203,7 +203,7 @@ class YTGQualityCheck:
             guide_id = self._resolve_guide_id(main_keyword, group_id=group_id, lang=lang)
         result.guide_id = guide_id
         if not guide_id:
-            result.verdict = VERDICT_BLOQUE
+            result.verdict = VERDICT_BLOCKED
             result.message = f"Guide YTG introuvable/non créé pour '{main_keyword}'"
             return result
 
@@ -218,7 +218,7 @@ class YTGQualityCheck:
         self._rate_wait()
         analysis = analyzer.analyze_content(guide_id, text)
         if not analysis:
-            result.verdict = VERDICT_BLOQUE
+            result.verdict = VERDICT_BLOCKED
             result.message = "Analyse YTG échouée (API)"
             return result
 
@@ -250,7 +250,7 @@ class YTGQualityCheck:
                 warnings.append(f"SOSEO {result.our_soseo:.0f}% < cible {target_s:.0f}%")
             if not result.dseo_ok:
                 warnings.append(f"DSEO {result.our_dseo:.0f}% > cible {target_d:.0f}%")
-            result.verdict = VERDICT_A_CORRIGER
+            result.verdict = VERDICT_NEEDS_FIX
             result.message = " | ".join(warnings)
 
         return result

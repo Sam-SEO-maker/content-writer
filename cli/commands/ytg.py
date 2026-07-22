@@ -27,7 +27,7 @@ def ytg():
 
 @ytg.command(name='create-guide')
 @click.option('--main-keyword', '--keyword', 'keyword', required=True,
-              help='Mot-clé principal pour le guide. --keyword = alias legacy.')
+              help='Main keyword for the guide. --keyword = legacy alias.')
 @click.option('--lang', default='fr', show_default=True, help='Langue (fr, en, ...)')
 @click.option('--country', default='fr', show_default=True, help='Pays (fr, us, ...)')
 def create_guide(keyword, lang, country):
@@ -519,11 +519,11 @@ def _infer_url_from_html_path(site_slug: str, path) -> str:
 @blog_option(required=True, dest='site_slug')
 @click.option('--slug', default='', help='Filtrer sur un slug d\'article précis')
 @click.option('--main-keyword', '--keyword', 'keyword', default='',
-              help='Mot-clé principal forcé (override le résolveur). Nécessite --slug '
-                   '(un seul article) : le guide YTG est créé/résolu sur ce mot-clé. '
+              help='Forced main keyword (overrides the resolver). Requires --slug '
+                   '(a single article): the YTG guide is created/resolved on this keyword. '
                    '--keyword = alias legacy.')
 @click.option('--fix', is_flag=True, default=False,
-              help='Signaler les articles A_CORRIGER pour correction ciblée (corrector)')
+              help='Signaler les articles NEEDS_FIX pour correction ciblée (corrector)')
 @click.option('--json-out', 'json_out', is_flag=True, default=False,
               help='Écrire le rapport récap dans _shared/outputs/{blog}/ytg_qc_report.json')
 def qc(site_slug, slug, keyword, fix, json_out):
@@ -534,14 +534,14 @@ def qc(site_slug, slug, keyword, fix, json_out):
       1. Résout le mot-clé principal (Notion / Sheet / GSC / slug).
       2. Résout ou crée le guide YTG.
       3. Analyse le HTML → SOSEO/DSEO vs cibles TOP3.
-      4. Rend un verdict : OPTIMAL / A_CORRIGER / BLOQUE / SKIP.
+      4. Rend un verdict : OPTIMAL / NEEDS_FIX / BLOCKED / SKIP.
     """
     from scripts.audit.ytg_qc import (
         YTGQualityCheck,
         discover_generated_html,
         VERDICT_OPTIMAL,
-        VERDICT_A_CORRIGER,
-        VERDICT_BLOQUE,
+        VERDICT_NEEDS_FIX,
+        VERDICT_BLOCKED,
         VERDICT_SKIP,
     )
     from scripts.audit.ytg_corrector import RateLimiter
@@ -576,7 +576,7 @@ def qc(site_slug, slug, keyword, fix, json_out):
     click.echo(f"\n[YTG QC] {site_slug} — {len(files)} article(s) à analyser\n")
 
     qc_engine = YTGQualityCheck(analyzer=analyzer, rate_limiter=RateLimiter())
-    counts = {VERDICT_OPTIMAL: 0, VERDICT_A_CORRIGER: 0, VERDICT_BLOQUE: 0, VERDICT_SKIP: 0}
+    counts = {VERDICT_OPTIMAL: 0, VERDICT_NEEDS_FIX: 0, VERDICT_BLOCKED: 0, VERDICT_SKIP: 0}
     report = []
     to_fix = []
 
@@ -595,26 +595,26 @@ def qc(site_slug, slug, keyword, fix, json_out):
 
         icon = {
             VERDICT_OPTIMAL: "[OK]   ",
-            VERDICT_A_CORRIGER: "[FIX]  ",
-            VERDICT_BLOQUE: "[BLOCK]",
+            VERDICT_NEEDS_FIX: "[FIX]  ",
+            VERDICT_BLOCKED: "[BLOCK]",
             VERDICT_SKIP: "[SKIP] ",
         }.get(res.verdict, "[?]    ")
         click.echo(f"{icon} {path.stem[:50]:<50} {res.verdict}  {res.message}")
-        if res.verdict == VERDICT_A_CORRIGER and res.under_optimized_terms:
+        if res.verdict == VERDICT_NEEDS_FIX and res.under_optimized_terms:
             click.echo(f"         à enrichir: {', '.join(res.under_optimized_terms[:8])}")
-        if res.verdict == VERDICT_A_CORRIGER and res.over_optimized_terms:
+        if res.verdict == VERDICT_NEEDS_FIX and res.over_optimized_terms:
             click.echo(f"         à réduire : {', '.join(res.over_optimized_terms[:8])}")
-        if res.verdict == VERDICT_A_CORRIGER:
+        if res.verdict == VERDICT_NEEDS_FIX:
             to_fix.append(res)
 
     click.echo()
     click.echo("[YTG QC] Résumé :")
     click.echo(f"  OPTIMAL    : {counts[VERDICT_OPTIMAL]}")
-    click.echo(f"  A_CORRIGER : {counts[VERDICT_A_CORRIGER]}")
-    click.echo(f"  BLOQUE     : {counts[VERDICT_BLOQUE]}")
+    click.echo(f"  NEEDS_FIX : {counts[VERDICT_NEEDS_FIX]}")
+    click.echo(f"  BLOCKED     : {counts[VERDICT_BLOCKED]}")
     click.echo(f"  SKIP       : {counts[VERDICT_SKIP]}")
     if ytg_cfg.get("gate"):
-        click.echo(f"  [GATE actif] {counts[VERDICT_A_CORRIGER] + counts[VERDICT_BLOQUE]} article(s) "
+        click.echo(f"  [GATE actif] {counts[VERDICT_NEEDS_FIX] + counts[VERDICT_BLOCKED]} article(s) "
                    "à revoir avant push WP.")
 
     if json_out:

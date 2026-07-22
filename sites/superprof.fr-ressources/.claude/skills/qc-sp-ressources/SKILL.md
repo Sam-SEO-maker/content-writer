@@ -19,7 +19,7 @@ applicable sur le fichier `{slug}_refreshed.gutenberg.html`.
 
 > **Périmètre.** Ceci est le QC **éditorial / format**. Il ne remplace PAS le QC
 > **sémantique** `cw ytg qc` (SOSEO/DSEO vs guide YTG, verdicts
-> OPTIMAL/A_CORRIGER/BLOQUE). Les deux sont complémentaires : lancer le QC
+> OPTIMAL/NEEDS_FIX/BLOCKED). Les deux sont complémentaires : lancer le QC
 > sémantique pour la couverture de mots-clés, cette checklist pour la conformité
 > de forme.
 

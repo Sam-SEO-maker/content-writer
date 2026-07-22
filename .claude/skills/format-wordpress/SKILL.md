@@ -1,87 +1,87 @@
 ---
 name: format-wordpress
 description: >-
-  Règles transverses de formatage HTML/WordPress pour tous les blogs : balises
-  autorisées, HTML clean sans wrappers WP, double output Gutenberg, accents
-  français obligatoires, interdiction du tiret cadratin, ancres sans <strong>,
-  pas de lien dans les H2/H3, ponctuation des listes. Référencée par les autres
-  skills de rédaction. Lecture seule (guide de formatage).
+  Cross-cutting HTML/WordPress formatting rules for all blogs: allowed tags,
+  clean HTML without WP wrappers, dual Gutenberg output, mandatory French
+  accents, em dash forbidden, anchors without <strong>, no links inside H2/H3,
+  bullet-list punctuation. Referenced by the other writing skills. Read-only
+  (formatting guide).
 disable-model-invocation: false
 ---
 
-# Format WordPress — règles de sortie transverses
+# WordPress format: cross-cutting output rules
 
-Règles de **forme** communes à toutes les skills de rédaction
-(`generate-enseigna-avis`, `sp-ressources-gutenberg`). Les skills spécifiques
-site ajoutent leurs blocs/tons ; ce guide fixe les invariants HTML/WP.
+**Form** rules shared by every writing skill
+(`generate-enseigna-avis`, `sp-ressources-gutenberg`). The site-specific skills
+add their own blocks/tone; this guide sets the HTML/WP invariants.
 
-## Balises autorisées
+## Allowed tags
 
 `<h2>`, `<h3>`, `<p>`, `<ul>`, `<ol>`, `<li>`, `<strong>`, `<em>`, `<a>`,
 `<table>`, `<img>`, `<blockquote>`.
 
-**Jamais** : `<script>`, `<style>` inline massif, `<iframe>` non sécurisé,
+**Never**: `<script>`, massive inline `<style>`, unsecured `<iframe>`,
 `<font>`, `<center>`.
 
-## Pas de wrappers WordPress
+## No WordPress wrappers
 
-Le HTML est une **liste plate de blocs**. Ne jamais émettre :
+The HTML is a **flat list of blocks**. Never emit:
 `<article>`, `<div class="content-wrap">`, `<header>`,
 `<div class="entry-content">`, `<div class="post-thumbnail">`.
 
-- **Pas de H1 dans un `<header>`** : WordPress gère le H1 selon le contexte du
-  blog (Enseigna : H1 = champ ACF, aucun H1 dans le corps ; Superprof Ressources :
-  H1 = premier bloc `wp:heading {"level":1}`). Voir la skill du site.
-- **Pas d'image à la Une** dans le HTML : WordPress la gère.
+- **No H1 inside a `<header>`**: WordPress handles the H1 depending on the
+  blog's context (Enseigna: H1 = ACF field, no H1 in the body; Superprof Ressources:
+  H1 = first `wp:heading {"level":1}` block). See the site's skill.
+- **No featured image** in the HTML: WordPress handles it.
 
-## Double output Gutenberg
+## Dual Gutenberg output
 
-Chaque refresh produit deux fichiers : `{slug}_refreshed.html` (HTML nu, debug)
-et `{slug}_refreshed.gutenberg.html` (collable dans l'éditeur de code WP,
-commentaires `<!-- wp:* -->` + classes `wp-block-*`). **Seul le `.gutenberg.html`
-sert à la publication** ; supprimer le nu après génération. Réf.
+Each refresh produces two files: `{slug}_refreshed.html` (bare HTML, debug)
+and `{slug}_refreshed.gutenberg.html` (pasteable into the WP code editor,
+`<!-- wp:* -->` comments + `wp-block-*` classes). **Only the `.gutenberg.html`
+is used for publication**; delete the bare one after generation. Ref.
 [[feedback-delete-nu-html-keep-gutenberg]].
 
-- **Images refresh** : conserver les `id` existants via `class="wp-image-NNN"`.
-  Sans id détectable, émettre un `wp:image` sans `id`.
-- **Convention pros/cons** (Enseigna) : `<div class="pros-cons"><div class="cons">…</div><div class="pros">…</div></div>`
-  → conversion auto en `wp:columns`.
+- **Refresh images**: keep the existing `id`s via `class="wp-image-NNN"`.
+  If no id is detectable, emit a `wp:image` without `id`.
+- **Pros/cons convention** (Enseigna): `<div class="pros-cons"><div class="cons">…</div><div class="pros">…</div></div>`
+  → auto-converted to `wp:columns`.
 
-## Langue française — accents (OBLIGATOIRE)
+## French language: accents (MANDATORY)
 
-Tout contenu (HTML **et** JSON) utilise les accents corrects (é è ê à ù ç î ô û ï).
-Jamais « ameliorer », « systeme », « debutant ». Un mot français sans accent est
-un **bug bloquant** à corriger avant livraison.
+French content (HTML **and** JSON) uses correct accents (é è ê à ù ç î ô û ï).
+Never « ameliorer », « systeme », « debutant ». A French word without its accent
+is a **blocking bug** to fix before delivery.
 
-## Typographie française — référence détaillée
+## French typography: detailed reference
 
-Mécanique complète du français dans `references/typographie-fr.md` (à lire pour
-toute rédaction FR) : **espaces insécables** avant `: ; ? ! % €` et dans les
-guillemets `« »`, apostrophe typographique `'`, formats de nombres/dates, casse
-(sentence case, langues/matières en minuscule), **écriture inclusive au point
-médian** (autorisée), **connecteurs IA à bannir** (« Il est important de noter
-que », « En outre »…) et anglicismes.
+The full mechanics of written French live in `references/typographie-fr.md`
+(read it before any FR writing): **non-breaking spaces** before `: ; ? ! % €`
+and inside `« »` quotation marks, typographic apostrophe `'`, number/date
+formats, capitalisation (sentence case, languages/subjects in lowercase),
+**inclusive writing with the middle dot** (allowed), **AI connector phrases to
+ban** (« Il est important de noter que », « En outre »…) and anglicisms.
 
-## Tiret cadratin interdit
+## Em dash forbidden
 
-Ne jamais utiliser `—`. Pour les incises : virgules, parenthèses, ou tiret
-demi-cadratin `–` si un séparateur visuel est indispensable. Tous blogs. Réf.
+Never use `—`. For parentheticals: commas, parentheses, or an en dash `–` if a
+visual separator is indispensable. All blogs. Ref.
 [[feedback-no-em-dash]].
 
-## Liens
+## Links
 
-- **Ancres sans `<strong>`** : `<a href="…">texte</a>`, jamais
-  `<a href="…"><strong>texte</strong></a>` (anti-pattern sur-optimisation).
-- **Pas de lien dans les H2/H3** : un `<a>` dans un heading est un red flag SEO.
-- **Jamais de _nouveau_ lien vers Wikipédia** (tous sites) : lier la source primaire,
-  pas l'article encyclopédique — [[feedback-no-wikipedia-links]]. (Un lien Wikipédia
-  déjà présent reste conservé au titre de la Règle d'Or ; l'interdiction porte sur l'ajout.)
-- **Sources** : pas de « Consulté le [date] » — [[feedback-no-consulte-le]].
+- **Anchors without `<strong>`**: `<a href="…">texte</a>`, never
+  `<a href="…"><strong>texte</strong></a>` (over-optimisation anti-pattern).
+- **No links inside H2/H3**: an `<a>` inside a heading is an SEO red flag.
+- **Never a _new_ link to Wikipedia** (all sites): link the primary source,
+  not the encyclopedia article ([[feedback-no-wikipedia-links]]). (An existing
+  Wikipedia link stays, per the Golden Rule; the ban is on adding new ones.)
+- **Sources**: no « Consulté le [date] » ([[feedback-no-consulte-le]]).
 
-## Ponctuation des listes à puces
+## Bullet-list punctuation
 
-Chaque `<li>` finit par une **virgule** ; le **dernier** `<li>` finit par un
-**point**.
+French content: each `<li>` ends with a **comma**; the **last** `<li>` ends
+with a **period**.
 
 ```html
 <ul>
@@ -91,39 +91,39 @@ Chaque `<li>` finit par une **virgule** ; le **dernier** `<li>` finit par un
 </ul>
 ```
 
-## Densité & conclusion
+## Density & conclusion
 
-- Minimum **3 sections H2**, sections développées (pas de H2 à un seul paragraphe).
-- **Pas de H2 « Conclusion »** (sauf blog Enseigna) : terminer par un court
-  paragraphe condensé (3-5 phrases), ton actionnable, sans répétition exhaustive.
-- Pas de section « Articles connexes / Pour aller plus loin » : les liens internes
-  sont intégrés **naturellement dans une phrase**, espacés de 150-200 mots.
+- Minimum **3 H2 sections**, fully developed (no single-paragraph H2).
+- **No "Conclusion" H2** (except the Enseigna blog): end with a short condensed
+  paragraph (3-5 sentences), actionable tone, no exhaustive recap.
+- No "Related articles / Further reading" section: internal links are woven
+  **naturally into a sentence**, spaced 150-200 words apart.
 
-## Tableaux
+## Tables
 
-Chaque `<table>` → un **CSV** dans `csv/` (`{slug}_tableau_{descriptif}.csv`),
-max 3/article, **aucun shortcode** `[table id=X /]` dans le HTML. Réf.
+Each `<table>` → a **CSV** in `csv/` (`{slug}_tableau_{descriptif}.csv`),
+max 3 per article, **no shortcode** `[table id=X /]` in the HTML. Ref.
 [[feedback-csv-naming-tablepress]].
 
-## Règle d'Or — ne jamais réduire les assets
+## Golden Rule: never reduce the assets
 
-Invariant absolu, tous blogs : le contenu généré ne réduit **jamais** le nombre
-d'assets de l'original (`assets_after ≥ assets_before`) — images, tableaux,
-vidéos, liens internes **et** liens externes (y compris vers des concurrents).
-On peut enrichir, jamais appauvrir. Conserver chaque lien existant à l'identique
-(URL **et** texte d'ancre), sans en injecter de nouveau. Le périmètre exact des
-assets comptés est propre à chaque site (Superprof Ressources n'émet ni
-`<table>` ni vidéo) : voir la skill du site.
+Absolute invariant, all blogs: generated content **never** reduces the
+original's asset count (`assets_after ≥ assets_before`): images, tables,
+videos, internal links **and** external links (including links to competitors).
+Enrich, never impoverish. Keep every existing link identical
+(URL **and** anchor text), without injecting new ones. The exact scope of
+counted assets is site-specific (Superprof Ressources emits neither
+`<table>` nor video): see the site's skill.
 
-## Métadonnées JSON
+## JSON metadata
 
-`title` (post_title WP, ≤ 60 car.), `h1` (H1 éditorial du corps, peut différer),
-`meta_description` (150-155 car.), `target_keywords`, `word_count`, `assets`
+`title` (WP post_title, ≤ 60 chars), `h1` (editorial H1 of the body, may differ),
+`meta_description` (150-155 chars), `target_keywords`, `word_count`, `assets`
 (count images/tables/videos/internal_links), `eeat_sources` (source/url/year).
 
-## Callouts colorés interdits
+## Colored callouts forbidden
 
-Pas de `wp:html` avec `#4caf50` (CTA vert), `#fff9e6` (jaune), `#e8f4f8` (bleu)
-sur Enseigna ni Superprof Ressources — ancien système. Réf.
-[[feedback-no-callouts-cta]]. (Les blocs AdvGB `advgb/infobox` autorisés sur
-Superprof Ressources sont un mécanisme distinct — voir [[sp-ressources-gutenberg]].)
+No `wp:html` with `#4caf50` (green CTA), `#fff9e6` (yellow), `#e8f4f8` (blue)
+on Enseigna or Superprof Ressources: legacy system. Ref.
+[[feedback-no-callouts-cta]]. (The AdvGB `advgb/infobox` blocks allowed on
+Superprof Ressources are a separate mechanism; see [[sp-ressources-gutenberg]].)

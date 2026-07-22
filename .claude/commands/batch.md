@@ -1,93 +1,93 @@
 ---
-description: Refresh batch depuis Google Sheets (toutes les URLs d'une action donnée pour un blog).
+description: Batch refresh from Google Sheets (all URLs of a given action for a blog).
 argument-hint: --action <PARTIAL_REFRESH|FULL_REFRESH|REFRESH_TITLES> --site <site-slug> [--limit N]
 allowed-tools: Bash(python3 content_writer.py batch refresh:*), Bash(python3 content_writer.py plan init:*), Bash(python3 content_writer.py plan check:*), Bash(python3 content_writer.py finalize:*), Task, Read, Write, WebSearch, WebFetch, Skill
 ---
 
-Lance un refresh batch. Le `--spreadsheet-id` est repris de `.env` si absent.
+Runs a batch refresh. `--spreadsheet-id` is taken from `.env` if absent.
 
-> 🚫 **Règle non négociable — blacklist AVANT tout fetch web.** Lire
-> `.claude/skills/recherche-sources/references/blacklisted-domains.md` **une fois en
-> début de batch**, avant le premier WebFetch/WebSearch, puis **re-vérifier au début
-> de chaque article** de la boucle (relire ou re-résumer la liste) : la contrainte
-> ne doit jamais sortir de la mémoire de travail entre deux itérations. Un domaine
-> blacklisté n'est jamais fetché ni retenu comme source. Exceptions (Règle d'Or,
-> article avis dont le sujet EST la plateforme) : voir le fichier blacklist.
+> 🚫 **Non-negotiable rule - blacklist BEFORE any web fetch.** Read
+> `.claude/skills/source-research/references/blacklisted-domains.md` **once at the
+> start of the batch**, before the first WebFetch/WebSearch, then **re-check at the
+> start of each article** in the loop (re-read or re-summarise the list): the
+> constraint must never leave working memory between two iterations. A blacklisted
+> domain is never fetched nor kept as a source. Exceptions (Golden Rule, review
+> article whose subject IS the platform): see the blacklist file.
 
-## Étape 1 — Préparation en série (CLI `cw`)
+## Step 1 - Serial preparation (`cw` CLI)
 
 ```bash
 python3 content_writer.py batch refresh $ARGUMENTS
 ```
 
-`cw batch refresh` lit les URLs à traiter dans le **Google Sheet** (lignes du blog
-dont l'action correspond), puis prépare le contexte de chacune : **récupération du
-`post_content` de l'article dans WordPress via la REST API** (`WordPressAPIClient`,
-si `wp_api_config` présent ; fallback scraping de la page publique seulement quand
-la REST est bloquée) → audit GSC/SERP/PAA/intent → décision de stratégie →
-`generation_prompt.txt`. C'est l'étape 1 de `/refresh`, en série. Noter pour
-chaque URL : `context_dir`, `Strategy`, `Mot-clé`, `YTG guide`, `Assets avant`,
-chemins `Output HTML`/`Output JSON` (et `Type: avis|versus` pour enseigna).
+`cw batch refresh` reads the URLs to process from the **Google Sheet** (the blog's
+rows whose action matches), then prepares the context for each one: **fetching the
+article's `post_content` from WordPress via the REST API** (`WordPressAPIClient`,
+when `wp_api_config` is present; fallback to scraping the public page only when
+the REST API is blocked) → GSC/SERP/PAA/intent audit → strategy decision →
+`generation_prompt.txt`. This is step 1 of `/refresh`, run serially. For each
+URL, note: `context_dir`, `Strategy`, `Keyword` (main keyword), `YTG guide`,
+`Assets avant` (assets before), the `Output HTML`/`Output JSON` paths (and
+`Type: avis|versus` for enseigna).
 
-Les URLs en `NO_ACTION`, `BLOCKED_QUALITY_ISSUES`, `ERROR` ou
-`REDIRECT_301_SUGGESTED` sortent du lot : les rapporter, rien à générer.
+URLs in `NO_ACTION`, `BLOCKED_QUALITY_ISSUES`, `ERROR` or
+`REDIRECT_301_SUGGESTED` drop out of the batch: report them, nothing to generate.
 
-## Étape 2 — Boucle par article (identique à /refresh, étapes 2 → 4)
+## Step 2 - Per-article loop (same as /refresh, steps 2 → 4)
 
-La suite n'est **pas** batchable : dérouler la chaîne complète **article par
-article**, dans la session principale pour les étapes déterministes, via le
-subagent **content-generator** (abonnement Max, jamais l'API payante) pour la
-rédaction. Pour chaque URL préparée :
+The rest is **not** batchable: run the full chain **article by article**, in the
+main session for the deterministic steps, via the **content-generator** subagent
+(Max subscription, never the paid API) for the writing. For each prepared URL:
 
-1. **Sources (brief E-E-A-T)** — invoquer la skill **`recherche-sources`** sur le
-   sujet/URL. Sans ce brief, `eeat_sources` serait inventé par le LLM.
+1. **Sources (E-E-A-T brief)** - invoke the **`source-research`** skill on the
+   topic/URL. Without this brief, `eeat_sources` would be invented by the LLM.
 
-2. **Plan optimisé SEO (obligatoire, comme en /refresh étape 2bis)** :
+2. **Optimised SEO outline (mandatory, as in /refresh step 2bis)**:
 
    ```bash
    python3 content_writer.py plan init <url> --site <site-slug>
    ```
 
-   puis invoquer la skill **`seo-outline`** pour remplir `content_plan.md`
-   (mapping PAA→sections, placement des preuves, gap top 10), et valider :
+   then invoke the **`seo-outline`** skill to fill in `content_plan.md`
+   (PAA→sections mapping, proof placement, top 10 gap), and validate:
 
    ```bash
    python3 content_writer.py plan check <url> --site <site-slug>
    ```
 
-   `OK` → générer ; `A_CORRIGER` → corriger le plan puis relancer `plan check`.
-   Ne **jamais** générer sur un plan non validé — en batch encore plus qu'en
-   unitaire, c'est le garde-fou avant de brûler les tokens de rédaction.
+   `OK` → generate; `NEEDS_FIX` → fix the plan then rerun `plan check`.
+   **Never** generate on an unvalidated plan - in batch even more than for a
+   single URL, this is the safeguard before burning writing tokens.
 
-3. **Génération** — subagent **content-generator** via Task, avec
-   `generation_prompt.txt`, le `content_plan.md` validé, le brief de sources,
-   le `site_slug`, les chemins de sortie, la `Strategy` et les `Assets avant`
-   (Règle d'Or : assets après ≥ avant). Le subagent écrit les fichiers,
-   jamais de HTML dans le chat.
+3. **Generation** - **content-generator** subagent via Task, with
+   `generation_prompt.txt`, the validated `content_plan.md`, the sources brief,
+   the `site_slug`, the output paths, the `Strategy` and the assets-before count
+   (Golden Rule: assets after ≥ before). The subagent writes the files,
+   never HTML in the chat.
 
-4. **Finalisation + QC sémantique YTG (SOSEO/DSEO)** :
+4. **Finalisation + YTG semantic QC (SOSEO/DSEO)**:
 
    ```bash
-   python3 content_writer.py finalize <url> --site <site-slug> --html-file <Output HTML> [--type <avis|versus>] [--main-keyword "<Mot-clé>"] [--guide-id <YTG guide>]
+   python3 content_writer.py finalize <url> --site <site-slug> --html-file <Output HTML> [--type <avis|versus>] [--main-keyword "<keyword>"] [--guide-id <YTG guide>]
    ```
 
-   Reporter le `Mot-clé` et le `YTG guide` de l'étape 1 dans
-   `--main-keyword`/`--guide-id` : le QC score alors SOSEO/DSEO sur le bon guide et
-   réutilise le guide sans le recréer. La cible n'est **pas uniforme** : elle
-   dépend de la SERP de **chaque requête**. Règle (moyennes du guide YTG,
-   `top3_soseo`/`top3_dseo` et `top10_soseo`/`top10_dseo`, récupérées au
-   STEP 2.5 de l'étape 1) : **SOSEO de l'article > moyenne TOP 3 et TOP 10** ;
-   **DSEO strictement < moyenne TOP 3 et TOP 10**. Verdict :
-   - `OPTIMAL` → article terminé, maillage appliqué ;
-   - `A_CORRIGER` → relancer le subagent avec les termes sous/sur-optimisés,
-     puis re-`finalize` (cap 2-3 itérations) ;
-   - `BLOQUE` → arrêt de **cet article** + alerte humaine, passer au suivant.
+   Carry over the `Keyword` and `YTG guide` from step 1 into
+   `--main-keyword`/`--guide-id`: the QC then scores SOSEO/DSEO against the right
+   guide and reuses the guide instead of recreating it. The target is **not
+   uniform**: it depends on the SERP of **each query**. Rule (YTG guide averages,
+   `top3_soseo`/`top3_dseo` and `top10_soseo`/`top10_dseo`, retrieved at
+   STEP 2.5 of step 1): **article SOSEO > TOP 3 and TOP 10 averages**;
+   **DSEO strictly < TOP 3 and TOP 10 averages**. Verdict:
+   - `OPTIMAL` → article done, internal linking applied;
+   - `NEEDS_FIX` → relaunch the subagent with the under/over-optimised terms,
+     then re-run `finalize` (cap of 2-3 iterations);
+   - `BLOCKED` → stop **this article** + human alert, move on to the next one.
 
-Ne pas paralléliser la génération : un article terminé (finalize + verdict YTG)
-avant de passer au suivant.
+Do not parallelise generation: finish one article (finalize + YTG verdict)
+before moving to the next.
 
-## Étape 3 — Rapport de lot
+## Step 3 - Batch report
 
-Rapporter : nombre d'URLs traitées / écartées (et pourquoi), stratégie par URL,
-verdict `plan check`, verdict YTG avec scores SOSEO/DSEO vs cible, verdict
-assets (avant/après), et chemins de sortie (`sites/<site-slug>/outputs/`).
+Report: number of URLs processed / discarded (and why), strategy per URL,
+`plan check` verdict, YTG verdict with SOSEO/DSEO scores vs target, assets
+verdict (before/after), and output paths (`sites/<site-slug>/outputs/`).

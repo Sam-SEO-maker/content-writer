@@ -1,155 +1,157 @@
 ---
-description: Refresh SEO complet d'une URL (fetch WP REST/scrape → GSC/SERP/PAA/intent → décision → recherche sources → génération via subagent).
+description: Full SEO refresh of a URL (WP REST fetch/scrape → GSC/SERP/PAA/intent → decision → source research → generation via subagent).
 argument-hint: <url> --site <enseigna.fr|superprof.fr-ressources> [--strategy X] [--main-keyword K]
 allowed-tools: Bash(python3 content_writer.py refresh:*), Bash(python3 content_writer.py finalize:*), Task, Read, Write, WebSearch, WebFetch, Skill
 ---
 
-Lance le refresh de l'URL fournie en séquençant la chaîne du workflow :
-récupération contenu → GSC → SERP/PAA → user intent → décision →
-**recherche sources** → génération → (QC YTG / maillage en Phase 3bis).
+Runs the refresh of the given URL by sequencing the workflow chain:
+content fetch → GSC → SERP/PAA → user intent → decision →
+**source research** → generation → (YTG QC / internal linking in Phase 3bis).
 
-> 🚫 **Règle non négociable — blacklist AVANT tout fetch web.** Lire
-> `.claude/skills/recherche-sources/references/blacklisted-domains.md` **avant le
-> premier WebFetch/WebSearch** de la session (résultats SERP compris). Un domaine
-> blacklisté n'est jamais fetché, jamais retenu dans un top N, jamais cité — le tri
-> se fait a priori, pas après curation. Exceptions (liens existants = Règle d'Or,
-> article avis dont le sujet EST la plateforme) : voir le fichier blacklist.
+> 🚫 **Non-negotiable rule - blacklist BEFORE any web fetch.** Read
+> `.claude/skills/source-research/references/blacklisted-domains.md` **before the
+> first WebFetch/WebSearch** of the session (SERP results included). A blacklisted
+> domain is never fetched, never kept in a top N, never cited - filtering happens
+> a priori, not after curation. Exceptions (existing links = Golden Rule, review
+> article whose subject IS the platform): see the blacklist file.
 
-## Étape 1 — Récupération + audit + décision déterministes (CLI `cw`)
+## Step 1 - Deterministic fetch + audit + decision (`cw` CLI)
 
-Exécute :
+Run:
 
 ```bash
 python3 content_writer.py refresh $ARGUMENTS
 ```
 
-⚠️ **Cette commande couvre déjà les étapes 1 à 6 du workflow** (via `_fetch_html`
-+ `AuditEngine.full_audit` + `process_url`) ; ne PAS les refaire à la main :
+⚠️ **This command already covers steps 1 to 6 of the workflow** (via `_fetch_html`
++ `AuditEngine.full_audit` + `process_url`); do NOT redo them by hand:
 
-- **Récupération du `post_content`** en 2 stratégies automatiques (`_fetch_html`) :
-  1. **WordPress REST API** (`WordPressAPIClient`, si `wp_api_config` présent pour
-     le blog),
-  2. **Fallback scraping** page publique (`ContentExtractor`) quand la REST est
-     bloquée.
-- **Perfs SEO GSC** (clics/impressions/CTR/position, `GSCAnalyzer`, fallback
-  mot-clé 12 mois),
-- **Résolution du mot-clé principal** (GSC → multi-source `KeywordResolver`),
-- **Analyse SERP** : PAA, features, TOP concurrents (`SERPAnalyzer`),
-- **User intent** + format dominant (`IntentDetector`),
-- **Décision stratégie** (moteur data-driven) + **composition du prompt**.
+- **`post_content` fetch** with 2 automatic strategies (`_fetch_html`):
+  1. **WordPress REST API** (`WordPressAPIClient`, when `wp_api_config` is present
+     for the blog),
+  2. **Scraping fallback** on the public page (`ContentExtractor`) when the REST
+     API is blocked.
+- **GSC SEO performance** (clicks/impressions/CTR/position, `GSCAnalyzer`, 12-month
+  keyword fallback),
+- **Main keyword resolution** (GSC → multi-source `KeywordResolver`),
+- **SERP analysis**: PAA, features, TOP competitors (`SERPAnalyzer`),
+- **User intent** + dominant format (`IntentDetector`),
+- **Strategy decision** (data-driven engine) + **prompt composition**.
 
-Sortie dans le `context_dir` affiché :
+Output in the displayed `context_dir`:
 
-- `generation_prompt.txt` (prompt composé : stratégie + site, signaux
-  GSC/SERP/PAA/intent déjà intégrés),
-- chemins `Output HTML` / `Output JSON`, `Strategy`, `Assets avant`.
+- `generation_prompt.txt` (composed prompt: strategy + site, GSC/SERP/PAA/intent
+  signals already integrated),
+- `Output HTML` / `Output JSON` paths, `Strategy`, assets-before count.
 
-Si l'action est `NO_ACTION`, `BLOCKED_QUALITY_ISSUES`, `ERROR` ou
-`REDIRECT_301_SUGGESTED` : **s'arrêter** et rapporter, rien à générer.
+If the action is `NO_ACTION`, `BLOCKED_QUALITY_ISSUES`, `ERROR` or
+`REDIRECT_301_SUGGESTED`: **stop** and report, nothing to generate.
 
-## Étape 2 — Recherche de sources (brief E-E-A-T) — la brique manquante
+## Step 2 - Source research (E-E-A-T brief) - the missing piece
 
-`cw refresh` ne va **pas** chercher de sources : sans cette étape, `eeat_sources`
-serait inventé par le LLM. Avant de générer, invoquer la skill **recherche-sources**
-sur le sujet/URL (cascade : bibliothèque curée par matière si dispo → complément
-web `WebSearch`/`WebFetch` / `deep-research`). Produire un brief structuré
-(source → claim → url → année), sans jamais fabriquer de chiffre.
+`cw refresh` does **not** look for sources: without this step, `eeat_sources`
+would be invented by the LLM. Before generating, invoke the **source-research**
+skill on the topic/URL (cascade: curated per-subject library if available → web
+complement `WebSearch`/`WebFetch` / `deep-research`). Produce a structured brief
+(source → claim → url → year), never fabricating a figure.
 
-> Tant que `sites/<site-slug>/sources/` n'existe pas (Phase 4), la skill opère en
-> mode web seul.
+> As long as `sites/<site-slug>/sources/` does not exist (Phase 4), the skill
+> operates in web-only mode.
 
-## Étape 2bis — Outline éditorial optimisé (artefact vérifiable)
+## Step 2bis - Optimised editorial outline (verifiable artefact)
 
-Avant de générer, produire un **outline traçable** dans `content_plan.md`. Objectif :
-vérifier la couverture **avant** de brûler les tokens de rédaction, et rendre la
-correction (si l'outline est mauvais) cent fois moins chère qu'une re-génération.
+Before generating, produce a **traceable outline** in `content_plan.md`. Goal:
+verify coverage **before** burning writing tokens, and make the fix (if the
+outline is bad) a hundred times cheaper than a re-generation.
 
-**Scaffold déterministe** — poser d'abord le squelette au bon chemin, avec les
-signaux (PAA, mot-clé, intent, assets) injectés depuis `audit_data.json` :
+**Deterministic scaffold** - first lay the skeleton at the right path, with the
+signals (PAA, keyword, intent, assets) injected from `audit_data.json`:
 
 ```bash
 python3 content_writer.py plan init <url> --site <site-slug>
 ```
 
-Puis invoquer la skill **`seo-outline`** pour **remplir** cet outline (mapping
-PAA→sections, placement des preuves, gap top 10) à partir des signaux de
-`generation_prompt.txt` + le brief de sources. Le CLI a posé la structure ; l'agent
-rédige les H2/H3.
+Then invoke the **`seo-outline`** skill to **fill in** this outline
+(PAA→sections mapping, proof placement, top 10 gap) from the signals in
+`generation_prompt.txt` + the sources brief. The CLI laid the structure; the agent
+writes the H2s/H3s.
 
-La skill `seo-outline` porte le détail (mapping PAA→sections, placement des preuves,
-gap concurrentiel, invariants de titres : ≥ 3 H2, pas de H2/H3 orphelin, 2-4 H3 par
-H2 au-delà de 150 mots, `?` sur les titres interrogatifs).
+The `seo-outline` skill carries the detail (PAA→sections mapping, proof placement,
+competitive gap, heading invariants: ≥ 3 H2s, no orphan H2/H3, 2-4 H3s per
+H2 beyond 150 words, `?` on interrogative headings).
 
-Une fois `content_plan.md` écrit, **le valider mécaniquement** (déterministe, zéro
-token) avant de générer :
+Once `content_plan.md` is written, **validate it mechanically** (deterministic,
+zero tokens) before generating:
 
 ```bash
 python3 content_writer.py plan check <url> --site <site-slug>
 ```
 
-- **OK** → passer à l'étape 3 ;
-- **A_CORRIGER** → corriger le plan selon les manquements listés (bon marché), puis
-  relancer `plan check`. Ne **pas** générer sur un plan `A_CORRIGER`.
+- **OK** → move on to step 3;
+- **NEEDS_FIX** → fix the plan according to the listed shortcomings (cheap), then
+  rerun `plan check`. Do **not** generate on an `NEEDS_FIX` plan.
 
-Le `content_plan.md` validé est une **entrée supplémentaire** transmise au subagent à
-l'étape 3 : il rédige *à partir de l'outline*, il ne le ré-invente pas.
+The validated `content_plan.md` is an **additional input** passed to the subagent
+at step 3: it writes *from the outline*, it does not reinvent it.
 
-## Étape 3 — Génération (subagent `content-generator`)
+## Step 3 - Generation (`content-generator` subagent)
 
-Déléguer la rédaction au subagent **content-generator** (abonnement Max, jamais
-l'API payante) via l'outil Task. Lui transmettre :
+Delegate the writing to the **content-generator** subagent (Max subscription,
+never the paid API) via the Task tool. Pass it:
 
-- le chemin `generation_prompt.txt` (contient déjà PAA, intent, SERP, mot-clé),
-- **le `content_plan.md` de l'étape 2bis** (outline validé : le subagent rédige à
-  partir de ce plan, section par section),
-- **le brief de sources vérifiées de l'étape 2** (à injecter dans le contenu et
-  dans `eeat_sources`, pas d'invention),
-- le `site_slug` (pour charger la bonne skill de rédaction),
-- les chemins `Output HTML` / `Output JSON`,
-- la `Strategy` et les `Assets avant` (Règle d'Or : assets après ≥ avant).
+- the `generation_prompt.txt` path (already contains PAA, intent, SERP, keyword),
+- **the `content_plan.md` from step 2bis** (validated outline: the subagent writes
+  from this plan, section by section),
+- **the verified sources brief from step 2** (to inject into the content and
+  into `eeat_sources`, no invention),
+- the `site_slug` (to load the right writing skill),
+- the `Output HTML` / `Output JSON` paths,
+- the `Strategy` and the assets-before count (Golden Rule: assets after ≥ before).
 
-Le subagent écrit directement le HTML brut + métadonnées dans les fichiers de
-sortie ; il **ne renvoie pas** de HTML dans le chat. Note le chemin du HTML brut
-écrit (`Output HTML`), il est requis à l'étape 4.
+The subagent writes the raw HTML + metadata directly to the output files; it
+**does not return** HTML in the chat. Note the path of the written raw HTML
+(`Output HTML`), it is required at step 4.
 
-## Étape 4 — Finalisation déterministe (`cw finalize`)
+## Step 4 - Deterministic finalisation (`cw finalize`)
 
-Une fois le HTML brut écrit, chaîner save → assets → QC YTG → maillage :
+Once the raw HTML is written, chain save → assets → YTG QC → internal linking:
 
 ```bash
-python3 content_writer.py finalize <url> --site <site-slug> --html-file <Output HTML> [--type <avis|versus>] [--main-keyword "<Mot-clé>"] [--guide-id <YTG guide>]
+python3 content_writer.py finalize <url> --site <site-slug> --html-file <Output HTML> [--type <avis|versus>] [--main-keyword "<keyword>"] [--guide-id <YTG guide>]
 ```
 
-> **Mot-clé + guide YTG.** L'étape 1 (`cw refresh`) affiche `Mot-clé:` et
-> `YTG guide:` quand le STEP 2.5 a créé un guide. **Reporter les deux** dans
-> `--main-keyword`/`--guide-id` : le QC post-génération score alors sur le bon guide
-> (le vrai mot-clé, pas le slug) et **réutilise** le guide sans le recréer
-> (économie de crédits). Absents → le QC re-résout le mot-clé (fallback slug).
+> **Keyword + YTG guide.** Step 1 (`cw refresh`) prints `Keyword:` (main keyword)
+> and `YTG guide:` when STEP 2.5 created a guide. **Carry both over** into
+> `--main-keyword`/`--guide-id`: the post-generation QC then scores against the
+> right guide (the real keyword, not the slug) and **reuses** the guide instead of
+> recreating it (credit savings). If absent → the QC re-resolves the keyword
+> (slug fallback).
 
-> **Type d'article (enseigna).** L'étape 6 du CLI `refresh` affiche une ligne
-> `Type: avis|versus` quand l'URL est classée (règle : slug `superprof-vs-*` →
-> versus ; slug contenant `avis` → avis ; sinon rien). Si un `Type:` est affiché,
-> **le reporter tel quel dans `--type`** : la sortie HTML est alors routée dans
-> `sites/enseigna/outputs/html/{type}/` et le prompt versus (`vs_concurrent.md`)
-> est déjà injecté à la génération. Sans `Type:`, ne pas passer `--type`.
+> **Article type (enseigna).** Step 6 of the `refresh` CLI prints a
+> `Type: avis|versus` line when the URL is classified (rule: slug `superprof-vs-*` →
+> versus; slug containing `avis` → avis; otherwise nothing). If a `Type:` is
+> printed, **carry it over as-is into `--type`**: the HTML output is then routed
+> into `sites/enseigna/outputs/html/{type}/` and the versus prompt
+> (`vs_concurrent.md`) is already injected at generation. Without `Type:`, do not
+> pass `--type`.
 
-Cette commande (déterministe) :
+This (deterministic) command:
 
-- **sauvegarde** le HTML nu + `.gutenberg.html` + CSV des tableaux,
-- **valide les assets** (Règle d'Or ; restaure les manquants),
-- lance le **QC sémantique YTG** → verdict :
-  - `OPTIMAL` → poursuit le maillage,
-  - `A_CORRIGER` → renvoie les termes sous/sur-optimisés : **relancer le subagent
-    content-generator** pour recorriger le HTML (boucle, cap 2-3 itérations), puis
-    relancer `finalize`,
-  - `BLOQUE` → **arrêt + alerte humaine** (sur-optimisation grave, pas de maillage,
-    pas de re-génération auto),
-- applique le **maillage** (`EnseignaAvisLinker` pour enseigna ; pour superprof les
-  liens de landing sont injectés en amont par `SuperprofRotator`). Ajouter
-  `--apply-linking` pour écrire les liens (sinon dry-run).
+- **saves** the bare HTML + `.gutenberg.html` + table CSVs,
+- **validates the assets** (Golden Rule; restores missing ones),
+- runs the **YTG semantic QC** → verdict:
+  - `OPTIMAL` → proceeds with internal linking,
+  - `NEEDS_FIX` → returns the under/over-optimised terms: **relaunch the
+    content-generator subagent** to fix the HTML (loop, cap of 2-3 iterations),
+    then rerun `finalize`,
+  - `BLOCKED` → **stop + human alert** (severe over-optimisation, no linking,
+    no automatic re-generation),
+- applies the **internal linking** (`EnseignaAvisLinker` for enseigna; for
+  superprof the landing links are injected upstream by `SuperprofRotator`). Add
+  `--apply-linking` to write the links (otherwise dry-run).
 
-## Étape 5 — Rapport
+## Step 5 - Report
 
-Rapporter : stratégie appliquée, sources retenues, chemins de sortie
-(`sites/<site-slug>/outputs/`), verdict YTG, verdict assets (avant/après), et
-liens ajoutés. Objectif : URL → contenu + verdict + liens, sans reprise manuelle.
+Report: applied strategy, selected sources, output paths
+(`sites/<site-slug>/outputs/`), YTG verdict, assets verdict (before/after), and
+links added. Goal: URL → content + verdict + links, with no manual rework.

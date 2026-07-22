@@ -9,7 +9,7 @@ Toutes les constantes globales du projet centralisées ici.
 # =========================================================================
 
 # Liste LEGACY (fallback uniquement). La liste canonique (~750 domaines) vit dans
-# `.claude/skills/recherche-sources/references/blacklisted-domains.md`, chargée par
+# `.claude/skills/source-research/references/blacklisted-domains.md`, chargée par
 # `_shared/core/blacklist.py` (load_blacklist_domains / is_blacklisted_url).
 BLACKLIST_DOMAINS = [
     "acadomia.fr",

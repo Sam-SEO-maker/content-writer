@@ -100,7 +100,7 @@ class RefreshOrchestrator:
         self.content_extractor = ContentExtractor(base_path=self.base_path)
 
         # (Quality gate EditorialAuditor retiré 2026-07 : plus de blocage éditorial ;
-        # décision data-driven + véracité via recherche-sources en amont.)
+        # décision data-driven + véracité via source-research en amont.)
 
         # Semantic checker pour validation post-génération (anti-suroptimisation)
         self.semantic_checker = SemanticChecker(
@@ -498,7 +498,7 @@ class RefreshOrchestrator:
             # le refresh des pages jugées de mauvaise qualité. Supprimé : dans le
             # modèle actuel, la décision de refresh vient des signaux data (GSC :
             # baisse trafic → FULL_REFRESH) et la véracité factuelle est garantie en
-            # amont de la génération par la skill `recherche-sources` (sources
+            # amont de la génération par la skill `source-research` (sources
             # réelles vérifiées) + le prompt site. Plus de blocage éditorial.
 
             # =========================================================
@@ -2246,7 +2246,7 @@ class RefreshOrchestrator:
                                     "ytg_guide_id": ytg_guide_id,
                                 }
 
-                                # Log results + verdict structuré (OPTIMAL / A_CORRIGER)
+                                # Log results + verdict structuré (OPTIMAL / NEEDS_FIX)
                                 soseo_ok = our_soseo >= top3_soseo if top3_soseo else True
                                 dseo_ok = our_dseo <= top3_dseo if top3_dseo else True
 
@@ -2258,7 +2258,7 @@ class RefreshOrchestrator:
                                         f"DSEO: {our_dseo:.0f}% (cible TOP3: {top3_dseo:.0f}%)"
                                     )
                                 else:
-                                    ytg_verdict = "A_CORRIGER"
+                                    ytg_verdict = "NEEDS_FIX"
                                     warnings = []
                                     if not soseo_ok:
                                         warnings.append(

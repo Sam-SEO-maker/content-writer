@@ -1,59 +1,61 @@
-# Densité sémantique : modèle par occurrences (SOSEO / DSEO)
+# Semantic density: occurrence-based model (SOSEO / DSEO)
 
-Référence chargée à la demande depuis `edito-refresh`. **Ne jamais raisonner en
-« densité % »** : raisonner en couverture + occurrences.
+Reference loaded on demand from `edito-refresh`. **Never reason in
+"density %"**: reason in coverage + occurrences.
 
-## Principe : deux axes
+## Principle: two axes
 
-1. **Couverture (LARGEUR)** : utiliser un maximum de termes du champ sémantique. Les articles TOP 3 couvrent ~90% des termes pertinents.
-2. **Modération (PROFONDEUR)** : ne pas répéter excessivement les mêmes termes.
+1. **Coverage (BREADTH)**: use as many terms of the semantic field as possible. TOP 3 articles cover ~90% of the relevant terms.
+2. **Moderation (DEPTH)**: do not repeat the same terms excessively.
 
-L'erreur courante n'est PAS d'utiliser trop de termes différents, c'est de
-**répéter les mêmes 5-6 termes trop souvent**. Viser la largeur, pas la profondeur.
+The common mistake is NOT using too many different terms; it is
+**repeating the same 5-6 terms too often**. Aim for breadth, not depth.
 
-## Plafonds de répétition (article ~1800 mots)
+## Repetition caps (article of ~1800 words)
 
-| Élément | Limite |
+| Element | Limit |
 |---------|--------|
-| Mot-clé principal (exact match) | **3-6 occurrences** (H1 + intro + 1-2 H2 + conclusion) |
-| Top 10 termes importants du sujet | 2-5 occurrences chacun, distribués |
-| Autres termes du champ sémantique | 1-3 occurrences chacun |
-| Espacement | pas le même terme dans 2 paragraphes consécutifs |
+| Main keyword (exact match) | **3-6 occurrences** (H1 + intro + 1-2 H2s + conclusion) |
+| Top 10 important topic terms | 2-5 occurrences each, distributed |
+| Other semantic-field terms | 1-3 occurrences each |
+| Spacing | not the same term in 2 consecutive paragraphs |
 
-## Règle de synonymie obligatoire
+## Mandatory synonymy rule
 
-Tout terme apparaissant **3 fois ou plus** → remplacé par un synonyme/périphrase
-dans ≥ 50% de ses occurrences. Exemples :
+Any term appearing **3 times or more** → replaced by a synonym/paraphrase
+in ≥ 50% of its occurrences. French content examples:
 - « musculation » → « renforcement musculaire », « travail en salle »
 - « coach » → « entraîneur », « préparateur physique »
 - « séance » → « session », « créneau », « entraînement »
 
-## Cible SOSEO / DSEO (YourTextGuru)
+## SOSEO / DSEO target (YourTextGuru)
 
-La cible est **variable : elle dépend de la SERP de chaque requête**, jamais d'un
-seuil uniforme. Le guide YTG fournit les scores moyens des concurrents
-(`top3_soseo`/`top3_dseo` et `top10_soseo`/`top10_dseo`) ; la règle :
+The target is **variable: it depends on each query's SERP**, never on a
+uniform threshold. The YTG guide provides the competitors' average scores
+(`top3_soseo`/`top3_dseo` and `top10_soseo`/`top10_dseo`); the rule:
 
-| Métrique | Règle vs moyenne TOP 3 | Règle vs moyenne TOP 10 |
+| Metric | Rule vs TOP 3 average | Rule vs TOP 10 average |
 |----------|------------------------|--------------------------|
-| **SOSEO** (couverture) | article **> moyenne** (ex. moyenne 60% → viser > 60%) | article **> moyenne** |
-| **DSEO** (danger) | article **strictement < moyenne** (ex. moyenne 5% → rester < 5%) | article **strictement < moyenne** |
+| **SOSEO** (coverage) | article **> average** (e.g. average 60% → aim for > 60%) | article **> average** |
+| **DSEO** (danger) | article **strictly < average** (e.g. average 5% → stay < 5%) | article **strictly < average** |
 
-Battre la moyenne, pas l'exploser : un article à 116% SOSEO / 37% DSEO est
-inexploitable (suroptimisation). Dépasser la moyenne SOSEO de quelques points
-suffit ; le DSEO doit toujours rester sous les deux moyennes.
+Beat the average, do not blow past it: an article at 116% SOSEO / 37% DSEO is
+unusable (over-optimisation). Exceeding the SOSEO average by a few points
+is enough; the DSEO must always stay below both averages.
 
-## ❌ Interdit / ✅ Correct
+## ❌ Forbidden / ✅ Correct
 
-Interdit : empiler 3+ termes techniques dans une phrase ; répéter un terme dans 2
-paragraphes consécutifs ; phrases « catalogue » de vocabulaire ; forcer un terme
-technique là où un mot courant suffit ; concentrer le vocabulaire dans une section.
+Forbidden: stacking 3+ technical terms in one sentence; repeating a term in 2
+consecutive paragraphs; vocabulary "catalogue" sentences; forcing a technical
+term where a common word suffices; concentrating the vocabulary in one section.
 
-Correct : vocabulaire spécialisé quand il précise ; périphrases plutôt que
-répétitions ; distribution uniforme ; écrire pour le lecteur d'abord ; laisser des
-paragraphes « respirer » en prose naturelle.
+Correct: specialised vocabulary when it adds precision; paraphrases rather than
+repetitions; uniform distribution; write for the reader first; let some
+paragraphs "breathe" in natural prose.
 
-## Exemple
+## Example
+
+French content example:
 
 ```
 ❌ SUROPTIMISÉ :
@@ -69,5 +71,5 @@ vous stimulez une croissance musculaire durable."
 → 1x "squat", termes variés, lecture fluide
 ```
 
-*Référence canonique du modèle SOSEO/DSEO (migré depuis l'ancien STYLE_GUIDE.md §11,
-supprimé). Cité par les strategies full_refresh et semantic_reorientation.*
+*Canonical reference for the SOSEO/DSEO model (migrated from the former STYLE_GUIDE.md §11,
+deleted). Cited by the full_refresh and semantic_reorientation strategies.*

@@ -44,7 +44,7 @@ class MinimalRow:
               ]),
               help='Force une stratégie spécifique')
 @click.option('--main-keyword', '--keyword', 'keyword',
-              help='Mot-clé principal (force analyse SERP). --keyword = alias legacy.')
+              help='Main keyword (forces SERP analysis). --keyword = legacy alias.')
 @click.option('--debug', is_flag=True, help='Mode debug avec traceback complet')
 def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
     """
@@ -70,7 +70,7 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
     if strategy:
         click.echo(f"Stratégie: {strategy} (forcée)")
     if keyword:
-        click.echo(f"Mot-clé:  {keyword}")
+        click.echo(f"Keyword:  {keyword}")
     click.echo()
 
     # Init orchestrator
@@ -209,11 +209,11 @@ def refresh(url, blog, spreadsheet_id, strategy, keyword, debug):
             if _art:
                 click.echo(f"  Type:         {_art}  (finalize --type {_art} → html/{_art}/)")
             click.echo(f"  Assets avant: {generation_info['metadata'].get('assets_before', {})}")
-            # Mot-clé + guide YTG : à reporter dans `finalize --main-keyword/--guide-id`
+            # Keyword + YTG guide: carry over into `finalize --main-keyword/--guide-id`
             # pour que le QC post-génération score sur le bon guide (pas le slug).
             _kw = keyword or result.main_keyword or ""
             if _kw:
-                click.echo(f"  Mot-clé:      {_kw}")
+                click.echo(f"  Keyword:      {_kw}")
             if result.ytg_guide_id:
                 click.echo(f"  YTG guide:    {result.ytg_guide_id}")
             click.echo(f"  Temps total:  {result.execution_time_seconds:.1f}s")
@@ -255,8 +255,8 @@ def _maybe_run_ytg_qc(site_slug: str, url: str,
         discover_generated_html,
         url_to_context_slug,
         VERDICT_OPTIMAL,
-        VERDICT_A_CORRIGER,
-        VERDICT_BLOQUE,
+        VERDICT_NEEDS_FIX,
+        VERDICT_BLOCKED,
     )
 
     slug = url.strip("/").split("/")[-1]
@@ -290,9 +290,9 @@ def _maybe_run_ytg_qc(site_slug: str, url: str,
         res.html_path = str(files[0])
         engine.persist(res)
         click.echo(f"[YTG QC] Verdict: {res.verdict} — {res.message}")
-        if res.verdict == VERDICT_A_CORRIGER and res.under_optimized_terms:
+        if res.verdict == VERDICT_NEEDS_FIX and res.under_optimized_terms:
             click.echo(f"[YTG QC] À enrichir : {', '.join(res.under_optimized_terms[:8])}")
-        if ytg_cfg.get("gate") and res.verdict in (VERDICT_A_CORRIGER, VERDICT_BLOQUE):
+        if ytg_cfg.get("gate") and res.verdict in (VERDICT_NEEDS_FIX, VERDICT_BLOCKED):
             click.echo("[YTG QC] ⚠ GATE actif : article à revoir avant push WP.")
     except Exception as e:
         click.echo(f"[YTG QC] Non-bloquant, erreur ignorée: {str(e)[:120]}")

@@ -1,74 +1,77 @@
-# E-E-A-T : framework détaillé (Experience, Expertise, Authoritativeness, Trust)
+# E-E-A-T: detailed framework (Experience, Expertise, Authoritativeness, Trust)
 
-Référence chargée à la demande depuis `edito-refresh`. Les 4 piliers avec paires
-❌/✅ et signaux. **Principe clé** : la Confiance (Trust) est l'élément le plus
-important, sans confiance, les autres signaux sont insuffisants.
+Reference loaded on demand from `edito-refresh`. The 4 pillars with ❌/✅
+pairs and signals. **Key principle**: Trust is the most important element;
+without trust, the other signals are insufficient.
 
-## 1. Experience (expérience pratique)
+## 1. Experience (hands-on experience)
 
+French content examples:
 - ❌ « Acadomia est une plateforme de soutien scolaire. »
 - ✅ « Après avoir testé Acadomia pendant 3 mois avec ma fille en 4ème, voici notre retour détaillé… L'enseignante a d'abord évalué le niveau, puis proposé un plan personnalisé. »
 
-Signaux : détails concrets spécifiques, nuances que seul un praticien connaîtrait, vocabulaire de terrain, captures/photos réelles si disponibles.
+Signals: specific concrete details, nuances only a practitioner would know, field vocabulary, real screenshots/photos if available.
 
-## 2. Expertise (compétence technique)
+## 2. Expertise (technical competence)
 
+French content examples:
 - ❌ « Beaucoup d'élèves prennent des cours particuliers. »
 - ✅ « Selon le DEPP (ministère de l'Éducation), 40% des collégiens bénéficient de soutien scolaire (2025). Le marché représente 2,5 milliards € annuels. »
 
-Signaux : sources académiques (CNRS, INSERM, DEPP), données < 2 ans, vocabulaire technique expliqué, experts reconnus, études méthodologiquement saines.
+Signals: academic sources (CNRS, INSERM, DEPP), data < 2 years old, technical vocabulary explained, recognised experts, methodologically sound studies.
 
-## 3. Authoritativeness (autorité)
+## 3. Authoritativeness (authority)
 
+French content examples:
 - ❌ « Un expert recommande cette plateforme. »
 - ✅ « Dr. Marie Dupont, directrice du laboratoire de psychologie de l'apprentissage à la Sorbonne et auteure de "Apprendre Efficacement" (Dunod, 2023), recommande… »
 
-Signaux : auteur avec credentials complets, titres académiques/professionnels, affiliations reconnues, publications datées, citations de sources primaires, liens vers sites d'autorité.
+Signals: author with full credentials, academic/professional titles, recognised affiliations, dated publications, citations of primary sources, links to authority sites.
 
-## 4. Trustworthiness (fiabilité)
+## 4. Trustworthiness (reliability)
 
-Signaux : disclaimers transparents, méthodologie expliquée, dates visibles, sources vérifiables avec liens, absence de conflits d'intérêt (ou transparence totale).
+Signals: transparent disclaimers, methodology explained, visible dates, verifiable sources with links, absence of conflicts of interest (or full transparency).
 
-> **Note site** : la **déclaration d'indépendance éditoriale** est **interdite sur
-> Enseigna** (voir sa skill), ne pas l'inclure. Elle n'est prescrite pour aucun
-> site actuel par défaut.
+> **Site note**: the **editorial independence statement** is **forbidden on
+> Enseigna** (see its skill), do not include it. It is not prescribed for any
+> current site by default.
 
-## Sources institutionnelles (principe transverse)
+## Institutional sources (cross-cutting principle)
 
-**Minimum : ≥ 3 sources institutionnelles citées avec lien** (uniforme, tous sites).
+**Minimum: ≥ 3 institutional sources cited with a link** (uniform, all sites).
 
-**Types de domaines à viser** (valable quel que soit le site) :
-- **Gouvernemental / officiel** : ministères, agences publiques, autorités de régulation.
-- **Académique** : archives ouvertes, revues à comité de lecture, presses universitaires.
-- **Statistique** : institut national de statistiques, organismes internationaux (OCDE…).
+**Types of domains to target** (valid whatever the site):
+- **Governmental / official**: ministries, public agencies, regulatory authorities.
+- **Academic**: open archives, peer-reviewed journals, university presses.
+- **Statistical**: national statistics institute, international bodies (OECD…).
 
-**Les domaines concrets sont un savoir par site, pas transverse** : ils vivent
-dans l'annuaire du site `sites/<site-slug>/sources/authority-map.md` (par matière + socle
-transverse), consommé au tier 1 de la skill `recherche-sources`. Ne pas maintenir de
-liste de domaines ici. Domaines interdits (concurrents, agrégateurs) :
-`recherche-sources/references/blacklisted-domains.md`.
+**Concrete domains are per-site knowledge, not cross-cutting**: they live
+in the site's directory `sites/<site-slug>/sources/authority-map.md` (per subject + a
+cross-cutting base), consumed at tier 1 of the `source-research` skill. Do not
+maintain a list of domains here. Forbidden domains (competitors, aggregators):
+`source-research/references/blacklisted-domains.md`.
 
-**Jamais de lien vers Wikipédia** (tous sites) : Wikipédia agrège des sources primaires
-sans être lui-même une autorité E-E-A-T. Remonter à la source qu'il cite (étude, texte
-officiel, institution) et lier celle-ci à la place.
+**Never link to Wikipedia** (all sites): Wikipedia aggregates primary sources
+without being an E-E-A-T authority itself. Trace back to the source it cites (study,
+official text, institution) and link that instead.
 
 ## YMYL (Your Money or Your Life)
 
-Sujets impactant santé, finances ou bonheur du lecteur → niveau E-E-A-T élevé requis.
-- **Éducation** : sources institutionnelles, données officielles, expertise pédagogique démontrée.
-- **Finance/tarifs (Enseigna)** : transparence des prix, comparaisons objectives.
+Topics impacting the reader's health, finances or happiness → high E-E-A-T level required.
+- **Education**: institutional sources, official data, demonstrated pedagogical expertise.
+- **Finance/pricing (Enseigna)**: price transparency, objective comparisons.
 
-## Auteur et bio : géré par WordPress, PAS dans le HTML
+## Author and bio: handled by WordPress, NOT in the HTML
 
-L'auteur, sa bio et ses credentials sont gérés par le **profil WordPress**, hors
-du corps de l'article. **Ne pas insérer de bloc « À propos de l'auteur » dans le
-HTML généré.** (Le nom d'auteur reste un fait E-E-A-T, simplement porté par le CMS.)
+The author, their bio and credentials are handled by the **WordPress profile**,
+outside the article body. **Do not insert an "About the author" block in the
+generated HTML.** (The author name remains an E-E-A-T fact, simply carried by the CMS.)
 
-## Grille d'audit E-E-A-T (0-100) : pour évaluer un article existant
+## E-E-A-T audit grid (0-100): to assess an existing article
 
 Experience /25 · Expertise /25 · Authority /25 · Trust /25.
-- < 40 : réécriture totale · 40-60 : réécriture partielle (enrichissement E-E-A-T)
-- 60-80 : mise à jour ciblée · > 80 : refresh léger (stats, dates)
+- < 40: full rewrite · 40-60: partial rewrite (E-E-A-T enrichment)
+- 60-80: targeted update · > 80: light refresh (stats, dates)
 
-*Source : fusion de l'ancien EEAT_GUIDE.md (savoir migré en references). Arbitrages
-appliqués : min 3 sources uniforme (C10), bio hors-HTML (C11), indépendance interdite (C12).*
+*Source: merger of the former EEAT_GUIDE.md (knowledge migrated into references). Decisions
+applied: min 3 sources uniform (C10), bio outside HTML (C11), independence statement forbidden (C12).*

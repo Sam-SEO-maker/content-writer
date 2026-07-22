@@ -1,80 +1,80 @@
-# Domaines blacklistés — ne jamais citer, ne jamais lier
+# Blacklisted domains: never cite, never link
 
-Liste canonique des domaines **interdits comme source ou cible de lien** dans le
-contenu généré. Fournie par l'équipe SEO/Éditorial Superprof (importée du paquet
-`blog-refresh.skill`, juillet 2026). Consommée par la skill `recherche-sources`
-(filtrage des candidats aux tiers 2-3) et opposable à toute skill de rédaction.
+Canonical list of domains **forbidden as a source or link target** in
+generated content. Provided by the Superprof SEO/Editorial team (imported from the
+`blog-refresh.skill` package, July 2026). Consumed by the `source-research` skill
+(filtering of candidates at tiers 2-3) and binding on every writing skill.
 
-## Règle
+## Rule
 
-> **Jamais** citer, référencer ou lier un domaine de cette liste. S'applique à :
-> - le brief de sources (`sources[]`) et le champ `eeat_sources`,
-> - les liens inline dans le corps de l'article,
-> - les attributions de citations et sources de statistiques,
-> - toute valeur d'`href` nouvellement introduite.
+> **Never** cite, reference or link a domain from this list. Applies to:
+> - the source brief (`sources[]`) and the `eeat_sources` field,
+> - inline links in the article body,
+> - quote attributions and statistics sources,
+> - any newly introduced `href` value.
 
-Si une recherche (tier 2) renvoie un résultat d'un domaine blacklisté : écarter le
-résultat et chercher une alternative. Si aucune source non blacklistée n'existe pour
-une claim → **abandonner la claim** plutôt que citer un domaine interdit, et le noter
-dans les `lacunes[]` du brief.
+If a search (tier 2) returns a result from a blacklisted domain: discard the
+result and look for an alternative. If no non-blacklisted source exists for
+a claim → **drop the claim** rather than cite a forbidden domain, and note it
+in the brief's `lacunes[]`.
 
-### Deux exceptions (prévalent sur la liste)
+### Two exceptions (prevail over the list)
 
-1. **Règle d'Or** : un lien blacklisté **déjà présent** dans l'article d'origine est
-   conservé à l'identique (`assets_after ≥ assets_before`). L'interdiction porte sur
-   l'**ajout**, jamais sur l'existant.
-2. **Sujet de l'article = la plateforme** (avis/versus Enseigna) : quand l'article
-   évalue une plateforme (Preply, GoStudent, Acadomia…), cette plateforme est une
-   **source primaire sur elle-même** (tarifs, offre, CGU) — la citer/lier est
-   légitime. La blacklist reste valable pour les **autres** domaines de l'article
-   (jamais Wikipédia, jamais un autre concurrent comme source d'autorité).
+1. **Golden Rule**: a blacklisted link **already present** in the original article is
+   kept as-is (`assets_after ≥ assets_before`). The prohibition covers
+   **additions**, never existing content.
+2. **The article's subject = the platform** (Enseigna review/versus articles): when the
+   article evaluates a platform (Preply, GoStudent, Acadomia…), that platform is a
+   **primary source about itself** (pricing, offer, terms of service); citing/linking it is
+   legitimate. The blacklist still holds for the **other** domains in the article
+   (never Wikipedia, never another competitor as an authority source).
 
-## Catégories (le *pourquoi*)
+## Categories (the *why*)
 
-1. **Encyclopédies et agrégateurs** — Wikipédia (toutes langues + projets sœurs
+1. **Encyclopedias and aggregators**: Wikipedia (all languages + sister projects
    `wikisource.org`, `wikiquote.org`, `wikinews.org`, `wikivoyage.org`), Khan Academy…
-   → citer la **source primaire** que l'agrégateur référence, jamais l'agrégateur
+   → cite the **primary source** the aggregator references, never the aggregator
    ([[feedback-no-wikipedia-links]]).
-2. **Concurrents tutorat** (directs + indirects) — Acadomia, Anacours, Complétude,
+2. **Tutoring competitors** (direct + indirect): Acadomia, Anacours, Complétude,
    Les Sherpas, GoStudent, Preply, italki, Wyzant, Chegg…
-3. **Plateformes de langues** — Babbel, Duolingo, Berlitz, Wall Street English, EF,
+3. **Language platforms**: Babbel, Duolingo, Berlitz, Wall Street English, EF,
    Lingoda, Busuu, Memrise…
-4. **Plateformes de cours / MOOC** — Udemy et équivalents.
-5. **Marketplaces et petites annonces** — Leboncoin, Wallapop, Milanuncios,
+4. **Course platforms / MOOCs**: Udemy and equivalents.
+5. **Marketplaces and classified ads**: Leboncoin, Wallapop, Milanuncios,
    StarOfService, Yoopies…
-6. **Annuaires et agrégateurs de profs** — FirstTutors, TutorHunt, Vedantu, Byju's…
-7. **Concurrents de niche** (yoga, musique, fitness, danse…) — hguitare.com,
+6. **Tutor directories and aggregators**: FirstTutors, TutorHunt, Vedantu, Byju's…
+7. **Niche competitors** (yoga, music, fitness, dance…): hguitare.com,
    pianofacile.com…
-8. **Hubs « explications faciles »** — SchoolMouv, Maxicours, Espacefrancais.com,
+8. **"Easy explanations" hubs**: SchoolMouv, Maxicours, Espacefrancais.com,
    La Dictée…
 
-## Règle des sous-domaines
+## Subdomain rule
 
-- Domaine nu blacklisté (`acadomia.fr`) ⇒ tous ses sous-domaines le sont
+- Bare domain blacklisted (`acadomia.fr`) ⇒ all its subdomains are too
   (`blog.acadomia.fr`…).
-- Sous-domaine blacklisté (`en.duolingo.com`) ⇒ le parent l'est aussi.
-- Entrée avec chemin (`Quipper.com/id`) ⇒ le domaine parent est blacklisté.
-- Wikipédia : **toutes** les éditions de langue et tous les projets sœurs.
+- Subdomain blacklisted (`en.duolingo.com`) ⇒ the parent is too.
+- Entry with a path (`Quipper.com/id`) ⇒ the parent domain is blacklisted.
+- Wikipedia: **all** language editions and all sister projects.
 
-## Substituts recommandés
+## Recommended substitutes
 
-Quand la seule source disponible est blacklistée, chercher dans (par ordre) :
+When the only available source is blacklisted, search (in order):
 
-1. **Institutions officielles** — ministères, `*.gouv.fr`, INSEE, Légifrance…
-2. **Académique** — HAL, Cairn, Persée, revues à comité de lecture.
-3. **Presse nationale de qualité** — Le Monde, Le Figaro, Les Échos… (et équivalents
-   par pays : El País, FAZ, The Guardian…).
-4. **Audiovisuel public** — France Info, RTBF, RTS, BBC…
-5. **Presse spécialisée reconnue** selon le sujet.
-6. **Livres publiés** (avec ISBN).
+1. **Official institutions**: ministries, `*.gouv.fr`, INSEE, Légifrance…
+2. **Academic**: HAL, Cairn, Persée, peer-reviewed journals.
+3. **Quality national press**: Le Monde, Le Figaro, Les Échos… (and per-country
+   equivalents: El País, FAZ, The Guardian…).
+4. **Public broadcasting**: France Info, RTBF, RTS, BBC…
+5. **Recognised specialist press** depending on the topic.
+6. **Published books** (with ISBN).
 
-Grille de qualité détaillée : `source-quality.md`. Sources préférées par pays :
-fichier de connaissance du site (ex. `sites/superprof.fr-ressources/.claude/skills/sp-ressources-gutenberg/references/connaissance-fr.md` §9).
+Detailed quality grid: `source-quality.md`. Preferred sources per country:
+the site's knowledge file (e.g. `sites/superprof.fr-ressources/.claude/skills/sp-ressources-gutenberg/references/connaissance-fr.md` §9).
 
-## Liste complète (alphabétique — autoritaire)
+## Full list (alphabetical, authoritative)
 
-Wikipédia (tout sous-domaine ou langue) : `*.wikipedia.org`, `wikipedia.org` —
-plus tous les domaines ci-dessous :
+Wikipedia (any subdomain or language): `*.wikipedia.org`, `wikipedia.org`,
+plus all the domains below:
 
 ```
 100balov.info

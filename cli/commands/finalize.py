@@ -4,13 +4,13 @@ Commande `finalize` — chaîne déterministe post-génération (Phase 3bis).
 À lancer APRÈS que le subagent `content-generator` a écrit le HTML brut. Chaîne :
   1. save_refreshed_html()  → HTML nu + .gutenberg.html + CSV tableaux
   2. AssetManager           → valide + restaure les assets (Règle d'Or)
-  3. YTGQualityCheck        → verdict OPTIMAL / A_CORRIGER / BLOQUE
+  3. YTGQualityCheck        → verdict OPTIMAL / NEEDS_FIX / BLOCKED
   4. Maillage               → EnseignaAvisLinker (enseigna) ; rappel directive
                               SuperprofRotator (superprof, injectée pré-génération)
 
 La GÉNÉRATION reste hors de cette commande (subagent, abonnement Max). `finalize`
 est déterministe et re-jouable : un second passage après correction d'un
-A_CORRIGER refait save → QC → maillage sans régénérer.
+NEEDS_FIX refait save → QC → maillage sans régénérer.
 """
 
 import json
@@ -30,8 +30,8 @@ from cli.options import blog_option
               help="Sous-type d'article routant la sortie HTML dans html/{type}/ "
                    "(enseigna : 'avis' | 'versus'). Défaut : pas de sous-dossier.")
 @click.option("--main-keyword", "--keyword", "keyword", default="",
-              help="Mot-clé principal (guide QC YTG sur le bon terme, pas le slug). "
-                   "À reporter depuis la sortie de `cw refresh`. --keyword = alias legacy.")
+              help="Main keyword (YTG QC guide on the right term, not the slug). "
+                   "Carry it over from the `cw refresh` output. --keyword = legacy alias.")
 @click.option("--guide-id", "guide_id", default="",
               help="ID du guide YTG déjà créé au STEP 2.5 (réutilisation, pas de "
                    "recréation). À reporter depuis la sortie de `cw refresh`.")
@@ -39,7 +39,7 @@ from cli.options import blog_option
               help="Applique le maillage (écrit les fichiers). Sinon dry-run.")
 @click.option("--publish", is_flag=True, default=False,
               help="Publie sur WordPress (REST) après QC OK. Blast radius : "
-                   "confirmation humaine obligatoire. Refusé si verdict A_CORRIGER/BLOQUE.")
+                   "confirmation humaine obligatoire. Refusé si verdict NEEDS_FIX/BLOCKED.")
 @click.option("--yes", "assume_yes", is_flag=True, default=False,
               help="Saute la confirmation interactive de publication (usage batch averti).")
 def finalize(url, site_slug, html_file, title, article_type, keyword, guide_id, apply_linking, publish, assume_yes):
@@ -99,9 +99,9 @@ def finalize(url, site_slug, html_file, title, article_type, keyword, guide_id, 
     click.echo("\n[3/4] QC sémantique YTG…")
     verdict = _run_ytg_qc(base, site_slug, url, saved, main_keyword=keyword, guide_id=guide_id)
 
-    # BLOQUE = problème de fond → arrêt + alerte humaine (pas de maillage)
-    if verdict == "BLOQUE":
-        click.echo("\n❌ Verdict BLOQUE — arrêt. Sur-optimisation grave : "
+    # BLOCKED = problème de fond → arrêt + alerte humaine (pas de maillage)
+    if verdict == "BLOCKED":
+        click.echo("\n❌ Verdict BLOCKED — arrêt. Sur-optimisation grave : "
                    "revue humaine requise, pas de re-génération automatique.")
         click.echo("   Maillage NON appliqué (article non finalisable en l'état).")
         _echo_timers(base, url, finalize_t0)
@@ -120,8 +120,8 @@ def finalize(url, site_slug, html_file, title, article_type, keyword, guide_id, 
         _maybe_publish(base, site_slug, url, url_slug, saved, verdict, assume_yes)
 
     click.echo(f"\n{'='*70}")
-    if verdict == "A_CORRIGER":
-        click.echo("⚠ FINALIZE OK — verdict A_CORRIGER : le subagent doit recorriger "
+    if verdict == "NEEDS_FIX":
+        click.echo("⚠ FINALIZE OK — verdict NEEDS_FIX : le subagent doit recorriger "
                    "les termes signalés puis relancer `finalize` (boucle, cap 2-3).")
     else:
         click.echo("✅ FINALIZE OK — article prêt (contenu + verdict YTG + liens).")
@@ -168,15 +168,15 @@ def _maybe_publish(base: Path, site_slug: str, url: str, url_slug: str, saved: P
     """Publie l'article sur WordPress via REST, uniquement si le QC est OK.
 
     Garde-fous (fort blast radius, site public) :
-    - refus si verdict A_CORRIGER ou BLOQUE (BLOQUE n'atteint jamais ce point) ;
+    - refus si verdict NEEDS_FIX ou BLOCKED (BLOCKED n'atteint jamais ce point) ;
     - confirmation humaine explicite avant le POST, sauf --yes.
     """
     from scripts.utils.push_to_wp import build_client, publish_article
 
     click.echo("\n[5/5] Publication WordPress (REST)…")
 
-    if verdict == "A_CORRIGER":
-        click.echo("  ⛔ Publication refusée : verdict A_CORRIGER. "
+    if verdict == "NEEDS_FIX":
+        click.echo("  ⛔ Publication refusée : verdict NEEDS_FIX. "
                    "Corriger puis relancer `finalize --publish`.")
         return
 
@@ -290,7 +290,7 @@ def _run_ytg_qc(base: Path, site_slug: str, url: str, saved: Path,
     le mot-clé sur le slug et de recréer un guide.
     """
     from scripts.audit.ytg_qc import (
-        YTGQualityCheck, VERDICT_A_CORRIGER, VERDICT_BLOQUE, VERDICT_SKIP,
+        YTGQualityCheck, VERDICT_NEEDS_FIX, VERDICT_BLOCKED, VERDICT_SKIP,
     )
 
     from _shared.core.site_paths import SitePaths
@@ -315,9 +315,9 @@ def _run_ytg_qc(base: Path, site_slug: str, url: str, saved: Path,
         res.html_path = str(saved)
         engine.persist(res)
         click.echo(f"  Verdict: {res.verdict} — {res.message}")
-        if res.verdict == VERDICT_A_CORRIGER and res.under_optimized_terms:
+        if res.verdict == VERDICT_NEEDS_FIX and res.under_optimized_terms:
             click.echo(f"  À enrichir : {', '.join(res.under_optimized_terms[:8])}")
-        if res.verdict == VERDICT_A_CORRIGER and res.over_optimized_terms:
+        if res.verdict == VERDICT_NEEDS_FIX and res.over_optimized_terms:
             click.echo(f"  À réduire  : {', '.join(res.over_optimized_terms[:8])}")
         return res.verdict
     except Exception as e:

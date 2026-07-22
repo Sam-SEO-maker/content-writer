@@ -64,7 +64,7 @@ class Heading:
 
 @dataclass
 class PlanReport:
-    verdict: str                       # "OK" | "A_CORRIGER"
+    verdict: str                       # "OK" | "NEEDS_FIX"
     violations: List[PlanViolation]
     h2_count: int
     paa_total: int
@@ -289,7 +289,7 @@ def validate_plan(markdown: str, paa_raw: str = "") -> PlanReport:
     proof_v, source_links, stats_found = _check_proof(markdown)
     violations += proof_v
 
-    verdict = "OK" if not violations else "A_CORRIGER"
+    verdict = "OK" if not violations else "NEEDS_FIX"
     real_h2 = len([h for h in h2s if h.text != "(sans H2 parent)"])
     return PlanReport(
         verdict=verdict,

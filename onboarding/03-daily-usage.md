@@ -44,7 +44,7 @@ in a terminal: it prints the always-up-to-date list of available commands.
 ## Skills (loaded on demand)
 
 - Cross-cutting (repo root): `edito-refresh` (SEO/GEO/E-E-A-T ranking rules),
-  `format-wordpress` (HTML/WP formatting), `recherche-sources` (verified sourcing).
+  `format-wordpress` (HTML/WP formatting), `source-research` (verified sourcing).
 - Your site's writing/QC skills live under `sites/<site-slug>/.claude/skills/` and are
   selected via `generation_skill` / `qc_skill` in your `site.json`.
 

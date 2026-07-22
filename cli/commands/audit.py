@@ -27,7 +27,7 @@ def audit():
 @audit.command()
 @click.argument('url')
 @click.option('--main-keyword', '--keyword', 'keyword',
-              help='Mot-clé principal (optionnel). --keyword = alias legacy.')
+              help='Main keyword (optional). --keyword = legacy alias.')
 def serp(url, keyword):
     """
     Audit SERP (PAA, secondary keywords).
@@ -51,7 +51,7 @@ def serp(url, keyword):
             parts = [p for p in path.split("/") if p]
             last = parts[-1].replace(".html", "") if parts else ""
             keyword = last.replace("-", " ") if last else url
-            click.echo(f"  (Mot-clé déduit du slug : '{keyword}')")
+            click.echo(f"  (Keyword derived from the slug: '{keyword}')")
 
         from urllib.parse import urlparse
         our_domain = urlparse(url).netloc
