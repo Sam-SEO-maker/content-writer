@@ -67,7 +67,7 @@ class DocumentCache:
             with open(full_path, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            print(f"Fichier non trouvé: {full_path}")
+            print(f"File not found: {full_path}")
             return ""
         except Exception as e:
             print(f"Erreur lecture {full_path}: {e}")
@@ -80,7 +80,7 @@ class DocumentCache:
             with open(full_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
-            print(f"Fichier non trouvé: {full_path}")
+            print(f"File not found: {full_path}")
             return {}
         except Exception as e:
             print(f"Erreur lecture {full_path}: {e}")

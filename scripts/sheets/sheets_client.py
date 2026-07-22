@@ -819,9 +819,9 @@ class SheetsClient:
                                 )
                                 if not site_slug or audit_row.site_slug == site_slug:
                                     rows.append(audit_row)
-                                    print(f"[INFO] Row minimale créée pour ligne {i}")
+                                    print(f"[INFO] Minimal row created for line {i}")
                             except Exception as fallback_error:
-                                print(f"[ERROR] Impossible de créer même une row minimale pour ligne {i}: {fallback_error}")
+                                print(f"[ERROR] Could not create even a minimal row for line {i}: {fallback_error}")
                                 continue
             return rows
         except Exception:
@@ -1024,7 +1024,7 @@ class SheetsClient:
                                 rows.append(audit_row)
                         except Exception as e:
                             # Fallback: créer une row minimale avec les champs essentiels
-                            print(f"[WARNING] Impossible de parser ligne {i}: {e}. Création d'une row minimale...")
+                            print(f"[WARNING] Could not parse line {i}: {e}. Creating a minimal row...")
                             try:
                                 # Créer une row minimale
                                 try:
@@ -1059,9 +1059,9 @@ class SheetsClient:
                                 )
                                 if not site_slug or audit_row.site_slug == site_slug:
                                     rows.append(audit_row)
-                                    print(f"[INFO] Row minimale créée pour ligne {i}")
+                                    print(f"[INFO] Minimal row created for line {i}")
                             except Exception as fallback_error:
-                                print(f"[ERROR] Impossible de créer même une row minimale pour ligne {i}: {fallback_error}")
+                                print(f"[ERROR] Could not create even a minimal row for line {i}: {fallback_error}")
                                 continue
             return rows
         except Exception:
@@ -1117,9 +1117,9 @@ class SheetsClient:
                                 )
                                 if not site_slug or audit_row.site_slug == site_slug:
                                     rows.append(audit_row)
-                                    print(f"[INFO] Row minimale créée pour ligne {i}")
+                                    print(f"[INFO] Minimal row created for line {i}")
                             except Exception as fallback_error:
-                                print(f"[ERROR] Impossible de créer même une row minimale pour ligne {i}: {fallback_error}")
+                                print(f"[ERROR] Could not create even a minimal row for line {i}: {fallback_error}")
                                 continue
             return rows
         except Exception:
@@ -1150,7 +1150,7 @@ class SheetsClient:
                                 rows.append(audit_row)
                         except Exception as e:
                             # Fallback: créer une row minimale avec les champs essentiels
-                            print(f"[WARNING] Impossible de parser ligne {i}: {e}. Création d'une row minimale...")
+                            print(f"[WARNING] Could not parse line {i}: {e}. Creating a minimal row...")
                             try:
                                 # Créer une row minimale avec essentiels pour batch_refresh
                                 try:
@@ -1185,9 +1185,9 @@ class SheetsClient:
                                 )
                                 if not site_slug or audit_row.site_slug == site_slug:
                                     rows.append(audit_row)
-                                    print(f"[INFO] Row minimale créée pour ligne {i}")
+                                    print(f"[INFO] Minimal row created for line {i}")
                             except Exception as fallback_error:
-                                print(f"[ERROR] Impossible de créer même une row minimale pour ligne {i}: {fallback_error}")
+                                print(f"[ERROR] Could not create even a minimal row for line {i}: {fallback_error}")
                                 continue
             return rows
         except Exception as e:
@@ -1453,7 +1453,7 @@ class SheetsClient:
                 {"sheet": tab, "cell": f"N{row_index}", "value": refresh_date},
             ])
             if not ok:
-                print(f"[SHEETS] ✗ update_refresh_status_enseigna: échec écriture pour {url[:60]}")
+                print(f"[SHEETS] ✗ update_refresh_status_enseigna: write failed for {url[:60]}")
             return ok
 
         print(f"[SHEETS] ✗ update_refresh_status_enseigna: URL introuvable dans Avis/Versus: {url[:80]}")
@@ -1572,7 +1572,7 @@ class SheetsClient:
                     # Créer avec en-têtes
                     self._append_row(sheet_name, columns)
             except Exception as e:
-                print(f"Erreur création feuille {sheet_name}: {e}")
+                print(f"Error creating sheet {sheet_name}: {e}")
                 success = False
 
         return success
@@ -1624,7 +1624,7 @@ class SheetsClient:
                     break
 
             if sheet_id is None:
-                print(f"Erreur: Sheet '{self.SHEET_REFRESHS_AUDIT}' non trouvée")
+                print(f"Error: sheet '{self.SHEET_REFRESHS_AUDIT}' not found")
                 return False
 
             # Préparer les requêtes batch update
@@ -1942,11 +1942,11 @@ class SheetsClient:
                 body=body
             ).execute()
 
-            print(f"[OK] Mise en forme appliquée au sheet {self.SHEET_REFRESHS_AUDIT}")
-            print(f"  Colonne F (post_type - Architecture sémantique):")
+            print(f"[OK] Formatting applied to sheet {self.SHEET_REFRESHS_AUDIT}")
+            print(f"  Column F (post_type - semantic architecture):")
             print(f"    [OK] Data Validation (3 options: PARENT, CHILD, STANDALONE)")
             print(f"    [OK] Conditional Formatting:")
-            print(f"      - PARENT: Violet foncé #4B0082 (texte blanc)")
+            print(f"      - PARENT: dark purple #4B0082 (white text)")
             print(f"      - CHILD: Violet clair #DDA0DD")
             print(f"      - STANDALONE: Gris neutre #C0C0C0")
             print(f"  Colonne G (action_blogpost):")
@@ -1954,7 +1954,7 @@ class SheetsClient:
             print(f"    [OK] Conditional Formatting (Gris, Bleu, Jaune, Orange)")
             print(f"  Colonne H (status):")
             print(f"    [OK] Data Validation (3 options)")
-            print(f"    [OK] Conditional Formatting (Gris, Vert clair, Vert foncé)")
+            print(f"    [OK] Conditional formatting (grey, light green, dark green)")
             print(f"  Colonne I (audit_gsc):")
             print(f"    [OK] Data Validation (3 options)")
             print(f"    [OK] Conditional Formatting (Jaune, Vert, Rouge)")
