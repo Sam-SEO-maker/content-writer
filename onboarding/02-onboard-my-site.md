@@ -47,7 +47,8 @@ This does three things:
    yourself in step 6. That's expected.)
 2. Writes a **minimal** `config/site.json` — only the identity fields it can derive
    from the catalog (`site_slug`, `display_name`, `domain`, `url_base`, `gsc_property`,
-   `language`, plus safe defaults for `auth_mode`/`content_type`) — and a `_TODO` line
+   `language`, `serp_location`, plus safe defaults for `auth_mode`/`content_type`/
+   `subject_category`) — and a `_TODO` line
    listing everything **you** must still add by hand (tone_profile, seo_settings,
    wp_api_config, sheets, …). It is a **skeleton, not a finished config**: expect ~12
    lines, not the rich hundred-line file a mature site ends up with. You'll flesh it

@@ -65,6 +65,5 @@
     "password_env_var": "WP_<YOUR_SITE>_APP_PASSWORD",
     "timeout": 30
   },
-  "generation_skill": "<your-writing-skill-name>",
-  "eeat_level": "high"
+  "generation_skill": "<your-writing-skill-name>"
 }
