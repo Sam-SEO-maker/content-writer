@@ -35,6 +35,15 @@
       ],
       "scope": "diff_based",
       "estimated_tokens": 1500
+    },
+    "full_refresh": {
+      "file": "_shared/strategies/full_refresh.md",
+      "trigger_conditions": [
+        "content_stale_critical",
+        "url_not_on_google"
+      ],
+      "scope": "full_content",
+      "estimated_tokens": 4000
     }
   }
 }

@@ -134,7 +134,10 @@ class PromptComposer:
         """
         # Alias : stratégies sans fichier .md propre (cf. prompts_dispatch.json,
         # non lu ici — garder les deux synchronisés).
-        strategy = {"partial_refresh": "full_refresh"}.get(strategy, strategy)
+        strategy = {
+            "partial_refresh": "full_refresh",
+            "eeat_rewrite": "semantic_reorientation",
+        }.get(strategy, strategy)
         # Essayer .md d'abord, puis .txt
         return (
             self._load_prompt(self.strategies_path / f"{strategy}.md") or

@@ -135,7 +135,7 @@ class StrategySelector:
             RefreshStrategy.PARTIAL_REFRESH: "partial_refresh",
             RefreshStrategy.SEMANTIC_REORIENTATION: "semantic_reorientation",
             RefreshStrategy.FORMAT_ADAPTATION: "format_adaptation",
-            RefreshStrategy.FULL_REFRESH: "partial_refresh",  # Utilise le même mais scope différent
+            RefreshStrategy.FULL_REFRESH: "full_refresh",
             RefreshStrategy.EEAT_REWRITE: "semantic_reorientation",
         }
 

@@ -642,6 +642,21 @@ Retourne l'article complet réécrit en HTML:
                 decision,
             )
             strategy = "FULL_REFRESH"
+        # Normaliser l'action vers une stratégie ayant un prompt .md : les actions
+        # du moteur sans membre RefreshStrategy homonyme (CONTENT_GAP_ANALYSIS,
+        # DEEP_AUDIT_AND_REWRITE...) passaient telles quelles au composer, qui ne
+        # trouvait aucun fichier → prompt de stratégie silencieusement absent.
+        # Source unique de conversion : StrategySelector.ACTION_TO_STRATEGY.
+        from _shared.core.models import RefreshStrategy
+        from scripts.decision.strategy_selector import StrategySelector
+        try:
+            strategy = RefreshStrategy(strategy).value
+        except ValueError:
+            mapped = StrategySelector.ACTION_TO_STRATEGY.get(strategy)
+            if mapped is None:
+                logger.warning(
+                    "Action '%s' sans stratégie mappée ; fallback FULL_REFRESH.", strategy)
+            strategy = (mapped or RefreshStrategy.FULL_REFRESH).value
         subject_category = audit_data.get("site_config", {}).get("subject_category", "education_general")
 
         # Sous-type d'article (avis/versus) déduit de l'URL — point unique.
