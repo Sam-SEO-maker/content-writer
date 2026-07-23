@@ -25,6 +25,9 @@ google-auth-oauthlib>=0.5.0
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 
+# PDF reports (maintainer-only, scripts/reports/ via launchd)
+# reportlab>=4.0.0  # install manually in the reports venv
+
 # MCP Protocol (optional - for standalone mode)
 # Note: Claude Code IDE provides MCP client automatically
 # mcp>=0.1.0

@@ -6,13 +6,11 @@
 
 # Données générées (scrapes, audits, articles produits)
 _shared/context/
-_shared/outputs/
 _shared/temp/
 _shared/cache/
 
 # Données machine / exports bruts (hors git)
 _local/
-Images/
 
 # Environnements et caches Python
 __pycache__/
