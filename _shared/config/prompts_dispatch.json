@@ -1,74 +1,5 @@
 {
-  "_comment": "Strategy prompt dispatch. Paths are relative to the repo root. The subject_prompts/site_overrides/blog_to_subject_mapping keys were removed (2026-07-17): they pointed to _shared/prompts/sites/*.md, gone in favour of sites/<site-slug>/prompts/site.md, and their output was consumed by nobody (PromptComposer composes strategy + site.md).",
-  "content_type_mapping": {
-    "review_comparatif": {
-      "base_prompt": "prompts/formats/comparatif_review.md",
-      "required_sections": [
-        "verdict",
-        "tableau_comparatif",
-        "pour_contre"
-      ],
-      "tone_override": "expert_analytique",
-      "structure": {
-        "must_have_rating": true,
-        "rating_scale": 10,
-        "comparison_table_required": true
-      }
-    },
-    "guide_complet": {
-      "base_prompt": "prompts/formats/guide_complete.md",
-      "required_sections": [
-        "introduction",
-        "etapes",
-        "faq"
-      ],
-      "tone_override": null,
-      "structure": {
-        "min_h2_sections": 4,
-        "faq_required": true
-      }
-    },
-    "listicle": {
-      "base_prompt": "prompts/formats/listicle.md",
-      "required_sections": [
-        "introduction",
-        "liste_numerotee",
-        "conclusion"
-      ],
-      "tone_override": null,
-      "structure": {
-        "list_format": "numbered",
-        "min_items": 5,
-        "max_items": 15
-      }
-    },
-    "tutoriel": {
-      "base_prompt": "prompts/formats/tutoriel.md",
-      "required_sections": [
-        "prerequis",
-        "etapes",
-        "resultat"
-      ],
-      "tone_override": "pedagogique",
-      "structure": {
-        "step_by_step_required": true,
-        "examples_required": true
-      }
-    },
-    "blog_article": {
-      "base_prompt": "prompts/formats/blog_article.md",
-      "required_sections": [
-        "introduction",
-        "body",
-        "conclusion"
-      ],
-      "tone_override": "natural_informal",
-      "structure": {
-        "paragraph_length": "3-5 sentences",
-        "intro_max_paragraphs": 2
-      }
-    }
-  },
+  "_comment": "Strategy prompt dispatch: maps the DecisionEngine action to the strategy prompt file injected at generation (read by StrategySelector). Paths are relative to the repo root. Purged 2026-07-23: content_type_mapping, category_paths, blog_to_category_mapping and eeat_levels were dead config from the old 5-level composer (targets no longer on disk, zero consumers in code); only strategy_prompts is read.",
   "strategy_prompts": {
     "title_optimization": {
       "file": "_shared/strategies/title_optimization.md",
@@ -104,37 +35,6 @@
       ],
       "scope": "diff_based",
       "estimated_tokens": 1500
-    }
-  },
-  "category_paths": {
-    "education_reviews": "education/education_reviews.md",
-    "education_general": "education/education_general.md"
-  },
-  "blog_to_category_mapping": {
-    "enseigna": "education_reviews",
-    "superprof.fr-ressources": "education_general"
-  },
-  "eeat_levels": {
-    "very_high": {
-      "description": "YMYL content - maximum E-E-A-T requirements",
-      "author_credentials_required": true,
-      "sources_minimum": 2,
-      "disclaimer_required": true,
-      "expert_review_recommended": true
-    },
-    "high": {
-      "description": "Educational content - strong E-E-A-T",
-      "author_credentials_required": true,
-      "sources_minimum": 1,
-      "disclaimer_required": false,
-      "expert_review_recommended": false
-    },
-    "medium_high": {
-      "description": "Informational content - standard E-E-A-T",
-      "author_credentials_required": true,
-      "sources_minimum": 0,
-      "disclaimer_required": false,
-      "expert_review_recommended": false
     }
   }
 }
