@@ -577,16 +577,6 @@ class RefreshOrchestrator:
 
             if self.workflow_tracker:
                 self.workflow_tracker.advance_step(url, "decision")
-                # Log la décision
-                with timed(timer, "sheets_write"):
-                    self.sheets_client.log_decision(
-                        url=url,
-                        rules_triggered=decision_result.get("rules_triggered", []),
-                        primary_action=primary_action,
-                        rewrite_scope=decision_result.get("rewrite_scope", ""),
-                        estimated_tokens=decision_result.get("estimated_tokens", 0),
-                        prompt_template=decision_result.get("prompt_template", ""),
-                    )
 
                 # Enrichir l'audit_row avec les actions recommandées
                 if 'audit_row' in locals():
@@ -609,32 +599,6 @@ class RefreshOrchestrator:
                     audit_row.to_do = to_do_action
                     audit_row.recommended_actions = recommended_actions
 
-                    # Loger l'audit dans Sheets
-                    with timed(timer, "sheets_write"):
-                        self.sheets_client.log_audit(audit_row)
-
-            # Update colonne G (action_blogpost) in spreadsheet
-            if self.sheets_client:
-                action_blogpost = map_action_to_blogpost(primary_action)
-                assets = audit_dict.get("assets", {})
-                images = assets.get("images", [])
-                internal_links = assets.get("internal_links", [])
-                content_metrics = {
-                    "word_count_before": audit_dict.get("word_count", 0),
-                    "images_count": len(images) if isinstance(images, list) else images,
-                    "internal_links_count": len(internal_links) if isinstance(internal_links, list) else internal_links,
-                }
-                cannibalization_data = {
-                    "flag": False,
-                    "urls": "",
-                }
-                with timed(timer, "sheets_write"):
-                    self.sheets_client.update_decision(
-                        url=url,
-                        action_blogpost=action_blogpost,
-                        content_metrics=content_metrics,
-                        cannibalization=cannibalization_data,
-                    )
 
             # Si NO_ACTION ou DATA_COLLECTION_REQUIRED, terminer ici
             if primary_action in ("NO_ACTION", "DATA_COLLECTION_REQUIRED"):
@@ -655,15 +619,10 @@ class RefreshOrchestrator:
                     execution_time_seconds=(datetime.now() - start_time).total_seconds(),
                 )
 
-            # Si REDIRECT_301, signaler et terminer
+            # Si REDIRECT_301, signaler et terminer (la suggestion est portée par
+            # le résultat action_taken=REDIRECT_301_SUGGESTED ; l'écriture Sheet
+            # legacy visait la colonne action_requise de l'onglet retiré).
             if primary_action == "REDIRECT_301":
-                if self.sheets_client:
-                    with timed(timer, "sheets_write"):
-                        self.sheets_client.set_action_required(
-                            url,
-                            audit_report.cannibalization.suggested_action
-                        )
-
                 if self.workflow_tracker:
                     self.workflow_tracker.complete_workflow(url, success=True)
 

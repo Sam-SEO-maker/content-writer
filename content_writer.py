@@ -45,7 +45,7 @@ def cli(ctx):
 
 
 # Import des groupes de commandes
-from cli.commands import refresh, audit, batch, indexing, linking
+from cli.commands import refresh, audit, batch, linking
 from cli.commands import ytg, notion_cmd
 from cli.commands import plan as plan_cmd
 from cli.commands import finalize as finalize_cmd
@@ -59,7 +59,6 @@ cli.add_command(refresh.refresh)
 cli.add_command(finalize_cmd.finalize)
 cli.add_command(audit.audit)
 cli.add_command(batch.batch)
-cli.add_command(indexing.indexing)
 cli.add_command(linking.linking)
 cli.add_command(ytg.ytg)
 cli.add_command(plan_cmd.plan)
