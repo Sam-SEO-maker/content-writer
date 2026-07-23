@@ -1372,10 +1372,11 @@ class SheetsClient:
     # Enseigna Avis/Versus Operations (onglets réels de production)
     # =========================================================================
     #
-    # "Avis" et "Versus" partagent le même schéma 14 colonnes A-N (voir EnseignaAvisRow).
-    # Ces onglets sont régénérés en colonnes A-J par scripts/audit/enseigna_refresh_list.py
-    # (snapshot GSC). Les colonnes K-N (suggested_action, publish_date, refresh_date) sont
-    # pilotées séparément — on ne les touche donc qu'en cellule ciblée, jamais en clear+rewrite.
+    # ⚠ "Avis" (14 col A-N) et "Versus" (16 col A-P) n'ont PAS le même schéma :
+    # indices par onglet dans EnseignaAvisRow.COLUMN_MAPS (constat en-têtes réels
+    # 2026-07-23). Les colonnes pilotées à la main (suggested_action, publish_date,
+    # refresh_date) ne sont touchées qu'en cellule ciblée, jamais en clear+rewrite.
+    # Versus n'a pas de colonne refresh_date d'origine : le pipeline écrit en Q.
 
     # Onglets de refresh Enseigna. Source de vérité : bloc `sheets` de
     # sites/enseigna/config/site.json (§4bis-A). On exclut l'onglet de
@@ -1415,10 +1416,12 @@ class SheetsClient:
             data = self._read_sheet(tab)
             if not data:
                 continue
+            action_col = EnseignaAvisRow.COLUMN_MAPS.get(
+                tab, EnseignaAvisRow.COLUMN_MAPS["Avis"])["suggested_action"]
             for i, raw_row in enumerate(data[1:], start=2):
-                if len(raw_row) < 4:
+                if len(raw_row) <= action_col:
                     continue
-                suggested_action = raw_row[3]
+                suggested_action = raw_row[action_col]
                 if suggested_action not in action_variants:
                     continue
                 audit_row = EnseignaAvisRow.from_list(raw_row, row_index=i, tab_name=tab)
@@ -1449,8 +1452,13 @@ class SheetsClient:
             row_index = self._find_url_row_col_a(url, tab)
             if row_index is None:
                 continue
+            # Colonne refresh_date propre à l'onglet (Avis: N ; Versus: Q — voir
+            # EnseignaAvisRow.COLUMN_MAPS ; écrire N sur Versus écraserait impressions_3m).
+            col_idx = EnseignaAvisRow.COLUMN_MAPS.get(
+                tab, EnseignaAvisRow.COLUMN_MAPS["Avis"])["refresh_date"]
+            col_letter = chr(ord("A") + col_idx)
             ok = self._batch_update_cells([
-                {"sheet": tab, "cell": f"N{row_index}", "value": refresh_date},
+                {"sheet": tab, "cell": f"{col_letter}{row_index}", "value": refresh_date},
             ])
             if not ok:
                 print(f"[SHEETS] ✗ update_refresh_status_enseigna: write failed for {url[:60]}")

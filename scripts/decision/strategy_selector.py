@@ -5,10 +5,13 @@ Sélectionne et configure la stratégie de refresh optimale.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Optional
 
 from _shared.core.models import RefreshStrategy, StrategyConfig
+
+logger = logging.getLogger(__name__)
 
 
 class StrategySelector:
@@ -22,6 +25,21 @@ class StrategySelector:
     Le prompt de site n'est PAS résolu ici : la composition
     strategy + sites/{id}/prompts/site.md est faite par PromptComposer.
     """
+
+    # Actions de decision_rules.json sans membre RefreshStrategy homonyme.
+    # Mapping aligné sur le rewrite_scope de chaque règle (full_with_gaps →
+    # FULL_REFRESH, full_with_eeat → EEAT_REWRITE, targeted_sections →
+    # PARTIAL_REFRESH). Les actions purement diagnostiques/alerte restent
+    # NO_ACTION (pas de génération) mais explicitement, plus par accident.
+    ACTION_TO_STRATEGY = {
+        "CONTENT_GAP_ANALYSIS": RefreshStrategy.FULL_REFRESH,
+        "DEEP_AUDIT_AND_REWRITE": RefreshStrategy.EEAT_REWRITE,
+        "CONTENT_AUDIT_AND_REFRESH": RefreshStrategy.PARTIAL_REFRESH,
+        "CONTENT_QUALITY_CHECK": RefreshStrategy.PARTIAL_REFRESH,
+        "SUGGEST_301": RefreshStrategy.REDIRECT_301,
+        "ALERT_REDIRECT_OR_SPECIALIZE": RefreshStrategy.NO_ACTION,
+        "DATA_COLLECTION_REQUIRED": RefreshStrategy.NO_ACTION,
+    }
 
     def __init__(
         self,
@@ -67,7 +85,12 @@ class StrategySelector:
         try:
             strategy = RefreshStrategy(primary_action)
         except ValueError:
-            strategy = RefreshStrategy.NO_ACTION
+            strategy = self.ACTION_TO_STRATEGY.get(primary_action)
+            if strategy is None:
+                logger.warning(
+                    "Action '%s' sans stratégie mappée (ni membre de RefreshStrategy, "
+                    "ni entrée ACTION_TO_STRATEGY) — repli NO_ACTION.", primary_action)
+                strategy = RefreshStrategy.NO_ACTION
 
         # Récupérer le scope de réécriture
         rewrite_scope = decision_result.get("rewrite_scope", "none")

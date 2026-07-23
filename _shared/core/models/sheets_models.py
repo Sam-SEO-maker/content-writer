@@ -4,13 +4,13 @@ Sheets Models Module
 Modèles pour l'intégration avec Google Sheets.
 
 Architecture (alignée sur les spreadsheets réels de production, pas un schéma théorique) :
-- `EnseignaAvisRow`     — onglets "Avis" ET "Versus" de la spreadsheet Enseigna (même schéma 14 col A-N)
+- `EnseignaAvisRow`     — onglets "Avis" (14 col A-N) et "Versus" (16 col A-P) de la spreadsheet
+                          Enseigna. Schémas DIFFÉRENTS par onglet : indices dans COLUMN_MAPS.
 - `SuperprofAuditRow`   — onglet "GSC_Perfs" de la spreadsheet Superprof (15 colonnes)
-- `ContentWriterRow`    — modèle théorique (20 colonnes A-T, feuille "Articles Ressources") — JAMAIS câblé,
-                          ne correspond à aucun onglet réel. Conservé pour référence uniquement.
 - `RefreshAuditRow`     — modèle SRW legacy (28 colonnes A-AB, feuille "Refreshs_Audit") — hérité d'un
                           fork multi-blogs antérieur. Ne correspond à aucun onglet réel Enseigna/Superprof.
                           Ne pas recréer cet onglet : voir mémoire feedback_refresh_pipeline_gotchas.
+(`ContentWriterRow`, modèle théorique jamais câblé, supprimé le 2026-07-23.)
 """
 
 from dataclasses import dataclass, field
@@ -37,172 +37,27 @@ def _safe_float(val, default=0.0):
 
 
 @dataclass
-class ContentWriterRow:
-    """
-    Modèle unifié Content Writer (20 colonnes A-T).
-
-    Utilisé pour les 2 blogs : enseigna + superprof.fr-ressources.
-    Remplace RefreshAuditRow dans la nouvelle architecture.
-
-    Structure spreadsheet "Articles Ressources" :
-      A: domain_name      — enseigna.fr | superprof.fr/ressources/
-      B: catégorie        — anglais/maths/histoire… (Superprof) ; soutien scolaire/langues/loisirs (Enseigna)
-      C: url
-      D: main_keyword
-      E: title
-      F: post_type        — théorique | exercices | review
-      G: status           — À faire | Audit GSC | En cours | Rédigé | Publié
-      H: action           — FULL_REFRESH | PARTIAL_REFRESH | TITLE_OPTIMIZATION | NEW_CONTENT
-      I: gsc_impressions_30d
-      J: gsc_clicks_30d
-      K: gsc_ctr_30d
-      L: people_also_ask  — questions PAA (comma-separated, max 4)
-      M: secondary_keywords
-      N: new_h1_title
-      O: word_count_before
-      P: word_count_after
-      Q: images_count
-      R: internal_links_count
-      S: error_message
-      T: refresh_date     — ISO timestamp
-    """
-
-    domain_name: str = ""                   # A
-    categorie: str = ""                     # B
-    url: str = ""                           # C
-    main_keyword: str = ""                  # D
-    title: str = ""                         # E
-    post_type: str = ""                     # F (théorique/exercices/review)
-    status: str = "À faire"                 # G
-    action: str = ""                        # H
-    gsc_impressions_30d: int = 0            # I
-    gsc_clicks_30d: int = 0                 # J
-    gsc_ctr_30d: float = 0.0               # K
-    people_also_ask: str = ""              # L
-    secondary_keywords: str = ""           # M
-    new_h1_title: str = ""                 # N
-    word_count_before: int = 0             # O
-    word_count_after: int = 0              # P
-    images_count: int = 0                  # Q
-    internal_links_count: int = 0          # R
-    error_message: str = ""                # S
-    refresh_date: str = ""                 # T
-
-    row_index: int = 0                     # non-sheet — ligne dans le spreadsheet
-
-    def to_list(self) -> list:
-        """Convertit en liste pour écriture Google Sheets (20 colonnes A-T)."""
-        return [
-            self.domain_name,
-            self.categorie,
-            self.url,
-            self.main_keyword,
-            self.title,
-            self.post_type,
-            self.status,
-            self.action,
-            self.gsc_impressions_30d,
-            self.gsc_clicks_30d,
-            round(self.gsc_ctr_30d * 100, 2) if self.gsc_ctr_30d else 0,
-            self.people_also_ask,
-            self.secondary_keywords,
-            self.new_h1_title,
-            self.word_count_before,
-            self.word_count_after,
-            self.images_count,
-            self.internal_links_count,
-            self.error_message,
-            self.refresh_date,
-        ]
-
-    @staticmethod
-    def headers() -> list:
-        """En-têtes (single source of truth) pour la feuille principale."""
-        return [
-            "Domain",
-            "Catégorie",
-            "URL",
-            "Main Keyword",
-            "Title",
-            "Post Type",
-            "Status",
-            "Action",
-            "Impressions 30d",
-            "Clicks 30d",
-            "CTR 30d (%)",
-            "People Also Ask",
-            "Secondary Keywords",
-            "New H1 Title",
-            "Word Count Before",
-            "Word Count After",
-            "Images Count",
-            "Internal Links Count",
-            "Error Message",
-            "Refresh Date",
-        ]
-
-    @staticmethod
-    def from_list(row: list, row_index: int = 0) -> "ContentWriterRow":
-        """Crée une instance à partir d'une liste (20 colonnes A-T)."""
-        def safe_float(val, default=0.0):
-            # CTR values arrive as percentages (e.g. "2,5") — divide by 100
-            if not val:
-                return default
-            try:
-                return float(str(val).replace(",", ".").replace("%", "")) / 100
-            except (ValueError, TypeError):
-                return default
-
-        return ContentWriterRow(
-            domain_name=row[0] if len(row) > 0 else "",
-            categorie=row[1] if len(row) > 1 else "",
-            url=row[2] if len(row) > 2 else "",
-            main_keyword=row[3] if len(row) > 3 else "",
-            title=row[4] if len(row) > 4 else "",
-            post_type=row[5] if len(row) > 5 else "",
-            status=row[6] if len(row) > 6 else "À faire",
-            action=row[7] if len(row) > 7 else "",
-            gsc_impressions_30d=_safe_int(row[8]) if len(row) > 8 else 0,
-            gsc_clicks_30d=_safe_int(row[9]) if len(row) > 9 else 0,
-            gsc_ctr_30d=safe_float(row[10]) if len(row) > 10 else 0.0,
-            people_also_ask=row[11] if len(row) > 11 else "",
-            secondary_keywords=row[12] if len(row) > 12 else "",
-            new_h1_title=row[13] if len(row) > 13 else "",
-            word_count_before=_safe_int(row[14]) if len(row) > 14 else 0,
-            word_count_after=_safe_int(row[15]) if len(row) > 15 else 0,
-            images_count=_safe_int(row[16]) if len(row) > 16 else 0,
-            internal_links_count=_safe_int(row[17]) if len(row) > 17 else 0,
-            error_message=row[18] if len(row) > 18 else "",
-            refresh_date=row[19] if len(row) > 19 else "",
-            row_index=row_index,
-        )
-
-
-@dataclass
 class EnseignaAvisRow:
     """
     Modèle aligné sur les onglets réels "Avis" et "Versus" de la spreadsheet Enseigna.
 
-    Les deux onglets partagent le même schéma 14 colonnes A-N, régénéré par
-    `scripts/audit/enseigna_refresh_list.py` (colonnes A-J, snapshot GSC) — les colonnes
-    K-N (suggested_action, publish_date, refresh_date) sont pilotées séparément
-    (remplissage manuel / autre outil) et NE DOIVENT PAS être écrasées par un refresh GSC.
+    ⚠ Les deux onglets NE partagent PAS le même schéma (constat en-têtes réels
+    2026-07-23) — le parsing est par index et dispatché par onglet (from_list).
+    Les colonnes pilotées à la main (suggested_action, publish_date, refresh_date)
+    NE DOIVENT PAS être écrasées par un refresh GSC.
 
-    Structure réelle observée (2026-07-08) :
-      A: url
-      B: top_keyword
-      C: priority            — HIGH | MEDIUM | LOW
-      D: suggested_action    — ex: PARTIAL_REFRESH, TITLE_OPTIMIZATION, FULL_REFRESH
-      E: impressions_30d
-      F: clicks_30d
-      G: impressions_3m
-      H: clicks_3m
-      I: nb_kw
-      J: ctr
-      K: avg_position
-      L: snapshot_date
-      M: publish_date
-      N: refresh_date        — mis à jour par le pipeline de refresh après génération
+    Avis (14 colonnes A-N) :
+      A url · B top_keyword · C priority · D suggested_action (en-tête sheet
+      mal libellé "FULL_REFRESH") · E impressions_30d · F clicks_30d ·
+      G impressions_3m · H clicks_3m · I nb_kw · J ctr · K avg_position ·
+      L snapshot_date · M publish_date · N refresh_date
+
+    Versus (16 colonnes A-P + Q ajoutée par le pipeline) :
+      A url · B priority · C suggested_action · D impressions · E clicks ·
+      F ctr · G avg_position · H nb_kw · I top_keyword · J top_kw_impressions ·
+      K snapshot_date · L impressions_30d · M clicks_30d · N impressions_3m ·
+      O clicks_3m · P publish_date · Q refresh_date (colonne pipeline, absente
+      du layout d'origine — écrite par update_refresh_status_enseigna)
     """
 
     url: str = ""                       # A
@@ -223,23 +78,47 @@ class EnseignaAvisRow:
     row_index: int = 0                  # non-sheet — ligne dans le spreadsheet (1-indexed)
     tab_name: str = "Avis"              # non-sheet — "Avis" ou "Versus", pour savoir où réécrire
 
+    # Index des champs par onglet (voir docstring). action_col est aussi utilisé
+    # par sheets_client pour filtrer sans parser toute la ligne.
+    COLUMN_MAPS = {
+        "Avis": {
+            "url": 0, "top_keyword": 1, "priority": 2, "suggested_action": 3,
+            "impressions_30d": 4, "clicks_30d": 5, "impressions_3m": 6,
+            "clicks_3m": 7, "nb_kw": 8, "ctr": 9, "avg_position": 10,
+            "snapshot_date": 11, "publish_date": 12, "refresh_date": 13,
+        },
+        "Versus": {
+            "url": 0, "priority": 1, "suggested_action": 2, "ctr": 5,
+            "avg_position": 6, "nb_kw": 7, "top_keyword": 8,
+            "snapshot_date": 10, "impressions_30d": 11, "clicks_30d": 12,
+            "impressions_3m": 13, "clicks_3m": 14, "publish_date": 15,
+            "refresh_date": 16,
+        },
+    }
+
     @staticmethod
     def from_list(row: list, row_index: int = 0, tab_name: str = "Avis") -> "EnseignaAvisRow":
+        cols = EnseignaAvisRow.COLUMN_MAPS.get(tab_name, EnseignaAvisRow.COLUMN_MAPS["Avis"])
+
+        def _get(field, default=""):
+            i = cols.get(field)
+            return row[i] if i is not None and len(row) > i else default
+
         return EnseignaAvisRow(
-            url=row[0] if len(row) > 0 else "",
-            top_keyword=row[1] if len(row) > 1 else "",
-            priority=row[2] if len(row) > 2 else "",
-            suggested_action=row[3] if len(row) > 3 else "",
-            impressions_30d=_safe_int(row[4]) if len(row) > 4 else 0,
-            clicks_30d=_safe_int(row[5]) if len(row) > 5 else 0,
-            impressions_3m=_safe_int(row[6]) if len(row) > 6 else 0,
-            clicks_3m=_safe_int(row[7]) if len(row) > 7 else 0,
-            nb_kw=_safe_int(row[8]) if len(row) > 8 else 0,
-            ctr=_safe_float(row[9]) if len(row) > 9 else 0.0,
-            avg_position=_safe_float(row[10]) if len(row) > 10 else 0.0,
-            snapshot_date=row[11] if len(row) > 11 else "",
-            publish_date=row[12] if len(row) > 12 else "",
-            refresh_date=row[13] if len(row) > 13 else "",
+            url=_get("url"),
+            top_keyword=_get("top_keyword"),
+            priority=_get("priority"),
+            suggested_action=_get("suggested_action"),
+            impressions_30d=_safe_int(_get("impressions_30d", 0)),
+            clicks_30d=_safe_int(_get("clicks_30d", 0)),
+            impressions_3m=_safe_int(_get("impressions_3m", 0)),
+            clicks_3m=_safe_int(_get("clicks_3m", 0)),
+            nb_kw=_safe_int(_get("nb_kw", 0)),
+            ctr=_safe_float(_get("ctr", 0.0)),
+            avg_position=_safe_float(_get("avg_position", 0.0)),
+            snapshot_date=_get("snapshot_date"),
+            publish_date=_get("publish_date"),
+            refresh_date=_get("refresh_date"),
             row_index=row_index,
             tab_name=tab_name,
         )

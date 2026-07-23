@@ -17,7 +17,6 @@ from _shared.core.models import (
     SitemapURL,
     SitemapCache,
     FetchResult,
-    SitemapType,
     SiteConfig
 )
 from _shared.core.sites_registry import SitesRegistry
