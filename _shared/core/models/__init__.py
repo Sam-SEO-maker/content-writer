@@ -1,8 +1,8 @@
 """
 Shared Models Package
 
-Centralise tous les modèles de données (dataclasses et enums) du projet.
-Permet des imports simplifiés : from _shared.core.models import ImageAsset, TaskStatus
+Centralises all the project's data models (dataclasses and enums).
+Allows simplified imports: from _shared.core.models import ImageAsset, TaskStatus
 """
 
 # Enums
