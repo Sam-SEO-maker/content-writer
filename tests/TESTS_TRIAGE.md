@@ -1,4 +1,14 @@
-# Triage des tests en échec (état 2026-07-15)
+# Triage des tests en échec (JOURNAL HISTORIQUE — clos)
+
+> **État final 2026-07-23 : suite VERTE — 250 tests, 0 échec** (`python3 -m pytest -q`,
+> `pytest.ini` restreint la collecte à `tests/`). Les 49 échecs listés plus bas ont été
+> résolus depuis (réécriture vers l'API actuelle ou suppression avec leur feature) :
+> `test_scheduler` et son "vrai doute" de dédup sont partis avec le module scheduler
+> (purge single-sheet du 2026-07-23, commit 48de374) ; `test_workflow.py` (harnais manuel
+> sur l'onglet retiré URLs_Input, 0 test collecté) supprimé le même jour.
+> Ce fichier est conservé comme journal de la remise au vert — état 2026-07-15 ci-dessous.
+
+## (Historique) Triage initial — état 2026-07-15
 
 Contexte : suite historiquement rouge (échecs PRÉEXISTANTS à la refonte Phase 0→6).
 Objectif = vert franc **sans masquer de vraie régression**.
