@@ -1,56 +1,17 @@
 {
+  "_comment": "Versioned template of _shared/config/sites.json (the runtime registry of onboarded sites, gitignored). You normally never edit sites.json by hand: entries are added automatically by `python3 content_writer.py site init <site-slug>` (schema below, from the catalog) and, on the maintainer side, by `notion sync-sites`. Sites may carry extra optional keys (eeat_level, registre, blacklist, editorial_guides, sheet_id, notion_*_db_id...) added per site as needed.",
   "notion_refresh_tracker_db_id": "YOUR_NOTION_DB_ID",
   "sites": [
     {
-      "site_slug": "enseigna.fr",
-      "name": "Enseigna",
-      "domain": "enseigna.fr",
-      "gsc_property": "https://enseigna.fr/",
-      "sheet_id": "YOUR_ENSEIGNA_SHEET_ID",
-      "credentials": "enseigna-gsc.json",
+      "site_slug": "superprof.xx",
+      "name": "Superprof XX (blog)",
+      "domain": "superprof.xx",
+      "url_base": "https://www.superprof.xx/blog/",
+      "gsc_property": "https://www.superprof.xx/blog/",
+      "language": "xx",
       "active": true,
-      "subject_category": "education_reviews",
-      "content_type": "review",
-      "ymyl_level": "medium",
-      "registre": "vouvoiement",
-      "blacklist": [
-        "acadomia.fr",
-        "kelprof.com",
-        "apprentus.fr",
-        "voscours.fr",
-        "completchude.com"
-      ],
-      "rating_system": {
-        "superprof_baseline": "9/10",
-        "competitors_max": "8/10"
-      },
-      "cesu_formula": "(Prix net x 1.8076) x 0.5",
-      "acf_fields": 15,
-      "pbn_website_id": 0,
-      "notion_commandes_db_id": "YOUR_NOTION_COMMANDES_DB_ID",
-      "notion_sujets_db_id": ""
-    },
-    {
-      "site_slug": "superprof.fr-ressources",
-      "name": "Superprof Ressources FR",
-      "domain": "superprof.fr",
-      "url_base": "https://www.superprof.fr/ressources/",
-      "gsc_property": "https://www.superprof.fr/ressources/",
-      "sheet_id": "YOUR_SUPERPROF_SHEET_ID",
-      "credentials": "google-service-account.json",
-      "active": true,
-      "subject_category": "education_general",
       "content_type": "blog_article",
-      "ymyl_level": "low",
-      "registre": "TODO_a_confirmer_PO",
-      "language": "fr",
-      "editorial_guides": [
-        "sites/superprof.fr-ressources/prompts/guides/guide-1-blog-writing-foundations.md",
-        "sites/superprof.fr-ressources/prompts/guides/guide-2-blog-writing-reference.md",
-        "sites/superprof.fr-ressources/prompts/guides/guide-3-working-with-refreshes.md"
-      ],
-      "notion_commandes_db_id": "",
-      "notion_sujets_db_id": ""
+      "subject_category": "education_general"
     }
   ]
 }
