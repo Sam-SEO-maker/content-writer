@@ -1,16 +1,15 @@
 {
-  "_doc": "Configuration des spreadsheets opérationnelles. Copier ce fichier en sheets_config.json et remplir les IDs réels.",
-
+  "_doc": "Operational spreadsheets configuration. Copy this file to sheets_config.json and fill in the real IDs.",
   "spreadsheets": {
     "superprof_ressources": {
       "id": "YOUR_SUPERPROF_SPREADSHEET_ID",
       "name": "Articles Ressources",
       "owner_email": "your@email.com",
       "sheets": {
-        "main": "TODO_nom_onglet"
+        "main": "TODO_tab_name"
       },
       "columns_main": [
-        "TODO_a_recuperer_avec_la_sheet"
+        "TODO_fetch_from_the_sheet"
       ]
     },
     "enseigna": {
@@ -21,16 +20,15 @@
         "versus": "Versus"
       },
       "columns_avis": [
-        "TODO_a_definir"
+        "TODO_to_define"
       ],
       "columns_versus": [
-        "TODO_a_definir"
+        "TODO_to_define"
       ]
     }
   },
-
   "notes": [
-    "Récupérer l'ID d'un Google Sheet depuis son URL : docs.google.com/spreadsheets/d/{ID}/edit",
-    "Le compte de service Google doit avoir accès en lecture/écriture à chaque spreadsheet"
+    "Get a Google Sheet ID from its URL: docs.google.com/spreadsheets/d/{ID}/edit",
+    "The Google service account must have read/write access to each spreadsheet"
   ]
 }
