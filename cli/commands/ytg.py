@@ -525,7 +525,7 @@ def _infer_url_from_html_path(site_slug: str, path) -> str:
 @click.option('--fix', is_flag=True, default=False,
               help='Flag NEEDS_FIX articles for targeted correction (corrector)')
 @click.option('--json-out', 'json_out', is_flag=True, default=False,
-              help='Write the summary report to _shared/outputs/{blog}/ytg_qc_report.json')
+              help='Write the summary report to sites/{site-slug}/outputs/ytg_qc_report.json')
 def qc(site_slug, slug, keyword, fix, json_out):
     """
     YTG semantic QC on a site's generated HTML, BEFORE WP integration.

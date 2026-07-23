@@ -31,7 +31,7 @@ python3 content_writer.py ytg qc --site <site_slug> --slug <slug> [--main-keywor
 ```
 
 Add `--fix` (flag the NEEDS_FIX items to the corrector) or `--json-out`
-(report `_shared/outputs/{blog}/ytg_qc_report.json`) if present in `$ARGUMENTS`.
+(report `sites/{site-slug}/outputs/ytg_qc_report.json`) if present in `$ARGUMENTS`.
 `--main-keyword` requires `--slug` (a single article) - the CLI refuses otherwise.
 
 The engine resolves the main keyword (Notion/Sheet/GSC/slug), resolves or creates the YTG

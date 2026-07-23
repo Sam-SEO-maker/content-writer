@@ -7,7 +7,7 @@
       "Edit(tests/**)",
       "Edit(content_writer.py)",
       "Edit(pyproject.toml)",
-      "Write(_shared/outputs/**)",
+      "Write(sites/**/outputs/**)",
       "Write(_shared/context/**)",
       "Write(_shared/benchmarks/**)",
       "Write(tests/**)",

@@ -22,8 +22,7 @@ dans les H2/H3. YMYL low.
 >
 > **Source de vérité canonique** :
 > `sites/superprof.fr-ressources/prompts/site.md` (règles maîtresses, prompt principal) +
-> `sites/superprof.fr-ressources/prompts/reference.md` (exemple HTML Gutenberg à imiter) +
-> `sites/superprof.fr-ressources/outputs/batches/REGEN_BRIEF.md` (brief réutilisable).
+> `sites/superprof.fr-ressources/prompts/reference.md` (exemple HTML Gutenberg à imiter).
 
 **Connaissance pays FR** : `references/connaissance-fr.md` (à consulter au besoin) —
 système éducatif post-réforme 2021 (piège « Bac S/L/ES »), vocabulaire opérationnel,
